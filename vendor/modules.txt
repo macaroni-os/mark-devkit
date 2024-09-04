@@ -1,3 +1,5 @@
+# github.com/chzyer/readline v1.5.1
+## explicit; go 1.15
 # github.com/fsnotify/fsnotify v1.7.0
 ## explicit; go 1.17
 github.com/fsnotify/fsnotify
@@ -8,6 +10,8 @@ github.com/go-logr/logr/funcr
 # github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572
 ## explicit; go 1.13
 github.com/go-task/slim-sprig
+# github.com/go-task/slim-sprig/v3 v3.0.0
+## explicit; go 1.20
 # github.com/google/go-cmp v0.6.0
 ## explicit; go 1.13
 github.com/google/go-cmp/cmp
@@ -30,6 +34,8 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/ianlancetaylor/demangle v0.0.0-20240312041847-bd984b5ce465
+## explicit; go 1.13
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
@@ -168,6 +174,8 @@ golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal
 golang.org/x/exp/slog/internal/buffer
+# golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
+## explicit; go 1.11
 # golang.org/x/net v0.28.0
 ## explicit; go 1.18
 golang.org/x/net/context
@@ -201,6 +209,8 @@ golang.org/x/text/unicode/norm
 # golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 ## explicit; go 1.19
 golang.org/x/tools/go/ast/inspector
+# google.golang.org/protobuf v1.34.1
+## explicit; go 1.17
 # gopkg.in/ini.v1 v1.67.0
 ## explicit
 gopkg.in/ini.v1
