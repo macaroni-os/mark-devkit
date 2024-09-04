@@ -27,7 +27,7 @@ jobs:
         with:
           install-only: true
       - name: Build test
-        run: sudo -E env "PATH=$PATH" make multiarch-build
+        run: sudo -E env "PATH=$PATH" make goreleaser-snapshot
 
       - name: Tests
         run: |
