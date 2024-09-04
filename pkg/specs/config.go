@@ -91,7 +91,7 @@ func GenDefault(viper *v.Viper) {
 
 	viper.SetDefault("logging.level", "info")
 	viper.SetDefault("logging.enable_logfile", false)
-	viper.SetDefault("logging.path", "/var/log/macaroni/macaronictl.log")
+	viper.SetDefault("logging.path", "/var/log/macaroni/mark-devkit.log")
 	viper.SetDefault("logging.json_format", false)
 	viper.SetDefault("logging.enable_emoji", true)
 	viper.SetDefault("logging.color", true)
