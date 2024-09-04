@@ -58,7 +58,9 @@ func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
 	config.Viper.BindPFlag("config", pflags.Lookup("config"))
 	config.Viper.BindPFlag("general.debug", pflags.Lookup("debug"))
 
-	rootCmd.AddCommand()
+	rootCmd.AddCommand(
+		metroCmdCommand(config),
+	)
 }
 
 func Execute() {
