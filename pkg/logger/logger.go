@@ -145,7 +145,7 @@ func (l *MarkDevkitLogger) Msg(level string, withoutColor, ln bool, msg ...inter
 		case "info":
 			levelMsg = l.Aurora.Bold(l.Aurora.White(message)).BgBlack().String()
 		case "error":
-			levelMsg = l.Aurora.Bold(l.Aurora.Red(":bomb: " + message + ":fire:")).BgBlack().String()
+			levelMsg = l.Aurora.Bold(l.Aurora.Red(":bomb:" + message + ":fire:")).BgBlack().String()
 		}
 	}
 
@@ -192,6 +192,6 @@ func (l *MarkDevkitLogger) Error(mess ...interface{}) {
 }
 
 func (l *MarkDevkitLogger) Fatal(mess ...interface{}) {
-	l.Error(mess)
+	l.Error(mess...)
 	os.Exit(1)
 }
