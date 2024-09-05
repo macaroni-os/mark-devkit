@@ -41,9 +41,10 @@ type JobRendered struct {
 }
 
 type JobSource struct {
-	Type string `yaml:"type,omitempty" json:"type,omitempty"`
-	Uri  string `yaml:"uri,omitempty" json:"uri,omitempty"`
-	Path string `yaml:"path,omitempty" json:"path,omitempty"`
+	Type   string `yaml:"type,omitempty" json:"type,omitempty"`
+	Uri    string `yaml:"uri,omitempty" json:"uri,omitempty"`
+	Path   string `yaml:"path,omitempty" json:"path,omitempty"`
+	Target string `yaml:"target,omitempty" json:"target,omitempty"`
 }
 
 type JobOutput struct {
