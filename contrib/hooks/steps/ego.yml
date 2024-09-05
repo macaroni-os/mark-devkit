@@ -1,0 +1,38 @@
+hooks:
+- type: "outer-pre-chroot"
+  name: "prepare-meta-repo"
+  description: |
+    Fetch meta-repo
+  entrypoint:
+    - /bin/bash
+    - -c
+  commands:
+    # Setup ego.conf
+    - |-
+      install -d ${MARKDEVKIT_WORKSPACE}/etc
+      cat > ${MARKDEVKIT_WORKSPACE}/etc/ego.conf << EOF
+      [global]
+      release = {{ .Values.release }}
+      {{- if .Values.sync_base_url }}
+      sync_base_url = {{ .Values.sync_base_url }}
+      {{- end }}
+      {{- if .Values.python_kit_profile }}
+      python_kit_profile = {{ .Values.python_kit_profile | default "" }}
+      {{- end }}
+      EOF
+      echo "Using ego.conf:"
+      cat ${MARKDEVKIT_WORKSPACE}/etc/ego.conf
+
+    # Prepare meta-repo on workspace
+    - |-
+      export EGO_CONFIG=${MARKDEVKIT_WORKSPACE}/etc/ego.conf
+      run_ego() {
+        if [ -e ${MARKDEVKIT_WORKSPACE}/ego/ego ]; then
+          echo "Using ${MARKDEVKIT_WORKSPACE}/ego/ego, since it's there."
+          ${MARKDEVKIT_WORKSPACE}/ego/ego $*
+        else
+          ego $*
+        fi
+      }
+      run_ego sync --dest=${MARKDEVKIT_WORKSPACE}/meta-repo
+

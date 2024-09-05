@@ -1,0 +1,36 @@
+# Example of specs to build stage tarballs
+# MARK Devkit Specifications
+version: "1.0"
+
+jobs:
+- name: job1
+  source:
+    type: http
+    uri: "https://build.funtoo.org/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/stage3-latest.tar.xz"
+  output:
+    type: file
+    name: stage3-{{ .Values.arch }}-{{ .Values.subarch }}-{{ .Values.release }}-{{ now | date "2006-01-02" }}.tar.xz
+    dir: './output/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/{{ now | date "2006-01-02" }}'
+
+  options:
+    branch: "next"
+    release: "next"
+    arch: x86-64bit
+    subarch: generic_64
+    sync_base_url: https://github.com/macaroni-os/{repo}
+    extras:
+      - freshen
+
+  workspacedir: /workspace
+  chroot_binds:
+    - source: /workspace/package
+      target: /var/tmp/cache/package
+    - source: /workspace/distfiles
+      target: /var/cache/portage/distfiles
+
+  hooks_basedir: ./hooks
+  # Define the list of the targets
+  # scripts to run over the chroot.
+  hooks_files:
+    - steps/ego.yml
+

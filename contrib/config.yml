@@ -1,0 +1,4 @@
+general:
+  debug: false
+logging:
+  level: info
