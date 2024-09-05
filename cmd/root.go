@@ -19,7 +19,12 @@ import (
 const (
 	cliName = `Copyright (c) 2024 Macaroni OS - Daniele Rondina
 
-M.A.R.K. Development Tool`
+M.A.R.K. Development Tool
+
+Distributed under the terms of the GNU General Public License version 3
+this tool comes with ABSOLUTELY NO WARRANTY; This is free software, and you
+are welcome to redistribute it under certain conditions.
+`
 
 	MARKDEVKIT_VERSION = `0.1.0`
 )
@@ -51,7 +56,7 @@ func initConfig(config *specs.MarkDevkitConfig) {
 func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
 	var pflags = rootCmd.PersistentFlags()
 
-	pflags.StringP("config", "c", "", "Macaronictl configuration file")
+	pflags.StringP("config", "c", "", "MARK Devkit configuration file")
 	pflags.BoolP("debug", "d", config.Viper.GetBool("general.debug"),
 		"Enable debug output.")
 
@@ -60,6 +65,7 @@ func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
 
 	rootCmd.AddCommand(
 		metroCmdCommand(config),
+		diagnoseCmdCommand(config),
 	)
 }
 
