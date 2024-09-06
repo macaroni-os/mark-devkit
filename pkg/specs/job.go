@@ -57,7 +57,7 @@ func (j *JobRendered) GetOptionsEnvsMap() map[string]string {
 
 		switch v.(type) {
 		case int:
-			ans[k] = fmt.Sprintf("%s", v.(int))
+			ans[k] = fmt.Sprintf("%d", v.(int))
 		case string:
 			ans[k] = v.(string)
 		default:
