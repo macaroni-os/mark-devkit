@@ -139,11 +139,11 @@ func (l *MarkDevkitLogger) Msg(level string, withoutColor, ln bool, msg ...inter
 	} else {
 		switch level {
 		case "warning":
-			levelMsg = l.Aurora.Bold(l.Aurora.Yellow(":construction: " + message)).BgBlack().String()
+			levelMsg = l.Aurora.Bold(l.Aurora.Yellow(":construction: " + message)).String()
 		case "debug":
-			levelMsg = l.Aurora.White(message).BgBlack().String()
+			levelMsg = l.Aurora.White(message).String()
 		case "info":
-			levelMsg = l.Aurora.Bold(l.Aurora.White(message)).BgBlack().String()
+			levelMsg = l.Aurora.Bold(message).String()
 		case "error":
 			levelMsg = l.Aurora.Bold(l.Aurora.Red(":bomb:" + message + ":fire:")).BgBlack().String()
 		}
