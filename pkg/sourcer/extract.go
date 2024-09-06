@@ -24,6 +24,9 @@ func (s *SourceHandler) extract(source *specs.JobSource, rootfsdir string) error
 	tarformers := executor.NewTarFormers(cfg)
 	// TODO: Add filters support on metro specs
 	tarfspec := tarf_specs.NewSpecFile()
+	// Enable this over a container could generate warnings
+	// Ignoring xattr mtime not supported by the underlying filesystem: operation not supported
+	tarfspec.SameChtimes = false
 
 	useExt4compression := true
 	opts := tarf_tools.NewTarReaderCompressionOpts(useExt4compression)
@@ -45,7 +48,7 @@ func (s *SourceHandler) extract(source *specs.JobSource, rootfsdir string) error
 		return fmt.Errorf("error on process tarball :" + err.Error())
 	}
 
-	s.Logger.InfoC(fmt.Sprintf(
+	s.Logger.Info(fmt.Sprintf(
 		"Archive %s extracted correctly.",
 		filepath.Base(source.Target),
 	))

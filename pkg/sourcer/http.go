@@ -25,9 +25,9 @@ func (s *SourceHandler) fetchttp(source *specs.JobSource) error {
 	}
 
 	if utils.Exists(source.Target) {
-		s.Logger.InfoC(
+		s.Logger.Info(
 			fmt.Sprintf(
-				"File %s is already present. Nothing to do.",
+				":gem_stone:File %s is already present. Nothing to do.",
 				source.Target,
 			))
 		return nil
@@ -58,6 +58,11 @@ func (s *SourceHandler) fetchttp(source *specs.JobSource) error {
 	if err != nil {
 		return err
 	}
+
+	s.Logger.Info(
+		fmt.Sprintf(":truck:Downloading file %s...",
+			filepath.Base(u.Path),
+		))
 
 	err = guard.Do(t)
 	if err != nil {
