@@ -21,15 +21,32 @@ func DiagnoseJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		Use:     "job",
 		Aliases: []string{"j"},
 		Short:   "Render Jobs for debug.",
+		PreRun: func(cmd *cobra.Command, args []string) {
+			log := logger.GetDefaultLogger()
+			specfile, _ := cmd.Flags().GetString("specfile")
+			job, _ := cmd.Flags().GetString("job")
+
+			if specfile == "" {
+				log.Fatal("No specfile param defined.")
+			}
+			if job == "" {
+				log.Fatal("No job defined.")
+			}
+
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			log := logger.GetDefaultLogger()
 
 			specfile, _ := cmd.Flags().GetString("specfile")
 			job, _ := cmd.Flags().GetString("job")
+			jsonOut, _ := cmd.Flags().GetBool("json")
+			quiet, _ := cmd.Flags().GetBool("quiet")
 
-			log.InfoC(log.Aurora.Bold(
-				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
-			)
+			if !quiet {
+				log.InfoC(log.Aurora.Bold(
+					fmt.Sprintf(":mask:Loading specfile %s", specfile)),
+				)
+			}
 
 			m := metro.NewMetro(config)
 			mspec, err := m.Load(specfile)
@@ -48,7 +65,12 @@ func DiagnoseJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				log.Fatal(err.Error())
 			}
 
-			data, err := jrender.Yaml()
+			var data []byte
+			if jsonOut {
+				data, err = jrender.Json()
+			} else {
+				data, err = jrender.Yaml()
+			}
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -60,6 +82,8 @@ func DiagnoseJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("specfile", "", "The specfiles of the jobs.")
 	flags.String("job", "", "The job to diagnose.")
+	flags.Bool("json", false, "Show output in JSON format")
+	flags.Bool("quiet", false, "Quiet log messages.")
 
 	return cmd
 }
