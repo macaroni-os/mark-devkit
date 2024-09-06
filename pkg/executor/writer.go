@@ -9,26 +9,26 @@ import (
 )
 
 type ExecutorWriter struct {
-	Type string
+	Type  string
+	Quiet bool
 }
 
-func NewExecutorWriter(t string) *ExecutorWriter {
-	return &ExecutorWriter{Type: t}
+func NewExecutorWriter(t string, q bool) *ExecutorWriter {
+	return &ExecutorWriter{
+		Type:  t,
+		Quiet: q,
+	}
 }
 
 func (w *ExecutorWriter) Write(p []byte) (int, error) {
 	logger := log.GetDefaultLogger()
-	switch w.Type {
-	case "stderr":
-		logger.Msg("info", false, false,
-			logger.Aurora.Bold(
-				logger.Aurora.BrightRed(string(p)),
-			),
-		)
-	case "stdout":
-		logger.Msg("info", false, false,
-			string(p),
-		)
+	if !w.Quiet {
+		switch w.Type {
+		case "stderr":
+			logger.Msg("info", true, false, string(p))
+		case "stdout":
+			logger.Msg("info", true, false, string(p))
+		}
 	}
 
 	return len(p), nil

@@ -19,6 +19,7 @@ type HostExecutor struct {
 	Logger *log.MarkDevkitLogger
 
 	Entrypoint []string
+	Quiet      bool
 }
 
 func NewHostExecutor(c *specs.MarkDevkitConfig) *HostExecutor {
@@ -26,6 +27,7 @@ func NewHostExecutor(c *specs.MarkDevkitConfig) *HostExecutor {
 		Config:     c,
 		Logger:     log.GetDefaultLogger(),
 		Entrypoint: []string{},
+		Quiet:      false,
 	}
 }
 
@@ -55,13 +57,13 @@ func (h *HostExecutor) RunCommandWithOutput(
 
 	hostCommand := exec.Command(cmds[0], cmds[1:]...)
 
-	h.Logger.DebugC(
-		h.Logger.Aurora.Bold(
-			h.Logger.Aurora.BrightYellow(
-				fmt.Sprintf("   :house_with_garden: - entrypoint: %s", entrypoint))))
-	h.Logger.InfoC(
-		h.Logger.Aurora.Bold(
-			h.Logger.Aurora.BrightYellow("   :house_with_garden: - " + command)))
+	if !h.Quiet {
+		h.Logger.InfoC(
+			h.Logger.Aurora.Bold(
+				h.Logger.Aurora.BrightYellow(
+					fmt.Sprintf(":locomotive:>>> Executing...\n- entrypoint: %s\n- command: [%s]",
+						entrypoint, command))))
+	}
 
 	// Convert envs to array list
 	elist := os.Environ()
@@ -71,6 +73,7 @@ func (h *HostExecutor) RunCommandWithOutput(
 
 	hostCommand.Stdout = outBuffer
 	hostCommand.Stderr = errBuffer
+	hostCommand.Stdin = os.Stdin
 	hostCommand.Env = elist
 
 	err := hostCommand.Start()
@@ -89,7 +92,7 @@ func (h *HostExecutor) RunCommandWithOutput(
 
 	h.Logger.DebugC(h.Logger.Aurora.Bold(
 		h.Logger.Aurora.BrightYellow(
-			fmt.Sprintf("   :house_with_garden: Exiting [%d]", ans))))
+			fmt.Sprintf(":station: Exiting [%d]", ans))))
 
 	return ans, nil
 }

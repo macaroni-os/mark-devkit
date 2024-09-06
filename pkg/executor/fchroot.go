@@ -29,6 +29,7 @@ type FchrootExecutor struct {
 	Logger *log.MarkDevkitLogger
 
 	Opts       *FchrootOpts
+	Quiet      bool
 	Entrypoint []string
 }
 
@@ -74,6 +75,7 @@ func NewFchrootExecutor(c *specs.MarkDevkitConfig, o *FchrootOpts) *FchrootExecu
 		Config: c,
 		Logger: log.GetDefaultLogger(),
 		Opts:   o,
+		Quiet:  false,
 	}
 }
 
@@ -111,14 +113,14 @@ func (f *FchrootExecutor) RunCommandWithOutput(
 	cmds = append(fchrootEntrypoint, cmds...)
 	chrootCommand := exec.Command(cmds[0], cmds[1:]...)
 
-	f.Logger.DebugC(
-		f.Logger.Aurora.Bold(
-			f.Logger.Aurora.BrightYellow(
-				fmt.Sprintf("   :house_with_garden: - entrypoint: %s",
-					fchrootEntrypoint))))
-	f.Logger.InfoC(
-		f.Logger.Aurora.Bold(
-			f.Logger.Aurora.BrightYellow("   :house_with_garden: - " + command)))
+	if !f.Quiet {
+		f.Logger.InfoC(
+			f.Logger.Aurora.Bold(
+				f.Logger.Aurora.BrightCyan(
+					fmt.Sprintf(
+						":high-speed_train:>>> fchroot executing...\n- entrypoint: %s\n- command: [%s]",
+						fchrootEntrypoint, command))))
+	}
 
 	// Convert envs to array list
 	elist := os.Environ()
@@ -145,8 +147,8 @@ func (f *FchrootExecutor) RunCommandWithOutput(
 	ans = chrootCommand.ProcessState.ExitCode()
 
 	f.Logger.DebugC(f.Logger.Aurora.Bold(
-		f.Logger.Aurora.BrightYellow(
-			fmt.Sprintf("   :house_with_garden: Exiting [%d]", ans))))
+		f.Logger.Aurora.BrightCyan(
+			fmt.Sprintf(":high-speed_train: Exiting [%d]", ans))))
 
 	return ans, nil
 }
