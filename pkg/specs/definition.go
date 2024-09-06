@@ -4,6 +4,10 @@ See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
 
+import (
+	tarf_specs "github.com/geaaru/tar-formers/pkg/specs"
+)
+
 type HookType string
 
 const (
@@ -51,6 +55,8 @@ type JobOutput struct {
 	Type string `yaml:"type,omitempty" json:"type,omitempty"`
 	Name string `yaml:"name,omitempty" json:"name,omitempty"`
 	Dir  string `yaml:"dir,omitempty" json:"dir,omitempty"`
+
+	TarformersSpec *tarf_specs.SpecFile `yaml:"tarformers_specs,omitempty" json:"tarformers_specs,omitempty"`
 }
 
 type Bind struct {

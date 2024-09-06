@@ -25,8 +25,6 @@ Distributed under the terms of the GNU General Public License version 3
 this tool comes with ABSOLUTELY NO WARRANTY; This is free software, and you
 are welcome to redistribute it under certain conditions.
 `
-
-	MARKDEVKIT_VERSION = `0.1.0`
 )
 
 var (
@@ -77,7 +75,7 @@ func Execute() {
 
 	var rootCmd = &cobra.Command{
 		Short:        cliName,
-		Version:      fmt.Sprintf("%s-g%s %s", MARKDEVKIT_VERSION, BuildCommit, BuildTime),
+		Version:      fmt.Sprintf("%s-g%s %s", specs.MARKDEVKIT_VERSION, BuildCommit, BuildTime),
 		Args:         cobra.OnlyValidArgs,
 		SilenceUsage: true,
 		PreRun: func(cmd *cobra.Command, args []string) {

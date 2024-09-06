@@ -5,6 +5,7 @@ See AUTHORS and LICENSE for the license details and contributors.
 package specs
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -17,6 +18,10 @@ import (
 
 func (j *JobRendered) Yaml() ([]byte, error) {
 	return yaml.Marshal(j)
+}
+
+func (j *JobRendered) Json() ([]byte, error) {
+	return json.Marshal(j)
 }
 
 func (j *JobRendered) GetPreChrootHooks() *[]*Hook {
