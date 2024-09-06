@@ -11,7 +11,7 @@ jobs:
   output:
     type: file
     name: stage3-{{ .Values.arch }}-{{ .Values.subarch }}-{{ .Values.release }}-{{ now | date "2006-01-02" }}.tar.xz
-    dir: './output/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/{{ now | date "2006-01-02" }}'
+    dir: './output/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/{{ now | date "2006-01-02" }}/'
 
   options:
     branch: "next"
@@ -22,16 +22,25 @@ jobs:
     extras:
       - freshen
 
+  environments:
+    - key: "SHELL"
+      value: "/bin/bash"
+
   workspacedir: /workspace
   chroot_binds:
     - source: /workspace/package
       target: /var/tmp/cache/package
     - source: /workspace/distfiles
       target: /var/cache/portage/distfiles
+    - source: /workspace/meta-repo
+      target: /var/git/meta-repo
 
   hooks_basedir: ./hooks
   # Define the list of the targets
   # scripts to run over the chroot.
   hooks_files:
     - steps/ego.yml
+    - steps/prepare-chroot.yml
+    - targets/stage3.yml
+    - steps/stage.yml
 

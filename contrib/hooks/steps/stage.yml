@@ -1,0 +1,26 @@
+hooks:
+- type: "outer-post-chroot"
+  name: "cleanup-rootfs"
+  description: |
+    Cleanup rootfs and 
+  entrypoint:
+    - /bin/bash
+    - -c
+  commands:
+    - >-
+      eval 'rm -rf ${MARKDEVKIT_ROOTFS}/var/tmp/* || true' &&
+      eval 'rm -rf ${MARKDEVKIT_ROOTFS}/var/log/* || true' &&
+      eval 'rm -rf ${MARKDEVKIT_ROOTFS}/var/cache/* || true' &&
+      eval 'rm -f ${MARKDEVKIT_ROOTFS}/etc/portage/bashrc || true'
+
+    # for now, this takes care of glibc trying to overwrite locale.gen - clean up so
+    # users don't have etc-update bugging them:
+    - >-
+      find ${MARKDEVKIT_ROOTFS}/etc -iname '._cfg????_*' -exec rm -f {} \;
+
+    # Set right permitions on /var/git
+    - >-
+      chown 250:250 ${MARKDEVKIT_ROOTFS}/var/git &&
+      chmod 0755 ${MARKDEVKIT_ROOTFS}/var/git
+
+

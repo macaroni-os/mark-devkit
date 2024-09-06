@@ -1,0 +1,16 @@
+hooks:
+- type: "outer-pre-chroot"
+  name: "prepare-binds"
+  description: |
+    Fetch binds directory
+  entrypoint:
+    - /bin/bash
+    - -c
+  commands:
+    - |-
+      set -x
+      mkdir -p ${MARKDEVKIT_ROOTFS}/var/tmp/cache/package || exit 1
+      mkdir -p ${MARKDEVKIT_ROOTFS}/var/cache/portage/distfiles || exit 1
+    - >-
+      chown 250:250 -R ${MARKDEVKIT_WORKSPACE}/package &&
+      chown 250:250 -R ${MARKDEVKIT_WORKSPACE}/distfiles

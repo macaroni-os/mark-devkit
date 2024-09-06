@@ -36,3 +36,12 @@ hooks:
       }
       run_ego sync --dest=${MARKDEVKIT_WORKSPACE}/meta-repo
 
+    # Prepare /var/git/meta-repo directory inside chroot
+    - >-
+      eval "mkdir -p ${MARKDEVKIT_ROOTFS}/var/git/meta-repo || true"
+
+    # Copy ego.conf inside chroot
+    - >-
+      eval 'mkdir -p ${MARKDEVKIT_ROOTFS}/etc || true' &&
+      cp -vf ${MARKDEVKIT_WORKSPACE}/etc/ego.conf ${MARKDEVKIT_ROOTFS}/etc/
+
