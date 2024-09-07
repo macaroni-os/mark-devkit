@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	specs "github.com/macaroni-os/mark-devkit/pkg/specs"
 
@@ -50,6 +51,17 @@ func (p *Packer) createTarball(rootfsdir string, out *specs.JobOutput) error {
 	}
 	// Add rootfs directory
 	tarfspec.Writer.AddDir(rootfsdir)
+
+	if strings.HasSuffix(rootfsdir, "/") {
+		rootfsdir = rootfsdir[0 : len(rootfsdir)-1]
+	}
+	// Configure the rename path rule to
+	// convert rootfsdir path to .
+	tarfspec.RenamePath = append(tarfspec.RenamePath,
+		tarf_specs.RenameRule{
+			Source: rootfsdir,
+			Dest:   ".",
+		})
 
 	useExt4compression := true
 	opts := tarf_tools.NewTarCompressionOpts(useExt4compression)
