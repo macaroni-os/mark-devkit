@@ -46,6 +46,7 @@ func RunJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			skipSourcePhase, _ := cmd.Flags().GetBool("skip-source-phase")
 			skipPackerPhase, _ := cmd.Flags().GetBool("skip-packer-phase")
+			skipHooksPhase, _ := cmd.Flags().GetBool("skip-hooks-phase")
 
 			log.Info(fmt.Sprintf(":guard:Loading specfile %s", specfile))
 
@@ -76,6 +77,7 @@ func RunJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				Quiet:         quiet,
 				SkipSource:    skipSourcePhase,
 				SkipPacker:    skipPackerPhase,
+				SkipHooks:     skipHooksPhase,
 				Opts:          fopts,
 			}
 
@@ -95,6 +97,8 @@ func RunJobCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Bool("cleanup", true, "Cleanup rootfs directory.")
 	flags.Bool("skip-source-phase", false, "Skip source phase.")
 	flags.Bool("skip-packer-phase", false, "Skip packer phase.")
+	flags.Bool("skip-hooks-phase", false,
+		"Skip hooks executions. For development only.")
 	flags.Bool("fchroot-debug", false, "Enable debug on fchroot.")
 	flags.Bool("quiet", false, "Avoid to see the hooks command output.")
 

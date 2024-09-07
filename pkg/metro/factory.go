@@ -22,6 +22,7 @@ type RunOpts struct {
 	CleanupRootfs bool
 	SkipSource    bool
 	SkipPacker    bool
+	SkipHooks     bool
 	Quiet         bool
 	Opts          *executor.FchrootOpts
 }
@@ -109,30 +110,13 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		envMap["LS_COLORS"] = os.Getenv("LS_COLORS")
 	}
 
-	// Run pre chroot hooks
-	preChrootHooks := job.GetPreChrootHooks()
-	if len(*preChrootHooks) > 0 {
+	if !opts.SkipHooks {
+		// Run pre chroot hooks
+		preChrootHooks := job.GetPreChrootHooks()
+		if len(*preChrootHooks) > 0 {
 
-		for _, hook := range *preChrootHooks {
-			err := m.runHook(job, hook, rootfsdir,
-				hostExecutor, fchrootExecutor,
-				stdOutWriter, stdErrWriter,
-				&envMap,
-			)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-
-	// Run inner-chroot and/or outer-chroot
-	for _, hf := range job.HookFile {
-		for _, h := range hf.Hooks {
-			if h.Type != specs.HookOuterPostChroot &&
-				h.Type != specs.HookOuterPreChroot {
-
-				err := m.runHook(job, &h, rootfsdir,
+			for _, hook := range *preChrootHooks {
+				err := m.runHook(job, hook, rootfsdir,
 					hostExecutor, fchrootExecutor,
 					stdOutWriter, stdErrWriter,
 					&envMap,
@@ -141,23 +125,42 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 					return err
 				}
 			}
-		}
-	}
 
-	// Run post chroot hooks
-	postChrootHooks := job.GetPostChrootHooks()
-	if len(*postChrootHooks) > 0 {
-		for _, hook := range *postChrootHooks {
-			err := m.runHook(job, hook, rootfsdir,
-				hostExecutor, fchrootExecutor,
-				stdOutWriter, stdErrWriter,
-				&envMap,
-			)
-			if err != nil {
-				return err
+		}
+
+		// Run inner-chroot and/or outer-chroot
+		for _, hf := range job.HookFile {
+			for _, h := range hf.Hooks {
+				if h.Type != specs.HookOuterPostChroot &&
+					h.Type != specs.HookOuterPreChroot {
+
+					err := m.runHook(job, &h, rootfsdir,
+						hostExecutor, fchrootExecutor,
+						stdOutWriter, stdErrWriter,
+						&envMap,
+					)
+					if err != nil {
+						return err
+					}
+				}
 			}
 		}
 
+		// Run post chroot hooks
+		postChrootHooks := job.GetPostChrootHooks()
+		if len(*postChrootHooks) > 0 {
+			for _, hook := range *postChrootHooks {
+				err := m.runHook(job, hook, rootfsdir,
+					hostExecutor, fchrootExecutor,
+					stdOutWriter, stdErrWriter,
+					&envMap,
+				)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
 	}
 
 	if !opts.SkipPacker {
