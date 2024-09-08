@@ -49,6 +49,11 @@ type JobSource struct {
 	Uri    string `yaml:"uri,omitempty" json:"uri,omitempty"`
 	Path   string `yaml:"path,omitempty" json:"path,omitempty"`
 	Target string `yaml:"target,omitempty" json:"target,omitempty"`
+
+	// Anisie specific options
+	AniseConfigPath   string   `yaml:"anise_config,omitempty" json:"anise_config,omitempty"`
+	AniseRepositories []string `yaml:"anise_repos,omitempty" json:"anise_repos,omitempty"`
+	AnisePackages     []string `yaml:"anise_packages,omitempty" json:"anise_packages,omitempty"`
 }
 
 type JobOutput struct {

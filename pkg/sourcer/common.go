@@ -28,6 +28,8 @@ func (s *SourceHandler) Produce(source *specs.JobSource) error {
 	switch source.Type {
 	case "http":
 		err = s.fetchttp(source)
+	case "anise":
+		s.Logger.Debug("Nothing to do on produce phase for anise source.")
 	default:
 		err = fmt.Errorf("Source type %s not supported!", source.Type)
 	}
@@ -39,6 +41,8 @@ func (s *SourceHandler) Consume(source *specs.JobSource, rootfsdir string) error
 	switch source.Type {
 	case "http":
 		err = s.extract(source, rootfsdir)
+	case "anise":
+		err = s.aniseConsume(source, rootfsdir)
 	default:
 		err = fmt.Errorf("Source type %s not supported!", source.Type)
 	}
