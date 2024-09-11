@@ -27,7 +27,8 @@ func (s *SourceHandler) aniseConsume(source *specs.JobSource, rootfsdir string) 
 	// run repo update.
 	err := s.aniseCommand([]string{
 		"repo", "update",
-	}, envsMaps, stdOutWriter, stdErrWriter, rootfsdir)
+	}, envsMaps, stdOutWriter, stdErrWriter, rootfsdir,
+		source.AniseConfigPath)
 	if err != nil {
 		return err
 	}
@@ -38,7 +39,8 @@ func (s *SourceHandler) aniseConsume(source *specs.JobSource, rootfsdir string) 
 			[]string{
 				"install", "-y", "--skip-config-protect",
 			}, source.AniseRepositories...),
-			envsMaps, stdOutWriter, stdErrWriter, rootfsdir)
+			envsMaps, stdOutWriter, stdErrWriter, rootfsdir,
+			source.AniseConfigPath)
 
 		if err != nil {
 			return err
@@ -49,9 +51,10 @@ func (s *SourceHandler) aniseConsume(source *specs.JobSource, rootfsdir string) 
 	if len(source.AnisePackages) > 0 {
 		err = s.aniseCommand(append(
 			[]string{
-				"install", "-y", "--skip-config-protect",
+				"install", "--sync-repos", "-y", "--skip-config-protect",
 			}, source.AnisePackages...),
-			envsMaps, stdOutWriter, stdErrWriter, rootfsdir)
+			envsMaps, stdOutWriter, stdErrWriter, rootfsdir,
+			source.AniseConfigPath)
 
 		if err != nil {
 			return err
@@ -60,7 +63,8 @@ func (s *SourceHandler) aniseConsume(source *specs.JobSource, rootfsdir string) 
 
 	err = s.aniseCommand([]string{
 		"cleanup",
-	}, envsMaps, stdOutWriter, stdErrWriter, rootfsdir)
+	}, envsMaps, stdOutWriter, stdErrWriter, rootfsdir,
+		source.AniseConfigPath)
 	if err != nil {
 		return err
 	}
@@ -70,7 +74,7 @@ func (s *SourceHandler) aniseConsume(source *specs.JobSource, rootfsdir string) 
 
 func (s *SourceHandler) aniseCommand(args []string,
 	envs map[string]string, outBuffer, errBuffer io.WriteCloser,
-	rootfsdir string) error {
+	rootfsdir, config string) error {
 
 	if outBuffer == nil {
 		return fmt.Errorf("Invalid outBuffer")
@@ -88,6 +92,11 @@ func (s *SourceHandler) aniseCommand(args []string,
 
 	aniseOpts := []string{
 		"--system-target", rootfsdir,
+	}
+	if config != "" {
+		aniseOpts = append(aniseOpts, []string{
+			"--config", config,
+		}...)
 	}
 
 	args = append(aniseOpts, args...)
