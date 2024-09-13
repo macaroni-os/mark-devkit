@@ -44,6 +44,20 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		if err != nil {
 			return err
 		}
+	} else if opts.CleanupRootfs {
+
+		m.Logger.Info(fmt.Sprintf(":knife:Cleanup existing rootfs %s...",
+			rootfsdir))
+		err = os.RemoveAll(rootfsdir)
+		if err != nil {
+			return err
+		}
+
+		err = helpers.EnsureDir(rootfsdir, 0, 0, 0700)
+		if err != nil {
+			return err
+		}
+
 	}
 	if opts.CleanupRootfs {
 		defer os.RemoveAll(rootfsdir)
