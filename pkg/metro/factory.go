@@ -34,15 +34,6 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		":rocket:Starting job %s...",
 		job.Name))
 
-	// Consume source
-	sourceHandler := sourcer.NewSourceHandler(m.Config)
-	if !opts.SkipSource {
-		err = sourceHandler.Produce(&job.Source)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Prepare rootfs
 	rootfsdir := filepath.Join(job.WorkspaceDir, "rootfs")
 	m.Logger.Info(fmt.Sprintf(":screwdriver:Preparing rootfs %s...",
@@ -57,24 +48,6 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 	if opts.CleanupRootfs {
 		defer os.RemoveAll(rootfsdir)
 	}
-	if !opts.SkipSource {
-		err = sourceHandler.Consume(&job.Source, rootfsdir)
-		if err != nil {
-			return err
-		}
-	}
-
-	m.Logger.Info(fmt.Sprintf(
-		":wrench:Rootfs ready for hooks!"))
-	// Prepare Host executor
-	hostExecutor := executor.NewHostExecutor(m.Config)
-	// Prepare fchroot executor
-	fchrootExecutor := executor.NewFchrootExecutor(m.Config,
-		opts.Opts)
-	if opts.Quiet {
-		hostExecutor.Quiet = true
-		fchrootExecutor.Quiet = true
-	}
 
 	// Ensure that job chroot binds exists
 	for _, bind := range job.ChrootBinds {
@@ -84,6 +57,16 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 				return err
 			}
 		}
+	}
+
+	// Prepare Host executor
+	hostExecutor := executor.NewHostExecutor(m.Config)
+	// Prepare fchroot executor
+	fchrootExecutor := executor.NewFchrootExecutor(m.Config,
+		opts.Opts)
+	if opts.Quiet {
+		hostExecutor.Quiet = true
+		fchrootExecutor.Quiet = true
 	}
 
 	// Prepare Stdout, Stderr writer
@@ -108,6 +91,44 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 	}
 	if os.Getenv("LS_COLORS") != "" {
 		envMap["LS_COLORS"] = os.Getenv("LS_COLORS")
+	}
+
+	m.Logger.Info(fmt.Sprintf(
+		":wrench:Rootfs ready for hooks!"))
+
+	if !opts.SkipHooks {
+
+		// Run pre sourcer hooks
+		preSourcerHooks := job.GetPreSourcesHooks()
+		if len(*preSourcerHooks) > 0 {
+
+			for _, hook := range *preSourcerHooks {
+				err := m.runHook(job, hook, rootfsdir,
+					hostExecutor, fchrootExecutor,
+					stdOutWriter, stdErrWriter,
+					&envMap,
+				)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	// Consume source
+	sourceHandler := sourcer.NewSourceHandler(m.Config)
+	if !opts.SkipSource {
+		err = sourceHandler.Produce(&job.Source)
+		if err != nil {
+			return err
+		}
+	}
+
+	if !opts.SkipSource {
+		err = sourceHandler.Consume(&job.Source, rootfsdir)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !opts.SkipHooks {
@@ -187,7 +208,8 @@ func (m *Metro) runHook(job *specs.JobRendered, hook *specs.Hook,
 			hook.Name))
 
 	if hook.Type == specs.HookOuterPostChroot ||
-		hook.Type == specs.HookOuterPreChroot {
+		hook.Type == specs.HookOuterPreChroot ||
+		hook.Type == specs.HookOuterPreSourcer {
 
 		for _, command := range hook.Commands {
 			res, err := hostExecutor.RunCommandWithOutput(

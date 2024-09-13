@@ -11,6 +11,7 @@ import (
 type HookType string
 
 const (
+	HookOuterPreSourcer = "outer-pre-sourcer"
 	HookInnerChroot     = "inner-chroot"
 	HookOuterChroot     = "outer-chroot"
 	HookOuterPostChroot = "outer-post-chroot"
