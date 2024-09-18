@@ -209,6 +209,9 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		// Run post chroot hooks
 		postOutputHooks := job.GetPostOutputHooks()
 		if len(*postOutputHooks) > 0 {
+			envMap["MARKDEVKIT_OUTPUTDIR"] = job.Output.Dir
+			envMap["MARKDEVKIT_OUTPUTNAME"] = job.Output.Name
+
 			for _, hook := range *postOutputHooks {
 				err := m.runHook(job, hook, rootfsdir,
 					hostExecutor, fchrootExecutor,
