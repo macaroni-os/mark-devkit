@@ -166,8 +166,8 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		// Run inner-chroot and/or outer-chroot
 		for _, hf := range job.HookFile {
 			for _, h := range hf.Hooks {
-				if h.Type != specs.HookOuterPostChroot &&
-					h.Type != specs.HookOuterPreChroot {
+				if h.Type == specs.HookInnerChroot ||
+					h.Type == specs.HookOuterChroot {
 
 					err := m.runHook(job, &h, rootfsdir,
 						hostExecutor, fchrootExecutor,
@@ -205,6 +205,23 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		if err != nil {
 			return err
 		}
+
+		// Run post chroot hooks
+		postOutputHooks := job.GetPostOutputHooks()
+		if len(*postOutputHooks) > 0 {
+			for _, hook := range *postOutputHooks {
+				err := m.runHook(job, hook, rootfsdir,
+					hostExecutor, fchrootExecutor,
+					stdOutWriter, stdErrWriter,
+					&envMap,
+				)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+
 	}
 
 	return nil
@@ -223,7 +240,8 @@ func (m *Metro) runHook(job *specs.JobRendered, hook *specs.Hook,
 
 	if hook.Type == specs.HookOuterPostChroot ||
 		hook.Type == specs.HookOuterPreChroot ||
-		hook.Type == specs.HookOuterPreSourcer {
+		hook.Type == specs.HookOuterPreSourcer ||
+		hook.Type == specs.HookOuterPostOutput {
 
 		for _, command := range hook.Commands {
 			res, err := hostExecutor.RunCommandWithOutput(

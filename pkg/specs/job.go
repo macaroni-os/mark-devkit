@@ -24,6 +24,19 @@ func (j *JobRendered) Json() ([]byte, error) {
 	return json.Marshal(j)
 }
 
+func (j *JobRendered) GetPostOutputHooks() *[]*Hook {
+	ans := []*Hook{}
+	for _, hf := range j.HookFile {
+		for idx, h := range hf.Hooks {
+			if h.Type == HookOuterPostOutput {
+				ans = append(ans, &hf.Hooks[idx])
+			}
+		}
+	}
+
+	return &ans
+}
+
 func (j *JobRendered) GetPreSourcesHooks() *[]*Hook {
 	ans := []*Hook{}
 	for _, hf := range j.HookFile {
