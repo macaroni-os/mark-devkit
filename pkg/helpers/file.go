@@ -13,7 +13,17 @@ func EnsureDir(dir string, uid, gid int, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
+
 	err = os.Chown(dir, uid, gid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func EnsureDirWithoutIds(dir string, perm os.FileMode) error {
+	err := os.MkdirAll(dir, perm)
 	if err != nil {
 		return err
 	}
