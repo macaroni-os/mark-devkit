@@ -16,10 +16,19 @@ import (
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
-func Clone(k *specs.ReposcanKit, targetdir string, opts git.CloneOptions, verbose bool) error {
+type CloneOptions struct {
+	GitCloneOptions *git.CloneOptions
+	Verbose         bool
+	Summary         bool
+	Results         []*specs.ReposcanKit
+}
+
+func Clone(k *specs.ReposcanKit, targetdir string, o *CloneOptions) error {
 	var r *git.Repository
 	var err error
 	log := logger.GetDefaultLogger()
+
+	opts := *o.GitCloneOptions
 
 	opts.URL = k.Url
 	if k.Branch != "" {
@@ -91,13 +100,19 @@ func Clone(k *specs.ReposcanKit, targetdir string, opts git.CloneOptions, verbos
 	}
 	log.Info(fmt.Sprintf(":right_arrow: [%s] @ %s",
 		k.Name, ref.Hash()))
-	if verbose {
+	if o.Verbose {
 		commit, err := r.CommitObject(ref.Hash())
 		if err != nil {
 			return err
 		}
 
 		log.InfoC(fmt.Sprintf("%s", commit))
+	}
+
+	if o.Summary {
+		res := *k
+		res.CommitSha1 = fmt.Sprintf("%s", ref.Hash())
+		o.Results = append(o.Results, &res)
 	}
 
 	return nil

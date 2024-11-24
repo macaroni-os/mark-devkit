@@ -41,6 +41,14 @@ func KitCloneCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			to, _ := cmd.Flags().GetString("to")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			singleBranch, _ := cmd.Flags().GetBool("single-branch")
+			deep, _ := cmd.Flags().GetInt("deep")
+			showSummary, _ := cmd.Flags().GetBool("show-summary")
+			writeSummaryFile, _ := cmd.Flags().GetString(
+				"write-summary-file")
+
+			if showSummary {
+				config.GetLogging().Level = "error"
+			}
 
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
@@ -61,11 +69,19 @@ func KitCloneCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				log.Fatal(err.Error())
 			}
 
-			opts := git.CloneOptions{
-				SingleBranch: singleBranch,
-				RemoteName:   "origin",
-				Progress:     os.Stdout,
-				Depth:        1,
+			opts := &kitops.CloneOptions{
+				GitCloneOptions: &git.CloneOptions{
+					SingleBranch: singleBranch,
+					RemoteName:   "origin",
+					Depth:        deep,
+				},
+				Verbose: verbose,
+				Summary: showSummary || writeSummaryFile != "",
+				Results: []*specs.ReposcanKit{},
+			}
+
+			if !showSummary {
+				opts.GitCloneOptions.Progress = os.Stdout
 			}
 
 			for _, kit := range analysis.Kits {
@@ -75,13 +91,32 @@ func KitCloneCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				log.InfoC(log.Aurora.Bold(
 					fmt.Sprintf(":factory:[%s] Syncing ...", kit.Name)),
 				)
-				err = kitops.Clone(kit, kitdir, opts, verbose)
+				err = kitops.Clone(kit, kitdir, opts)
 				if err != nil {
 					log.Fatal(err.Error())
 				}
 			}
 
 			log.Info(":party_popper:Kits synced.")
+
+			if showSummary || writeSummaryFile != "" {
+				summary := &specs.ReposcanAnalysis{
+					Kits: opts.Results,
+				}
+
+				if writeSummaryFile != "" {
+					err = summary.WriteYamlFile(writeSummaryFile)
+					if err != nil {
+						log.Fatal(err.Error())
+					}
+				}
+
+				if showSummary {
+					data, _ := summary.Yaml()
+					fmt.Println(string(data))
+				}
+			}
+
 		},
 	}
 
@@ -90,6 +125,10 @@ func KitCloneCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.String("to", "output", "Target dir where sync kits.")
 	flags.Bool("verbose", false, "Show additional informations.")
 	flags.Bool("single-branch", true, "Pull only the used branch.")
+	flags.Bool("show-summary", false, "Show YAML summary results")
+	flags.Int("deep", 5, "Define the limit of commits to fetch.")
+	flags.String("write-summary-file", "",
+		"Write the sync summary to the specified file in YAML format.")
 
 	return cmd
 }
