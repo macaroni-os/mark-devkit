@@ -66,3 +66,21 @@ func (m *MergeKit) GetSourceKit(name string) *ReposcanKit {
 
 	return nil
 }
+
+func (m *MergeKit) GetEclassesInclude() *map[string][]string {
+	var ans *map[string][]string = nil
+
+	if m.Target.Eclasses != nil {
+		ans = &m.Target.Eclasses.Include
+	}
+	return ans
+}
+func (m *MergeKit) GetFixupsInclude() *[]*MergeKitFixupInclude {
+	var ans *[]*MergeKitFixupInclude = nil
+
+	if m.Target.Fixups != nil {
+		ans = &m.Target.Fixups.Include
+	}
+
+	return ans
+}

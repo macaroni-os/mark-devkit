@@ -33,7 +33,7 @@ func EnsureDirWithoutIds(dir string, perm os.FileMode) error {
 	return nil
 }
 
-func GetFilesMd5(f string) (string, error) {
+func GetFileMd5(f string) (string, error) {
 	content, err := os.ReadFile(f)
 	if err != nil {
 		return "", err

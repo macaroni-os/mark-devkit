@@ -34,7 +34,8 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	}
 
 	for pkg, files := range m.files4Commit {
-		commitHash, err := m.bumpAtom(kitDir, pkg, files, opts, worktree)
+		cMsg := fmt.Sprintf("Bump %s", pkg)
+		commitHash, err := m.commitFiles(kitDir, files, cMsg, opts, worktree)
 		if err != nil {
 			return err
 		}
@@ -48,8 +49,9 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	return nil
 }
 
-func (m *MergeBot) bumpAtom(kitDir, pkg string, files []string,
-	opts *MergeBotOpts, worktree *git.Worktree) (plumbing.Hash, error) {
+func (m *MergeBot) commitFiles(kitDir string, files []string,
+	commitMessage string, opts *MergeBotOpts,
+	worktree *git.Worktree) (plumbing.Hash, error) {
 
 	for _, file := range files {
 		// Drop kitDir prefix
@@ -65,8 +67,7 @@ func (m *MergeBot) bumpAtom(kitDir, pkg string, files []string,
 		SignatureEmail: opts.SignatureEmail,
 	}
 
-	return worktree.Commit(
-		fmt.Sprintf("Bump %s", pkg),
+	return worktree.Commit(commitMessage,
 		&git.CommitOptions{
 			Author: &object.Signature{
 				Name:  gOpts.GetSignatureName(),

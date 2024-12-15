@@ -73,7 +73,7 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 	if utils.Exists(filesDir) {
 		// Add files under <pkgdir>/files directory if there are changes.
 		files, err := m.copyFilesDir(filesDir,
-			filepath.Join(targetPkgDir, "files"), atom)
+			filepath.Join(targetPkgDir, "files"))
 		if err != nil {
 			return err
 		}
@@ -85,8 +85,7 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 	return nil
 }
 
-func (m *MergeBot) copyFilesDir(sourcedir, targetdir string,
-	atom *specs.RepoScanAtom) ([]string, error) {
+func (m *MergeBot) copyFilesDir(sourcedir, targetdir string) ([]string, error) {
 	ans := []string{}
 
 	entries, err := os.ReadDir(sourcedir)
@@ -106,7 +105,7 @@ func (m *MergeBot) copyFilesDir(sourcedir, targetdir string,
 			files, err := m.copyFilesDir(
 				filepath.Join(sourcedir, entry.Name()),
 				filepath.Join(targetdir, entry.Name()),
-				atom)
+			)
 			if err != nil {
 				return ans, err
 			}
@@ -118,13 +117,13 @@ func (m *MergeBot) copyFilesDir(sourcedir, targetdir string,
 			targetFile := filepath.Join(targetdir, entry.Name())
 			targetFileMd5 := ""
 
-			sourceFileMd5, err := helpers.GetFilesMd5(sourceFile)
+			sourceFileMd5, err := helpers.GetFileMd5(sourceFile)
 			if err != nil {
 				return ans, err
 			}
 
 			if utils.Exists(targetFile) {
-				targetFileMd5, err = helpers.GetFilesMd5(targetFile)
+				targetFileMd5, err = helpers.GetFileMd5(targetFile)
 				if err != nil {
 					return ans, err
 				}

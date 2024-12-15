@@ -213,8 +213,16 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	}
 
 	// Copy eclasses
+	err = m.MergeEclasses(mkit, opts)
+	if err != nil {
+		return err
+	}
 
 	// Copy fixups
+	err = m.MergeFixups(mkit, opts)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

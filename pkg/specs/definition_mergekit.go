@@ -17,6 +17,8 @@ type MergeKitTarget struct {
 	Branch   string            `yaml:"branch" json:"branch"`
 	Eclasses *MergeKitEclasses `yaml:"eclasses,omitempty" json:"eclasses,omitempty"`
 
+	Fixups *MergeKitFixups `yaml:"fixups,omitempty" json:"fixups,omitempty"`
+
 	AtomDefaults *MergeKitAtom   `yaml:"atoms_defaults,omitempty" json:"atoms_defaults,omitempty"`
 	Atoms        []*MergeKitAtom `yaml:"atoms,omitempty" json:"atoms,omitempty"`
 }
@@ -29,4 +31,15 @@ type MergeKitAtom struct {
 	Package     string   `yaml:"pkg,omitempty" json:"pkg,omitempty"`
 	MaxVersions *int     `yaml:"max_versions,omitempty" json:"max_versions,omitempty"`
 	Conditions  []string `yaml:"conditions,omitempty" json:"conditions,omitempty"`
+}
+
+type MergeKitFixups struct {
+	Include []*MergeKitFixupInclude `yaml:"include,omitempty" json:"include,omitempty"`
+}
+
+type MergeKitFixupInclude struct {
+	Dir  string `yaml:"dir,omitempty" json:"dir,omitempty"`
+	To   string `yaml:"to,omitempty" json:"to,omitempty"`
+	File string `yaml:"file,omitempty" json:"file,omitempty"`
+	Name string `yaml:"name,omitempty" json:"name,omitempty"`
 }
