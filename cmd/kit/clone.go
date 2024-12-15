@@ -8,7 +8,6 @@ package cmddiag
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	kitops "github.com/macaroni-os/mark-devkit/pkg/kit"
@@ -84,17 +83,9 @@ func KitCloneCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				opts.GitCloneOptions.Progress = os.Stdout
 			}
 
-			for _, kit := range analysis.Kits {
-
-				kitdir := filepath.Join(to, kit.Name)
-
-				log.InfoC(log.Aurora.Bold(
-					fmt.Sprintf(":factory:[%s] Syncing ...", kit.Name)),
-				)
-				err = kitops.Clone(kit, kitdir, opts)
-				if err != nil {
-					log.Fatal(err.Error())
-				}
+			err = kitops.CloneKits(analysis, to, opts)
+			if err != nil {
+				log.Fatal(err.Error())
 			}
 
 			log.Info(":party_popper:Kits synced.")
