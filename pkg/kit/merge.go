@@ -224,6 +224,16 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		return err
 	}
 
+	if opts.Push {
+
+		kitDir := filepath.Join(m.GetTargetDir(), targetKit.Name)
+		pushOpts := NewPushOptions()
+		err = Push(kitDir, pushOpts)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

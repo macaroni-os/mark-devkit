@@ -41,6 +41,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			signatureName, _ := cmd.Flags().GetString("signature-name")
 			signatureEmail, _ := cmd.Flags().GetString("signature-email")
 			verbose, _ := cmd.Flags().GetBool("verbose")
+			push, _ := cmd.Flags().GetBool("push")
 
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
@@ -51,6 +52,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeOpts.GitDeepFetch = deep
 			mergeOpts.PullSources = !skipPullSources
 			mergeOpts.GenReposcan = !skipGenReposcan
+			mergeOpts.Push = push
 			mergeOpts.Verbose = verbose
 			mergeOpts.SignatureName = signatureName
 			mergeOpts.SignatureEmail = signatureEmail
@@ -58,6 +60,8 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeBot := kit.NewMergeBot(config)
 			mergeBot.SetWorkDir(to)
 
+			fmt.Println("PUSH", push)
+			return
 			err := mergeBot.Run(specfile, mergeOpts)
 			if err != nil {
 				log.Fatal(err.Error())
@@ -77,6 +81,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"Skip reposcan files generation.")
 	flags.Bool("skip-pull-sources", false,
 		"Skip pull of sources repositories.")
+	flags.Bool("push", false, "Push commits to origin.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")
