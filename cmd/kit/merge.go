@@ -60,8 +60,6 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeBot := kit.NewMergeBot(config)
 			mergeBot.SetWorkDir(to)
 
-			fmt.Println("PUSH", push)
-			return
 			err := mergeBot.Run(specfile, mergeOpts)
 			if err != nil {
 				log.Fatal(err.Error())
