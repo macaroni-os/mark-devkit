@@ -11,3 +11,8 @@
 The Macaroni OS M.A.R.K. Development tool.
 
 See [mark-stages](https://github.com/macaroni-os/mark-stages) repository for the documentation.
+
+
+TODO `kit merge`:
+- support automatic bump of a new revision when the md5 of the source is changed.
+
