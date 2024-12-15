@@ -248,7 +248,9 @@ func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*spe
 			return ans, err
 		}
 
-		ans = append(ans, candidate)
+		if candidate != nil {
+			ans = append(ans, candidate)
+		}
 	}
 
 	return ans, nil
@@ -382,6 +384,18 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 		}
 	}
 
+	// Generate target kit reposcan
+	if !m.IsANewBranch {
+		kit, _ := mkit.GetTargetKit()
+		sourceDir := filepath.Join(m.GetTargetDir(), kit.Name)
+		targetFile := filepath.Join(m.GetReposcanDir(), "target-"+kit.Name+"-"+kit.Branch)
+		err = m.GenerateKitCacheFile(sourceDir, kit.Name, kit.Branch,
+			targetFile, eclassDirs, opts.Concurrency)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -400,9 +414,6 @@ func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) erro
 		return err
 	}
 
-	m.Logger.InfoC(fmt.Sprintf("Branch %s doesn't exists. Creating the branch.",
-		kit.Branch))
-
 	gitOpts := &CloneOptions{
 		GitCloneOptions: &git.CloneOptions{
 			RemoteName: "origin",
@@ -418,6 +429,9 @@ func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) erro
 	}
 
 	if !existsBranch {
+		m.Logger.InfoC(fmt.Sprintf("Branch %s doesn't exists. Creating the branch.",
+			kit.Branch))
+
 		m.IsANewBranch = true
 
 		err = CloneAndCreateBranch(kit, kitDir, gitOpts)
