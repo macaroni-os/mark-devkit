@@ -64,4 +64,6 @@ type ReposcanKit struct {
 	Url        string `yaml:"url,omitempty" json:"url,omitempty"`
 	Branch     string `yaml:"branch,omitempty" json:"branch,omitempty"`
 	CommitSha1 string `yaml:"commit_sha1,omitempty" json:"commit_sha1,omitempty"`
+	Depth      *int   `yaml:"depth,omitempty" json:"depth,omitempty"`
+	Priority   *int   `yaml:"priority,omitempty" json:"priority,omitempty"`
 }

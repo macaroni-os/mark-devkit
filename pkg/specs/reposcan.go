@@ -52,6 +52,13 @@ func NewReposcanKit(name, url, branch, commit string) *ReposcanKit {
 	}
 }
 
+func (r *ReposcanKit) GetPriority() int {
+	if r.Priority != nil {
+		return *r.Priority
+	}
+	return 1
+}
+
 func (r *RepoScanSpec) Yaml() (string, error) {
 	data, err := yaml.Marshal(r)
 	if err != nil {

@@ -23,6 +23,7 @@ func kitCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	cmd.AddCommand(
 		cmdkit.KitCloneCommand(config),
 		cmdkit.KitMergeCommand(config),
+		cmdkit.KitBumpReleaseCommand(config),
 	)
 
 	return cmd

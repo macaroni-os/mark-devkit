@@ -3,7 +3,7 @@
 	See AUTHORS and LICENSE for the license details and contributors.
 */
 
-package cmddiag
+package cmdkit
 
 import (
 	"fmt"

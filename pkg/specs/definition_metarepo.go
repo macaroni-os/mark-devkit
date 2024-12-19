@@ -20,10 +20,36 @@ type MetaKitSetting struct {
 // Used by kit-info.json and version.json
 type MetaReleaseInfo struct {
 	Required []map[string]string `yaml:"required,omitempty" json:"required,omitempty"`
-	Version  int                 `yaml:version,omitempty" json:"version,omitempty"`
+	Version  int                 `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
 // kit-sha1.json structure
 type MetaKitSha1 struct {
-	Kits map[string]map[string]string `yaml:"-,inline" json:",inline"`
+	Kits map[string]map[string]interface{} `yaml:"-,inline" json:"-,inline"`
+}
+
+// Instead of directly define the sha1 of a branch
+// is possible define the depth and the sha1 together.
+// This struct is used as value of the MetaKitSha1 map interface.
+type MetaKitShaValue struct {
+	Sha1  string `yaml:"sha1,omitempty" json:"sha1,omitempty"`
+	Depth *int   `yaml:"depth,omitempty" json:"depth,omitempty"`
+}
+
+type KitReleaseSpec struct {
+	Release *KitRelease `yaml:"release,omitempty" json:"release,omitempty"`
+
+	File string `yaml:"-" json:"-"`
+}
+
+type KitRelease struct {
+	Sources []*ReposcanKit   `yaml:"sources,omitempty" json:"sources,omitempty"`
+	Target  KitReleaseTarget `yaml:"target,omitempty" json:"target,omitempty"`
+	MainKit string           `yaml:"main_kit,omitempty" json:"main_kit,omitempty"`
+}
+
+type KitReleaseTarget struct {
+	Name   string `yaml:"name" json:"name"`
+	Url    string `yaml:"url,omitempty" json:"url,omitempty"`
+	Branch string `yaml:"branch" json:"branch"`
 }

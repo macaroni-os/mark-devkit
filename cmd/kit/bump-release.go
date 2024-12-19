@@ -15,12 +15,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
-
+func KitBumpReleaseCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:     "merge",
-		Aliases: []string{"m", "me"},
-		Short:   "Merge packages between kits.",
+		Use:     "bump-release",
+		Aliases: []string{"br", "bump", "release"},
+		Short:   "Bump a new kits release.",
 		PreRun: func(cmd *cobra.Command, args []string) {
 			log := logger.GetDefaultLogger()
 			specfile, _ := cmd.Flags().GetString("specfile")
@@ -32,35 +31,30 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			log := logger.GetDefaultLogger()
+
 			specfile, _ := cmd.Flags().GetString("specfile")
 			deep, _ := cmd.Flags().GetInt("deep")
-			concurrency, _ := cmd.Flags().GetInt("concurrency")
-			skipPullSources, _ := cmd.Flags().GetBool("skip-pull-sources")
-			skipGenReposcan, _ := cmd.Flags().GetBool("skip-reposcan-generation")
 			to, _ := cmd.Flags().GetString("to")
+			verbose, _ := cmd.Flags().GetBool("verbose")
 			signatureName, _ := cmd.Flags().GetString("signature-name")
 			signatureEmail, _ := cmd.Flags().GetString("signature-email")
-			verbose, _ := cmd.Flags().GetBool("verbose")
 			push, _ := cmd.Flags().GetBool("push")
 
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
 			)
 
-			mergeOpts := kit.NewMergeBotOpts()
-			mergeOpts.Concurrency = concurrency
-			mergeOpts.GitDeepFetch = deep
-			mergeOpts.PullSources = !skipPullSources
-			mergeOpts.GenReposcan = !skipGenReposcan
-			mergeOpts.Push = push
-			mergeOpts.Verbose = verbose
-			mergeOpts.SignatureName = signatureName
-			mergeOpts.SignatureEmail = signatureEmail
+			releaseOpts := kit.NewReleaseOpts()
+			releaseOpts.Verbose = verbose
+			releaseOpts.GitDeepFetch = deep
+			releaseOpts.SignatureName = signatureName
+			releaseOpts.SignatureEmail = signatureEmail
+			releaseOpts.Push = push
 
-			mergeBot := kit.NewMergeBot(config)
-			mergeBot.SetWorkDir(to)
+			releaseBot := kit.NewReleaseBot(config)
+			releaseBot.SetWorkDir(to)
 
-			err := mergeBot.Run(specfile, mergeOpts)
+			err := releaseBot.Run(specfile, releaseOpts)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -72,13 +66,8 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("specfile", "", "The specfiles of the jobs.")
 	flags.String("to", "workdir", "Override default work directory.")
-	flags.Bool("verbose", false, "Show additional informations.")
 	flags.Int("deep", 5, "Define the limit of commits to fetch.")
-	flags.Int("concurrency", 3, "Define the elaboration concurrency.")
-	flags.Bool("skip-reposcan-generation", false,
-		"Skip reposcan files generation.")
-	flags.Bool("skip-pull-sources", false,
-		"Skip pull of sources repositories.")
+	flags.Bool("verbose", false, "Show additional informations.")
 	flags.Bool("push", false, "Push commits to origin.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
