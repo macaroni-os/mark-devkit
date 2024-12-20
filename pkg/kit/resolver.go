@@ -429,11 +429,6 @@ func (r *RepoScanResolver) KeywordsIsAdmit(atom *specs.RepoScanAtom, p *gentoo.G
 
 	keywords := atom.GetMetadataValue("KEYWORDS")
 	if keywords == "" && !r.AllowEmptyKeywords {
-		if r.ContinueWithError {
-			r.Logger.DebugC(fmt.Sprintf(
-				"[%s] Continue also if KEYWORDS is empty.", atom.Atom))
-			return true, nil
-		}
 		r.Logger.DebugC(fmt.Sprintf(
 			"[%s] Skip version without keywords %s or disabled.", atom.Atom, p.GetPF()))
 		return false, nil
