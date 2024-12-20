@@ -88,6 +88,7 @@ func (m *MergeBot) mergeFixupInclude(targetKitDir string,
 
 		sourceFile := filepath.Join(specFileBasedir, include.File)
 		targetFile := filepath.Join(targetKitDir, include.To)
+		targetFileMd5 := ""
 
 		if !utils.Exists(sourceFile) {
 			m.Logger.Warning(fmt.Sprintf(":warning:Fixup file %s not found. Skipped.",
@@ -95,12 +96,26 @@ func (m *MergeBot) mergeFixupInclude(targetKitDir string,
 			return ans, nil
 		}
 
-		err := helpers.CopyFile(sourceFile, targetFile)
+		sourceFileMd5, err := helpers.GetFileMd5(sourceFile)
 		if err != nil {
-			return ans, err
+			return ans, nil
 		}
 
-		ans = append(ans, targetFile)
+		if utils.Exists(targetFile) {
+			targetFileMd5, err = helpers.GetFileMd5(targetFile)
+			if err != nil {
+				return ans, err
+			}
+		}
+
+		if sourceFileMd5 != targetFileMd5 {
+			err := helpers.CopyFile(sourceFile, targetFile)
+			if err != nil {
+				return ans, err
+			}
+
+			ans = append(ans, targetFile)
+		}
 
 	} else {
 
