@@ -152,6 +152,19 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 
 	files := atom.Files
 
+	// A single package could be defined multiple times in the
+	// YAML specs in order to match multiple versions.
+	// In that case the TargetResolver could be without the
+	// Manifest files of the elaborated files.
+	// To avoid missing DIST files we store in memory the files
+	// of the new packages in order to merge the list if it's needed.
+	elabFiles, present := m.manifestFiles[atom.CatPkg]
+	if present {
+		files = append(files, elabFiles...)
+	}
+
+	m.manifestFiles[atom.CatPkg] = files
+
 	if len(existingAtoms) > 0 {
 		for _, a := range existingAtoms {
 			files = append(files, a.Files...)

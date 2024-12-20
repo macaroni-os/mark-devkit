@@ -26,7 +26,8 @@ type MergeBot struct {
 	IsANewBranch bool
 	WorkDir      string
 
-	files4Commit map[string][]string
+	files4Commit  map[string][]string
+	manifestFiles map[string][]specs.RepoScanFile
 }
 
 type MergeBotOpts struct {
@@ -67,6 +68,7 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		IsANewBranch:   false,
 		WorkDir:        "./workdir",
 		files4Commit:   make(map[string][]string, 0),
+		manifestFiles:  make(map[string][]specs.RepoScanFile, 0),
 	}
 }
 
