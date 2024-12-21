@@ -220,6 +220,18 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		return err
 	}
 
+	// Prepare metadata directory of the kit
+	err = m.prepareMetadataDir(mkit, opts)
+	if err != nil {
+		return err
+	}
+
+	// Prepare profiles directory of the kit
+	err = m.prepareProfilesDir(mkit, candidates, opts)
+	if err != nil {
+		return err
+	}
+
 	// Copy fixups
 	err = m.MergeFixups(mkit, opts)
 	if err != nil {

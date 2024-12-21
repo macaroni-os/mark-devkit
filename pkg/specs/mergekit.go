@@ -84,3 +84,19 @@ func (m *MergeKit) GetFixupsInclude() *[]*MergeKitFixupInclude {
 
 	return ans
 }
+
+func (m *MergeKit) GetMetadata() *MergeKitMetadata {
+	if m.Target.Metadata == nil {
+		m.Target.Metadata = &MergeKitMetadata{
+			LayoutMasters: "",
+		}
+	}
+	return m.Target.Metadata
+}
+
+func (m *MergeKitMetadata) GetLayoutMasters() string {
+	if m.LayoutMasters == "" {
+		return "core-kit"
+	}
+	return m.LayoutMasters
+}
