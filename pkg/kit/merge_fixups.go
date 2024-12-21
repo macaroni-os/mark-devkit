@@ -82,6 +82,9 @@ func (m *MergeBot) mergeFixupInclude(targetKitDir string,
 
 	ans := []string{}
 
+	m.Logger.Debug(fmt.Sprintf("Checking fixup %s/%s for %s...",
+		include.File, include.Dir, targetKitDir))
+
 	specFileBasedir := filepath.Dir(mkit.File)
 
 	if include.File != "" {
@@ -129,7 +132,7 @@ func (m *MergeBot) mergeFixupInclude(targetKitDir string,
 	} else {
 
 		sourceDir := filepath.Join(specFileBasedir, include.Dir)
-		targetDir := filepath.Join(targetKitDir, include.Dir)
+		targetDir := filepath.Join(targetKitDir, include.To)
 
 		if !utils.Exists(sourceDir) {
 			m.Logger.Warning(fmt.Sprintf(":warning:Fixup directory %s not found. Skipped.",
