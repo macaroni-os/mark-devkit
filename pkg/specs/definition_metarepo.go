@@ -8,7 +8,7 @@ package specs
 type MetaKitInfo struct {
 	KitOrder    []string                  `yaml:"kit_order,omitempty" json:"kit_order,omitempty"`
 	KitSettings map[string]MetaKitSetting `yaml:"kit_settings,omitempty" json:"kit_settings,omitempty"`
-	ReleaseDefs map[string][]string       `yaml:"release_def,omitempty" json:"release_def,omitempty"`
+	ReleaseDefs map[string][]string       `yaml:"release_defs,omitempty" json:"release_defs,omitempty"`
 	ReleaseInfo *MetaReleaseInfo          `yaml:"release_info,omitempty" json:"release_info,omitempty"`
 }
 
