@@ -116,6 +116,13 @@ func (m *MergeBot) prepareProfilesDir(mkit *specs.MergeKit,
 		}
 	}
 
+	if len(mkit.Target.ThirdpartyMirrors) > 0 {
+		err = m.generateThirdPartyMirrorsFile(mkit, profilesDir, &files4Commit, opts)
+		if err != nil {
+			return err
+		}
+	}
+
 	if len(files4Commit) > 0 {
 
 		// Open the repository
@@ -141,6 +148,47 @@ func (m *MergeBot) prepareProfilesDir(mkit *specs.MergeKit,
 				commit, _ := repo.CommitObject(commitHash)
 				m.Logger.InfoC(fmt.Sprintf("%s", commit))
 			}
+		}
+	}
+
+	return nil
+}
+
+func (m *MergeBot) generateThirdPartyMirrorsFile(mkit *specs.MergeKit,
+	profilesDir string, files4CommitMapRef *map[string]string,
+	opts *MergeBotOpts) error {
+
+	var err error
+	targetFile := filepath.Join(profilesDir, "thirdpartymirrors")
+	files4Commit := *files4CommitMapRef
+
+	content := ""
+
+	for idx := range mkit.Target.ThirdpartyMirrors {
+		content += fmt.Sprintf("%s\t%s\n",
+			mkit.Target.ThirdpartyMirrors[idx].Alias,
+			strings.Join(mkit.Target.ThirdpartyMirrors[idx].Uri, " "))
+	}
+
+	contentMd5 := fmt.Sprintf("%x", md5.Sum([]byte(content)))
+	targetFileMd5 := ""
+
+	if utils.Exists(targetFile) {
+		targetFileMd5, err = helpers.GetFileMd5(targetFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	if contentMd5 != targetFileMd5 {
+		err = os.WriteFile(targetFile, []byte(content), 0644)
+		if err != nil {
+			return err
+		}
+		if targetFileMd5 == "" {
+			files4Commit[targetFile] = "Add profiles/thirdpartymirrors file"
+		} else {
+			files4Commit[targetFile] = "Update profiles/thirdpartymirrors file"
 		}
 	}
 

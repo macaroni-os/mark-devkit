@@ -16,9 +16,10 @@ type MergeKitTarget struct {
 	Url    string `yaml:"url,omitempty" json:"url,omitempty"`
 	Branch string `yaml:"branch" json:"branch"`
 
-	Eclasses *MergeKitEclasses `yaml:"eclasses,omitempty" json:"eclasses,omitempty"`
-	Metadata *MergeKitMetadata `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-	Fixups   *MergeKitFixups   `yaml:"fixups,omitempty" json:"fixups,omitempty"`
+	Eclasses          *MergeKitEclasses           `yaml:"eclasses,omitempty" json:"eclasses,omitempty"`
+	Metadata          *MergeKitMetadata           `yaml:"metadata,omitempty" json:"metadata,omitempty"`
+	ThirdpartyMirrors []*MergeKitThirdPartyMirror `yaml:"thirdpartymirrors,omitempty" json:"thirdpartymirrors,omitempty"`
+	Fixups            *MergeKitFixups             `yaml:"fixups,omitempty" json:"fixups,omitempty"`
 
 	AtomDefaults *MergeKitAtom   `yaml:"atoms_defaults,omitempty" json:"atoms_defaults,omitempty"`
 	Atoms        []*MergeKitAtom `yaml:"atoms,omitempty" json:"atoms,omitempty"`
@@ -27,6 +28,11 @@ type MergeKitTarget struct {
 type MergeKitMetadata struct {
 	LayoutMasters string   `yaml:"layout_masters,omitempty" json:"layout_masters,omitempty"`
 	Aliases       []string `yaml:"aliases,omitempty" json:"aliases,omitempty"`
+}
+
+type MergeKitThirdPartyMirror struct {
+	Alias string   `yaml:"alias,omitempty" json:"alias,omitempty"`
+	Uri   []string `yaml:"uri,omitempty" json:"uri,omitempty"`
 }
 
 type MergeKitEclasses struct {
