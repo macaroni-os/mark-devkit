@@ -165,8 +165,14 @@ func (m *MergeBot) generateThirdPartyMirrorsFile(mkit *specs.MergeKit,
 	content := ""
 
 	for idx := range mkit.Target.ThirdpartyMirrors {
-		content += fmt.Sprintf("%s\t%s\n",
+		padding := "\t"
+		if len(mkit.Target.ThirdpartyMirrors[idx].Alias) < 8 {
+			padding += "\t"
+		}
+
+		content += fmt.Sprintf("%s%s%s\n",
 			mkit.Target.ThirdpartyMirrors[idx].Alias,
+			padding,
 			strings.Join(mkit.Target.ThirdpartyMirrors[idx].Uri, " "))
 	}
 
