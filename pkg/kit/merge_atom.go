@@ -6,6 +6,7 @@ package kit
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -32,6 +33,9 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 	mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	var ebuildFile, manifestFile string
 	kit, _ := mkit.GetTargetKit()
+
+	m.Logger.Debug(fmt.Sprintf(
+		"[%s] merging...", atom.Atom))
 
 	targetPkgDir := filepath.Join(m.GetTargetDir(), kit.Name,
 		atom.Category, atom.Package)
@@ -64,7 +68,8 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 	// Create manifest
 	manifestFile, err = m.createManifest(targetPkgDir, atom)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on create manifest for %s: %s",
+			atom.Atom, err.Error())
 	}
 
 	files4commit := []string{ebuildFile, manifestFile}
@@ -88,58 +93,102 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 func (m *MergeBot) copyFilesDir(sourcedir, targetdir string) ([]string, error) {
 	ans := []string{}
 
+	m.Logger.Debug(fmt.Sprintf("Analyzing directory %s...", sourcedir))
+
 	entries, err := os.ReadDir(sourcedir)
 	if err != nil {
-		return ans, err
+		return ans, fmt.Errorf("error on reading dir %s: %s",
+			sourcedir, err.Error())
 	}
 
 	if !utils.Exists(targetdir) {
 		err = helpers.EnsureDirWithoutIds(targetdir, 0755)
 		if err != nil {
-			return ans, err
+			return ans, fmt.Errorf(
+				"error on create dir %s: %s",
+				targetdir, err.Error())
 		}
 	}
 
-	for _, entry := range entries {
-		if entry.IsDir() {
-			files, err := m.copyFilesDir(
-				filepath.Join(sourcedir, entry.Name()),
-				filepath.Join(targetdir, entry.Name()),
-			)
-			if err != nil {
-				return ans, err
-			}
-
-			ans = append(ans, files...)
-		} else {
-
-			sourceFile := filepath.Join(sourcedir, entry.Name())
-			targetFile := filepath.Join(targetdir, entry.Name())
-			targetFileMd5 := ""
-
-			sourceFileMd5, err := helpers.GetFileMd5(sourceFile)
-			if err != nil {
-				return ans, err
-			}
-
-			if utils.Exists(targetFile) {
-				targetFileMd5, err = helpers.GetFileMd5(targetFile)
+	if len(entries) > 0 {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				files, err := m.copyFilesDir(
+					filepath.Join(sourcedir, entry.Name()),
+					filepath.Join(targetdir, entry.Name()),
+				)
 				if err != nil {
-					return ans, err
+					return ans, fmt.Errorf(
+						"error on copy subdir %s: %s",
+						entry.Name(), err.Error())
 				}
-			}
 
-			if sourceFileMd5 != targetFileMd5 {
-				err = helpers.CopyFile(sourceFile, targetFile)
-				if err != nil {
-					return ans, err
+				ans = append(ans, files...)
+			} else {
+
+				sourceFile := filepath.Join(sourcedir, entry.Name())
+				targetFile := filepath.Join(targetdir, entry.Name())
+				targetFileMd5 := ""
+
+				fi, _ := os.Lstat(sourceFile)
+				if fi.Mode()&fs.ModeSymlink != 0 {
+					// POST: file is a link.
+
+					if utils.Exists(targetFile) {
+						// Keep things easy. If the path
+						// exists I just avoid to manage all the
+						// possible use cases. We can fix the link
+						// manually eventually.
+						continue
+					}
+
+					symlink, err := os.Readlink(sourceFile)
+					if err != nil {
+						return ans, fmt.Errorf(
+							"error on readlink %s: %s",
+							sourceFile, err.Error())
+					}
+
+					if err = os.Symlink(symlink, targetFile); err != nil {
+						return ans, fmt.Errorf(
+							"error on create symlink %s -> %s: %s",
+							symlink, targetFile, err.Error())
+					}
+
+				} else {
+					sourceFileMd5, err := helpers.GetFileMd5(sourceFile)
+					if err != nil {
+						return ans, fmt.Errorf(
+							"error on retrieve md5 of file %s: %s",
+							sourceFile, err.Error())
+					}
+
+					if utils.Exists(targetFile) {
+						targetFileMd5, err = helpers.GetFileMd5(targetFile)
+						if err != nil {
+							return ans, fmt.Errorf(
+								"error on retrieve md5 of file %s: %s",
+								targetFile, err.Error())
+						}
+					}
+
+					if sourceFileMd5 != targetFileMd5 {
+						err = helpers.CopyFile(sourceFile, targetFile)
+						if err != nil {
+							return ans, fmt.Errorf(
+								"error on copy file %s -> %s: %s",
+								sourceFile, targetFile,
+								err.Error())
+						}
+
+					}
 				}
 
 				ans = append(ans, targetFile)
+
 			}
 
 		}
-
 	}
 
 	return ans, nil
