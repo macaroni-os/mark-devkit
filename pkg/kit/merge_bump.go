@@ -58,7 +58,9 @@ func (m *MergeBot) commitFiles(kitDir string, files []string,
 		f := file[len(kitDir)+1 : len(file)]
 		_, err := worktree.Add(f)
 		if err != nil {
-			return plumbing.ZeroHash, err
+			return plumbing.ZeroHash, fmt.Errorf(
+				"error on commit file %s (%s): %s",
+				file, f, err.Error())
 		}
 	}
 
