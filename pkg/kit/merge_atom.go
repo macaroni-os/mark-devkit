@@ -172,16 +172,18 @@ func (m *MergeBot) copyFilesDir(sourcedir, targetdir string) ([]string, error) {
 						}
 					}
 
-					if sourceFileMd5 != targetFileMd5 {
-						err = helpers.CopyFile(sourceFile, targetFile)
-						if err != nil {
-							return ans, fmt.Errorf(
-								"error on copy file %s -> %s: %s",
-								sourceFile, targetFile,
-								err.Error())
-						}
-
+					if sourceFileMd5 == targetFileMd5 {
+						continue
 					}
+
+					err = helpers.CopyFile(sourceFile, targetFile)
+					if err != nil {
+						return ans, fmt.Errorf(
+							"error on copy file %s -> %s: %s",
+							sourceFile, targetFile,
+							err.Error())
+					}
+
 				}
 
 				ans = append(ans, targetFile)
