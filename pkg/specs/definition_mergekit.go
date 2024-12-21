@@ -25,7 +25,8 @@ type MergeKitTarget struct {
 }
 
 type MergeKitMetadata struct {
-	LayoutMasters string `yaml:"layout_masters,omitempty" json:"layout_masters,omitempty"`
+	LayoutMasters string   `yaml:"layout_masters,omitempty" json:"layout_masters,omitempty"`
+	Aliases       []string `yaml:"aliases,omitempty" json:"aliases,omitempty"`
 }
 
 type MergeKitEclasses struct {

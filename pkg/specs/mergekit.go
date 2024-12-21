@@ -89,6 +89,7 @@ func (m *MergeKit) GetMetadata() *MergeKitMetadata {
 	if m.Target.Metadata == nil {
 		m.Target.Metadata = &MergeKitMetadata{
 			LayoutMasters: "",
+			Aliases:       []string{},
 		}
 	}
 	return m.Target.Metadata
@@ -99,4 +100,8 @@ func (m *MergeKitMetadata) GetLayoutMasters() string {
 		return "core-kit"
 	}
 	return m.LayoutMasters
+}
+
+func (m *MergeKitMetadata) HasAliases() bool {
+	return len(m.Aliases) > 0
 }

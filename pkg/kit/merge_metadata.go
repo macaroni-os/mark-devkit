@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
@@ -23,7 +24,6 @@ thin-manifests = true
 sign-manifests = false
 profile-formats = portage-2
 cache-formats = md5-dict
-masters = %s
 `
 )
 
@@ -43,16 +43,25 @@ func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
 
 	metadata := mkit.GetMetadata()
 
-	layoutData := fmt.Sprintf(layoutConfTemplate,
-		kit.Name, metadata.GetLayoutMasters())
+	layoutData := fmt.Sprintf(layoutConfTemplate, kit.Name)
+
+	if metadata.GetLayoutMasters() != kit.Name {
+		// core-kit doesn't need masters
+		layoutData += fmt.Sprintf("masters = %s\n", metadata.GetLayoutMasters())
+	}
+	if metadata.HasAliases() {
+		layoutData += fmt.Sprintf("aliases = %s\n",
+			strings.Join(metadata.Aliases, " "))
+	}
+
 	layoutDataMd5 := fmt.Sprintf("%x", md5.Sum([]byte(layoutData)))
 
 	layoutConf := filepath.Join(metadataDir, "layout.conf")
 	layoutConfMd5 := ""
-	cMsg := "Update metadata/layout.conf"
+	cMsg := "Add metadata/layout.conf"
 
 	if utils.Exists(layoutConf) {
-		cMsg = "Add metadata/layout.conf"
+		cMsg = "Update metadata/layout.conf"
 		layoutConfMd5, err = helpers.GetFileMd5(layoutConf)
 		if err != nil {
 			return err
