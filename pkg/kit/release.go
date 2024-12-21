@@ -498,7 +498,7 @@ func (r *ReleaseBot) cloneTargetKit(release *specs.KitReleaseSpec, opts *Release
 			RemoteName: "origin",
 			Depth:      opts.GitDeepFetch,
 		},
-		Verbose: true,
+		Verbose: opts.Verbose,
 		// Always generate summary report
 		Summary: true,
 		Results: []*specs.ReposcanKit{},
