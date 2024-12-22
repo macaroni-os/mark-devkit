@@ -96,6 +96,8 @@ func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
 			commit, _ := repo.CommitObject(commitHash)
 			m.Logger.InfoC(fmt.Sprintf("%s", commit))
 		}
+
+		m.hasCommit = true
 	}
 
 	return nil

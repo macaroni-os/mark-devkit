@@ -6,6 +6,7 @@ package kit
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
@@ -26,17 +27,19 @@ type MergeBot struct {
 	IsANewBranch bool
 	WorkDir      string
 
+	hasCommit     bool
 	files4Commit  map[string][]string
 	manifestFiles map[string][]specs.RepoScanFile
 }
 
 type MergeBotOpts struct {
-	GenReposcan bool
-	DryRun      bool
-	PullSources bool
-	Push        bool
-	PullRequest bool
-	Verbose     bool
+	GenReposcan     bool
+	DryRun          bool
+	PullSources     bool
+	Push            bool
+	PullRequest     bool
+	Verbose         bool
+	CleanWorkingDir bool
 
 	GitDeepFetch int
 	Concurrency  int
@@ -47,13 +50,14 @@ type MergeBotOpts struct {
 
 func NewMergeBotOpts() *MergeBotOpts {
 	return &MergeBotOpts{
-		GenReposcan:  true,
-		DryRun:       false,
-		Push:         true,
-		PullSources:  true,
-		PullRequest:  false,
-		GitDeepFetch: 10,
-		Concurrency:  10,
+		GenReposcan:     true,
+		DryRun:          false,
+		Push:            true,
+		PullSources:     true,
+		PullRequest:     false,
+		GitDeepFetch:    10,
+		Concurrency:     10,
+		CleanWorkingDir: true,
 	}
 }
 
@@ -67,6 +71,7 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		TargetResolver: targetResolver,
 		IsANewBranch:   false,
 		WorkDir:        "./workdir",
+		hasCommit:      false,
 		files4Commit:   make(map[string][]string, 0),
 		manifestFiles:  make(map[string][]specs.RepoScanFile, 0),
 	}
@@ -90,6 +95,8 @@ func (m *MergeBot) SetWorkDir(d string)            { m.WorkDir = d }
 func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	// Load MergeKit specs
 	mkit := specs.NewMergeKit()
+
+	defer os.RemoveAll(m.WorkDir)
 
 	err := mkit.LoadFile(specfile)
 	if err != nil {
@@ -238,7 +245,7 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		return err
 	}
 
-	if opts.Push {
+	if opts.Push && m.hasCommit {
 
 		kitDir := filepath.Join(m.GetTargetDir(), targetKit.Name)
 		pushOpts := NewPushOptions()

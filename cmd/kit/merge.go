@@ -41,6 +41,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			signatureName, _ := cmd.Flags().GetString("signature-name")
 			signatureEmail, _ := cmd.Flags().GetString("signature-email")
 			verbose, _ := cmd.Flags().GetBool("verbose")
+			keepWorkdir, _ := cmd.Flags().GetBool("keep-workdir")
 			push, _ := cmd.Flags().GetBool("push")
 
 			log.InfoC(log.Aurora.Bold(
@@ -56,6 +57,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeOpts.Verbose = verbose
 			mergeOpts.SignatureName = signatureName
 			mergeOpts.SignatureEmail = signatureEmail
+			mergeOpts.CleanWorkingDir = !keepWorkdir
 
 			mergeBot := kit.NewMergeBot(config)
 			mergeBot.SetWorkDir(to)
@@ -80,6 +82,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Bool("skip-pull-sources", false,
 		"Skip pull of sources repositories.")
 	flags.Bool("push", false, "Push commits to origin.")
+	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")

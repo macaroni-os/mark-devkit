@@ -149,6 +149,8 @@ func (m *MergeBot) prepareProfilesDir(mkit *specs.MergeKit,
 				m.Logger.InfoC(fmt.Sprintf("%s", commit))
 			}
 		}
+
+		m.hasCommit = true
 	}
 
 	return nil

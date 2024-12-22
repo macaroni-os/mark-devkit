@@ -71,6 +71,8 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 			commit, _ := repo.CommitObject(commitHash)
 			m.Logger.InfoC(fmt.Sprintf("%s", commit))
 		}
+
+		m.hasCommit = true
 	}
 
 	return nil
