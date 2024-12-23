@@ -97,7 +97,9 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	// Load MergeKit specs
 	mkit := specs.NewMergeKit()
 
-	defer os.RemoveAll(m.WorkDir)
+	if opts.CleanWorkingDir {
+		defer os.RemoveAll(m.WorkDir)
+	}
 
 	err := mkit.LoadFile(specfile)
 	if err != nil {
