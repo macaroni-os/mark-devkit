@@ -72,13 +72,13 @@ func (r *KitRelease) GetMainKit() string {
 }
 
 func (r *MetaReleaseInfo) Json() ([]byte, error) {
-	return json.Marshal(r)
+	return json.MarshalIndent(r, "", "  ")
 }
 
 func (i *MetaKitInfo) Json() ([]byte, error) {
-	return json.Marshal(i)
+	return json.MarshalIndent(i, "", "  ")
 }
 
 func (i *MetaKitSha1) Json() ([]byte, error) {
-	return json.Marshal(i.Kits)
+	return json.MarshalIndent(i.Kits, "", " ")
 }
