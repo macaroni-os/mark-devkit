@@ -13,6 +13,7 @@ import (
 	log "github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
+	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/go-git/go-git/v5"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
@@ -295,6 +296,12 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 		return nil, nil
 	}
 
+	// Check if the selected package is with slot
+	gatom, err := gentoo.ParsePackageStr(atom.Package)
+	if err != nil {
+		return ans, err
+	}
+
 	gpkg, err := ans.ToGentooPackage()
 	if err != nil {
 		return ans, err
@@ -307,6 +314,11 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 			epkg, err := a.ToGentooPackage()
 			if err != nil {
 				return ans, err
+			}
+
+			// Ignore packages with different SLOTs
+			if gatom.Slot != "" && gatom.Slot != "0" && gatom.Slot != epkg.Slot {
+				continue
 			}
 
 			equal, err := epkg.Equal(gpkg)
