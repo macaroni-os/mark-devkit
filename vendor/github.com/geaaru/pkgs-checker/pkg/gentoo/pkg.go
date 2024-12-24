@@ -186,8 +186,22 @@ func (p *GentooPackage) GetPN() string {
 	return p.Name
 }
 
-func (p *GentooPackage) GetPV() string {
-	return fmt.Sprintf("%s", p.Version)
+func (p *GentooPackage) GetPV() (ans string) {
+	// -r1 is a Gentoo-specific revision of the ebuild
+	// rather than the package, and so is not part of ${PV}
+	// _rc and other suffix is a revision of the package, and so is part of ${PV}
+	// Basically, everything but -r1, -r2 etc. are in ${PV}.
+
+	if p.VersionSuffix != "" {
+		if strings.Index(p.VersionSuffix, "-r") >= 0 {
+			ans = fmt.Sprintf("%s%s", p.Version, strings.Split(p.VersionSuffix, "-r")[0])
+		} else {
+			ans = fmt.Sprintf("%s%s", p.Version, p.VersionSuffix)
+		}
+	} else {
+		ans = fmt.Sprintf("%s", p.Version)
+	}
+	return
 }
 
 func (p *GentooPackage) GetPackageNameWithCond() (ans string) {
