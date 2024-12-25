@@ -323,6 +323,33 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 				continue
 			}
 
+			// Analyze only packages matched with conditions
+			if len(atom.Conditions) > 0 {
+				ignore := false
+				for _, cond := range atom.Conditions {
+					gcond, err := gentoo.ParsePackageStr(cond)
+					if err != nil {
+						return ans, err
+					}
+
+					admit, err := gcond.Admit(epkg)
+					if err != nil {
+						return ans, err
+					}
+
+					if !admit {
+						ignore = true
+						break
+					}
+				}
+
+				if ignore {
+					m.Logger.Debug(fmt.Sprintf("[%s] Ignored by conditions of %s.",
+						epkg.GetPF(), atom.Package))
+					continue
+				}
+			}
+
 			equal, err := epkg.Equal(gpkg)
 			if err != nil {
 				return ans, err
