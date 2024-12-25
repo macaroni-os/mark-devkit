@@ -272,18 +272,28 @@ func (r *RepoScanResolver) GetLastPackage(pkg string, opts *PortageResolverOpts)
 			if err != nil {
 				// If the version is not supported, skip the version
 				r.Logger.Warning(fmt.Sprintf(
-					"[%s/%s-%s] Error on generate Gentoo package: %s. Package skipped.",
-					atom.Category, atom.Package, atom.Revision,
-					err.Error()))
+					"[%s-%s::%s] Error on generate Gentoo package: %s. Package skipped.",
+					atom.Atom, atom.Revision, atom.Kit, err.Error()))
 				continue
+			}
+
+			if gp.Repository != "" {
+				// Exclude package from different kit
+				if gp.Repository != atom.Kit {
+					r.Logger.Debug(fmt.Sprintf(
+						"[%s-%s::%s] Skipping atom with kit %s != %s.",
+						atom.Atom, atom.Revision, atom.Kit,
+						atom.Kit, gp.Repository))
+					continue
+				}
 			}
 
 			// TODO: check of handle this in a better way
 			valid, err := r.KeywordsIsAdmit(&atom, p)
 			if err != nil {
 				r.Logger.DebugC(fmt.Sprintf(
-					"[%s/%s-%s] Check %s/%s:%s@%s: Invalid keyword.",
-					atom.Category, atom.Package, atom.Revision,
+					"[%s-%s::%s] Check %s/%s:%s@%s: Invalid keyword.",
+					atom.Atom, atom.Revision, atom.Kit,
 					p.Category, p.GetPF(), p.Slot, p.Repository))
 			}
 
