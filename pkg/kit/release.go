@@ -230,6 +230,9 @@ func (r *ReleaseBot) prepareReposConfDir(release *specs.KitReleaseSpec,
 
 			file := filepath.Join(reposConfDir, entry.Name())
 			md5Entry, err := helpers.GetFileMd5(file)
+			if err != nil {
+				return err
+			}
 
 			// The default file is mandatory and contains
 			// the info about what is the main-repo kit.
@@ -419,7 +422,7 @@ func (r *ReleaseBot) prepareMetadataDir(release *specs.KitReleaseSpec,
 		}
 	}
 
-	kitSha1Data, err := kitSha1.Json()
+	kitSha1Data, _ := kitSha1.Json()
 	kitSha1Md5 := fmt.Sprintf("%x", md5.Sum(kitSha1Data))
 	targetKitSha1Md5 := ""
 
