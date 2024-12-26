@@ -47,10 +47,10 @@ func (h *HostExecutor) RunCommandWithOutput(
 	}
 
 	if outBuffer == nil {
-		return 1, fmt.Errorf("Invalid outBuffer")
+		return ans, fmt.Errorf("Invalid outBuffer")
 	}
 	if errBuffer == nil {
-		return 1, fmt.Errorf("Invalid errBuffer")
+		return ans, fmt.Errorf("Invalid errBuffer")
 	}
 
 	cmds := append(entrypoint, command)
@@ -79,13 +79,13 @@ func (h *HostExecutor) RunCommandWithOutput(
 	err := hostCommand.Start()
 	if err != nil {
 		h.Logger.Error("Error on start command: " + err.Error())
-		return 1, err
+		return ans, err
 	}
 
 	err = hostCommand.Wait()
 	if err != nil {
 		h.Logger.Error("Error on waiting command: " + err.Error())
-		return 1, err
+		return ans, err
 	}
 
 	ans = hostCommand.ProcessState.ExitCode()
