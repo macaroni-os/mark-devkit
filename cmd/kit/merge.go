@@ -43,6 +43,8 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			keepWorkdir, _ := cmd.Flags().GetBool("keep-workdir")
 			push, _ := cmd.Flags().GetBool("push")
+			githubUser, _ := cmd.Flags().GetString("github-user")
+			pr, _ := cmd.Flags().GetBool("pr")
 
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
@@ -54,10 +56,15 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeOpts.PullSources = !skipPullSources
 			mergeOpts.GenReposcan = !skipGenReposcan
 			mergeOpts.Push = push
+			mergeOpts.PullRequest = pr
 			mergeOpts.Verbose = verbose
 			mergeOpts.SignatureName = signatureName
 			mergeOpts.SignatureEmail = signatureEmail
 			mergeOpts.CleanWorkingDir = !keepWorkdir
+
+			if githubUser != "" {
+				mergeOpts.GithubUser = githubUser
+			}
 
 			mergeBot := kit.NewMergeBot(config)
 			mergeBot.SetWorkDir(to)
@@ -83,9 +90,11 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"Skip pull of sources repositories.")
 	flags.Bool("push", false, "Push commits to origin.")
 	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
+	flags.Bool("pr", false, "Push commit over specific branch and as Pull Request.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")
+	flags.String("github-user", "", "Override the default Github user used for PR.")
 
 	return cmd
 }

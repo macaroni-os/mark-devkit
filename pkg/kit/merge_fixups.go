@@ -7,11 +7,14 @@ package kit
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/macaroni-os/macaronictl/pkg/utils"
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
 func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
@@ -46,20 +49,63 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		}
 
 		cMsg := ""
-		includeType := "file"
-		name := include.Name
-		if include.Dir != "" {
-			includeType = "directory"
-		}
-
-		if include.Name == "" {
-			name = include.To
-		}
+		includeType := include.GetType()
+		name := include.GetName()
 
 		if m.IsANewBranch {
 			cMsg = fmt.Sprintf("Add %s %s", includeType, name)
 		} else {
 			cMsg = fmt.Sprintf("Update %s %s", includeType, name)
+		}
+
+		if opts.PullRequest {
+			// NOTE: pull request for a new branch it doesn't make sense
+			// Probably we need to add a check.
+			prBranchName := fmt.Sprintf(
+				"%s%s-%s",
+				prBranchPrefix, "fixup-include-",
+				strings.ReplaceAll(strings.ReplaceAll(name, ".", "_"),
+					"/", "_"),
+			)
+
+			prBranchExists, err := BranchExists(kit.Url, prBranchName)
+			if err != nil {
+				return err
+			}
+
+			if prBranchExists {
+				// PR is already been pushed.
+				m.Logger.InfoC(fmt.Sprintf(
+					"[%s] PR branch already present for fixup %s. Nothing to do.",
+					prBranchName, name))
+				continue
+			}
+
+			headRef, err := repo.Head()
+			if err != nil {
+				return err
+			}
+
+			branchRef := plumbing.NewBranchReferenceName(prBranchName)
+			ref := plumbing.NewHashReference(branchRef, headRef.Hash())
+			// The created reference is saved in the storage.
+			err = repo.Storer.SetReference(ref)
+			if err != nil {
+				return err
+			}
+
+			// Creating the new branch for the PR.
+			branchCoOpts := git.CheckoutOptions{
+				Branch: plumbing.ReferenceName(branchRef),
+				Create: false,
+				Keep:   true,
+			}
+
+			if err := worktree.Checkout(&branchCoOpts); err != nil {
+				return err
+			}
+
+			m.fixupBranches[name] = include
 		}
 
 		commitHash, err := m.commitFiles(kitDir, files, cMsg, opts, worktree)
@@ -73,6 +119,19 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		}
 
 		m.hasCommit = true
+
+		if opts.PullRequest {
+			// Return to working branch
+			targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
+			branchCoOpts := git.CheckoutOptions{
+				Branch: plumbing.ReferenceName(targetBranchRef),
+				Force:  true,
+			}
+			err := worktree.Checkout(&branchCoOpts)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

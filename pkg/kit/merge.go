@@ -5,9 +5,11 @@ See AUTHORS and LICENSE for the license details and contributors.
 package kit
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	log "github.com/macaroni-os/mark-devkit/pkg/logger"
@@ -15,7 +17,9 @@ import (
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/go-git/go-git/v5"
+	"github.com/google/go-github/v68/github"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
+	"golang.org/x/oauth2"
 )
 
 type MergeBot struct {
@@ -31,6 +35,9 @@ type MergeBot struct {
 	hasCommit     bool
 	files4Commit  map[string][]string
 	manifestFiles map[string][]specs.RepoScanFile
+	fixupBranches map[string]*specs.MergeKitFixupInclude
+
+	GithubClient *github.Client
 }
 
 type MergeBotOpts struct {
@@ -47,6 +54,9 @@ type MergeBotOpts struct {
 
 	SignatureName  string
 	SignatureEmail string
+
+	// Pull Request data
+	GithubUser string
 }
 
 func NewMergeBotOpts() *MergeBotOpts {
@@ -59,6 +69,7 @@ func NewMergeBotOpts() *MergeBotOpts {
 		GitDeepFetch:    10,
 		Concurrency:     10,
 		CleanWorkingDir: true,
+		GithubUser:      "macaroni-os",
 	}
 }
 
@@ -75,6 +86,8 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		hasCommit:      false,
 		files4Commit:   make(map[string][]string, 0),
 		manifestFiles:  make(map[string][]specs.RepoScanFile, 0),
+		fixupBranches:  make(map[string]*specs.MergeKitFixupInclude, 0),
+		GithubClient:   nil,
 	}
 }
 
@@ -92,6 +105,25 @@ func (m *MergeBot) GetReposcanDir() string {
 
 func (m *MergeBot) GetResolver() *RepoScanResolver { return m.Resolver }
 func (m *MergeBot) SetWorkDir(d string)            { m.WorkDir = d }
+
+func (m *MergeBot) SetupGithubClient(ctx context.Context) error {
+	if m.GithubClient == nil {
+		pushOpts := NewPushOptions()
+
+		auth, err := getGithubAuth(pushOpts)
+		if err != nil {
+			return err
+		}
+
+		ts := oauth2.StaticTokenSource(&oauth2.Token{
+			AccessToken: auth.Password,
+		})
+		tc := oauth2.NewClient(ctx, ts)
+		m.GithubClient = github.NewClient(tc)
+	}
+
+	return nil
+}
 
 func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	// Load MergeKit specs
@@ -249,16 +281,111 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	}
 
 	if opts.Push && m.hasCommit {
+		err = m.Push(mkit, opts)
+	}
 
-		kitDir := filepath.Join(m.GetTargetDir(), targetKit.Name)
-		pushOpts := NewPushOptions()
-		err = Push(kitDir, pushOpts)
+	return err
+}
+
+func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
+	var err error
+	targetKit, _ := mkit.GetTargetKit()
+	kitDir := filepath.Join(m.GetTargetDir(), targetKit.Name)
+	pushOpts := NewPushOptions()
+	ctx := context.Background()
+
+	if opts.PullRequest {
+		// Setup github client for PR
+		err = m.SetupGithubClient(ctx)
 		if err != nil {
 			return err
 		}
+
+		// Push bump branches
+		for pkg := range m.files4Commit {
+			prBranchName := fmt.Sprintf(
+				"%s%s-%s",
+				prBranchPrefix, "bump",
+				strings.ReplaceAll(strings.ReplaceAll(pkg, ".", "_"),
+					"/", "_"),
+			)
+
+			err = PushBranch(kitDir, prBranchName, pushOpts)
+			if err != nil {
+				break
+			}
+
+			pr, err := CreatePullRequest(m.GithubClient, ctx,
+				// title
+				fmt.Sprintf("mark-devkit: Bump %s", pkg),
+				// source branch
+				prBranchName,
+				// target branch
+				targetKit.Branch,
+				// body
+				fmt.Sprintf(
+					"Automatic bump of package %s for branch %s by mark-bot",
+					pkg, targetKit.Branch),
+				// github User
+				opts.GithubUser,
+				// github target repository
+				targetKit.Name,
+			)
+
+			if err != nil {
+				break
+			}
+
+			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR: %s",
+				pkg, pr.GetHTMLURL()))
+		}
+
+		// Create PR for fixups if available
+		if len(m.fixupBranches) > 0 {
+			for name, include := range m.fixupBranches {
+				prBranchName := fmt.Sprintf(
+					"%s%s-%s",
+					prBranchPrefix, "fixup-include-",
+					strings.ReplaceAll(strings.ReplaceAll(name, ".", "_"),
+						"/", "_"),
+				)
+
+				err = PushBranch(kitDir, prBranchName, pushOpts)
+				if err != nil {
+					break
+				}
+
+				pr, err := CreatePullRequest(m.GithubClient, ctx,
+					// title
+					fmt.Sprintf("mark-devkit: Update %s %s", include.GetType(), name),
+					// source branch
+					prBranchName,
+					// target branch
+					targetKit.Branch,
+					// body
+					fmt.Sprintf(
+						"Automatic update for fixup %s for branch %s for specfile %s by mark-bot",
+						name, targetKit.Branch, mkit.File),
+					// github User
+					opts.GithubUser,
+					// github target repository
+					targetKit.Name,
+				)
+
+				if err != nil {
+					break
+				}
+
+				m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for fixup: %s",
+					name, pr.GetHTMLURL()))
+			}
+		}
+
+	} else {
+		err = Push(kitDir, pushOpts)
 	}
 
-	return nil
+	return err
 }
 
 func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*specs.RepoScanAtom, error) {
@@ -479,7 +606,6 @@ func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) erro
 	gitOpts := &CloneOptions{
 		GitCloneOptions: &git.CloneOptions{
 			RemoteName: "origin",
-			Depth:      opts.GitDeepFetch,
 		},
 		Verbose: true,
 		// Always generate summary report
@@ -490,6 +616,11 @@ func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) erro
 		SignatureEmail: opts.SignatureEmail,
 	}
 
+	if !opts.PullRequest {
+		gitOpts.GitCloneOptions.Depth = opts.GitDeepFetch
+		gitOpts.GitCloneOptions.SingleBranch = true
+	}
+
 	if !existsBranch {
 		m.Logger.InfoC(fmt.Sprintf("Branch %s doesn't exists. Creating the branch.",
 			kit.Branch))
@@ -498,7 +629,6 @@ func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) erro
 
 		err = CloneAndCreateBranch(kit, kitDir, gitOpts)
 	} else {
-		gitOpts.GitCloneOptions.SingleBranch = true
 
 		err = Clone(kit, kitDir, gitOpts)
 		if err != nil {

@@ -105,3 +105,19 @@ func (m *MergeKitMetadata) GetLayoutMasters() string {
 func (m *MergeKitMetadata) HasAliases() bool {
 	return len(m.Aliases) > 0
 }
+
+func (f *MergeKitFixupInclude) GetType() string {
+	ans := "file"
+	if f.Dir != "" {
+		ans = "directory"
+	}
+
+	return ans
+}
+
+func (f *MergeKitFixupInclude) GetName() string {
+	if f.Name != "" {
+		return f.Name
+	}
+	return f.To
+}
