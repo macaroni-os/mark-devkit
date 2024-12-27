@@ -36,6 +36,7 @@ type MergeBot struct {
 	files4Commit  map[string][]string
 	manifestFiles map[string][]specs.RepoScanFile
 	fixupBranches map[string]*specs.MergeKitFixupInclude
+	eclassUpdate  bool
 
 	GithubClient *github.Client
 }
@@ -88,6 +89,7 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		manifestFiles:  make(map[string][]specs.RepoScanFile, 0),
 		fixupBranches:  make(map[string]*specs.MergeKitFixupInclude, 0),
 		GithubClient:   nil,
+		eclassUpdate:   false,
 	}
 }
 
@@ -333,7 +335,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 			)
 
 			if err != nil {
-				break
+				return err
 			}
 
 			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR: %s",
@@ -352,7 +354,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 				err = PushBranch(kitDir, prBranchName, pushOpts)
 				if err != nil {
-					break
+					return err
 				}
 
 				pr, err := CreatePullRequest(m.GithubClient, ctx,
@@ -373,12 +375,49 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				)
 
 				if err != nil {
-					break
+					return err
 				}
 
 				m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for fixup: %s",
 					name, pr.GetHTMLURL()))
 			}
+		}
+
+		if m.eclassUpdate {
+
+			prBranchName := fmt.Sprintf(
+				"%s/%s-%s",
+				prBranchPrefix, targetKit.Branch, "eclasses",
+			)
+
+			err = PushBranch(kitDir, prBranchName, pushOpts)
+			if err != nil {
+				return err
+			}
+
+			pr, err := CreatePullRequest(m.GithubClient, ctx,
+				// title
+				"mark-devkit: Update/Add eclasses",
+				// source branch
+				prBranchName,
+				// target branch
+				targetKit.Branch,
+				// body
+				fmt.Sprintf(
+					"Automatic update for add/update eclasses to branch %s for specfile %s by mark-bot",
+					targetKit.Branch, mkit.File),
+				// github User
+				opts.GithubUser,
+				// github target repository
+				targetKit.Name,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for eclasses: %s",
+				targetKit.Name, pr.GetHTMLURL()))
 		}
 
 	} else {
