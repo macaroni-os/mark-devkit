@@ -563,7 +563,7 @@ func (m *MergeBot) cloneSourcesKits(mkit *specs.MergeKit, opts *MergeBotOpts) er
 			RemoteName:   "origin",
 			Depth:        opts.GitDeepFetch,
 		},
-		Verbose: true,
+		Verbose: opts.Verbose,
 		// Always generate summary report
 		Summary: true,
 		Results: []*specs.ReposcanKit{},
