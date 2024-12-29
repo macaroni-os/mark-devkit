@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/geaaru/pkgs-checker v0.14.4
-	github.com/geaaru/rest-guard v0.4.0
+	github.com/geaaru/rest-guard v0.6.1
 	github.com/geaaru/tar-formers v0.9.1
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/kyokomi/emoji v2.2.4+incompatible

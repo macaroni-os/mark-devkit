@@ -42,6 +42,7 @@ func NewRestGuard(cfg *specs.RestGuardConfig) (*RestGuard, error) {
 		IdleConnTimeout:     idleConnTimeout,
 		MaxIdleConnsPerHost: cfg.MaxIdleConnsPerHost,
 		MaxConnsPerHost:     cfg.MaxConnsPerHost,
+		DisableCompression:  cfg.DisableCompression,
 	}
 
 	if cfg.InsecureSkipVerify {

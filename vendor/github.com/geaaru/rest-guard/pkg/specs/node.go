@@ -25,10 +25,14 @@ func (n *RestNode) SetDisable(b bool) { n.Disable = b }
 
 func (n *RestNode) GetUrlPrefix() string {
 	ans := ""
-	if n.Ssl {
-		ans = "https://"
+	if n.Schema != "" {
+		ans = n.Schema + "://"
 	} else {
-		ans = "http://"
+		if n.Ssl {
+			ans = "https://"
+		} else {
+			ans = "http://"
+		}
 	}
 
 	ans += n.BaseUrl

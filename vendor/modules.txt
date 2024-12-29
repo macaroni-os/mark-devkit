@@ -88,8 +88,8 @@ github.com/fsnotify/fsnotify/internal
 # github.com/geaaru/pkgs-checker v0.14.4
 ## explicit; go 1.22.0
 github.com/geaaru/pkgs-checker/pkg/gentoo
-# github.com/geaaru/rest-guard v0.4.0
-## explicit; go 1.19
+# github.com/geaaru/rest-guard v0.6.1
+## explicit; go 1.22.0
 github.com/geaaru/rest-guard/pkg/guard
 github.com/geaaru/rest-guard/pkg/specs
 # github.com/geaaru/tar-formers v0.9.1
