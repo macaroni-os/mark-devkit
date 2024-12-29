@@ -37,9 +37,16 @@ func (m *ManifestFile) Write(f string) error {
 	mFiles := make(map[string]*specs.RepoScanFile, 0)
 	filesName := []string{}
 
+	// On SRC_URI could be set the same file name multiple time with
+	// failover download URL.
+	// The Manifest file in this case must be generate with only one
+	// entry for file.Name. I consider the same hash in all download urls.
+
 	for idx := range m.Files {
-		mFiles[m.Files[idx].Name] = &m.Files[idx]
-		filesName = append(filesName, m.Files[idx].Name)
+		if _, present := mFiles[m.Files[idx].Name]; !present {
+			mFiles[m.Files[idx].Name] = &m.Files[idx]
+			filesName = append(filesName, m.Files[idx].Name)
+		}
 	}
 
 	// TODO: At the moment we don't support Manifest with EBUILD rows
