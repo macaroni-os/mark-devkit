@@ -8,12 +8,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
-func (m *MergeBot) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFile string,
+func RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile string,
 	eclassDirs []string, concurrency int) error {
 	anisePcBin := utils.TryResolveBinaryAbsPath("anise-portage-converter")
 
@@ -38,9 +37,6 @@ func (m *MergeBot) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFil
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	m.Logger.Debug(fmt.Sprintf("Generating kit-cache file for kit %s: %s...",
-		kitName, strings.Join(args, " ")))
-
 	err := cmd.Start()
 	if err != nil {
 		return err
@@ -57,4 +53,14 @@ func (m *MergeBot) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFil
 	}
 
 	return nil
+}
+
+func (m *MergeBot) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFile string,
+	eclassDirs []string, concurrency int) error {
+
+	m.Logger.Debug(fmt.Sprintf("Generating kit-cache file for kit %s...",
+		kitName))
+
+	return RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile,
+		eclassDirs, concurrency)
 }

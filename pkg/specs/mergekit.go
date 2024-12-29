@@ -95,6 +95,20 @@ func (m *MergeKit) GetMetadata() *MergeKitMetadata {
 	return m.Target.Metadata
 }
 
+func (m *MergeKitTarget) GetThirdpartyMirrorsUris(alias string) []string {
+	ans := []string{}
+
+	if len(m.ThirdpartyMirrors) > 0 {
+		for idx := range m.ThirdpartyMirrors {
+			if m.ThirdpartyMirrors[idx].Alias == alias {
+				return m.ThirdpartyMirrors[idx].Uri
+			}
+		}
+	}
+
+	return ans
+}
+
 func (m *MergeKitMetadata) GetLayoutMasters() string {
 	if m.LayoutMasters == "" {
 		return "core-kit"
