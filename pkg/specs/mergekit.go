@@ -7,6 +7,7 @@ package specs
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -134,4 +135,56 @@ func (f *MergeKitFixupInclude) GetName() string {
 		return f.Name
 	}
 	return f.To
+}
+
+func NewDistfilesSpec() *DistfilesSpec {
+	return &DistfilesSpec{
+		MergeKit:        NewMergeKit(),
+		FallbackMirrors: []*MergeKitThirdPartyMirror{},
+	}
+}
+
+func (d *DistfilesSpec) LoadFile(file string) error {
+	// Read specfile
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return err
+	}
+
+	return d.LoadYaml(content, file)
+}
+
+func (d *DistfilesSpec) LoadYaml(data []byte, file string) error {
+	if err := yaml.Unmarshal(data, d); err != nil {
+		return err
+	}
+	d.File = file
+	return nil
+}
+
+func (l *MirrorLayoutMode) GetAtomPath(fileName, fileSha512, fileBlake2b string) (ans string) {
+	if l.Type == "flat" {
+		ans = "/" + fileName
+		return
+	}
+
+	if l.Type == "content-hash" {
+		ans = "/"
+		subpaths := strings.Split(l.HashMode, ":")
+		for idx := range subpaths {
+			if l.Hash == "SHA512" {
+				ans += fileSha512[idx*2:idx*2+2] + "/"
+			} else {
+				ans += fileBlake2b[idx*2:idx*2+2] + "/"
+			}
+		}
+
+		if l.Hash == "SHA512" {
+			ans += fileSha512
+		} else {
+			ans += fileBlake2b
+		}
+	}
+
+	return
 }

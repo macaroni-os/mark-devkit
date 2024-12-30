@@ -27,7 +27,7 @@ func NewFetcherDir(c *specs.MarkDevkitConfig) *FetcherDir {
 
 func (f *FetcherDir) Sync(specfile string, opts *FetchOpts) error {
 	// Load MergeKit specs
-	mkit := specs.NewMergeKit()
+	mkit := specs.NewDistfilesSpec()
 
 	if opts.CleanWorkingDir {
 		defer os.RemoveAll(f.GetReposcanDir())
@@ -52,7 +52,7 @@ func (f *FetcherDir) Sync(specfile string, opts *FetchOpts) error {
 	return nil
 }
 
-func (f *FetcherDir) syncAtoms(mkit *specs.MergeKit, opts *FetchOpts) error {
+func (f *FetcherDir) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
 
 	// Prepare download directory
 	err := helpers.EnsureDirWithoutIds(f.GetDownloadDir(), 0755)
@@ -81,7 +81,7 @@ func (f *FetcherDir) syncAtoms(mkit *specs.MergeKit, opts *FetchOpts) error {
 	return nil
 }
 
-func (f *FetcherDir) syncAtom(mkit *specs.MergeKit, opts *FetchOpts, atom *specs.RepoScanAtom) error {
+func (f *FetcherDir) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts, atom *specs.RepoScanAtom) error {
 
 	toDownload := false
 

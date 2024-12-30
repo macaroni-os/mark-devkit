@@ -31,8 +31,9 @@ type MergeKitMetadata struct {
 }
 
 type MergeKitThirdPartyMirror struct {
-	Alias string   `yaml:"alias,omitempty" json:"alias,omitempty"`
-	Uri   []string `yaml:"uri,omitempty" json:"uri,omitempty"`
+	Alias  string        `yaml:"alias,omitempty" json:"alias,omitempty"`
+	Uri    []string      `yaml:"uri,omitempty" json:"uri,omitempty"`
+	Layout *MirrorLayout `yaml:"layout,omitempty" json:"layout,omitempty"`
 }
 
 type MergeKitEclasses struct {
@@ -54,4 +55,19 @@ type MergeKitFixupInclude struct {
 	To   string `yaml:"to,omitempty" json:"to,omitempty"`
 	File string `yaml:"file,omitempty" json:"file,omitempty"`
 	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+}
+
+type DistfilesSpec struct {
+	*MergeKit       `json:"-,inline" yaml:"-,inline"`
+	FallbackMirrors []*MergeKitThirdPartyMirror `json:"fallback_mirrors,omitempty" yaml:"fallback_mirrors,omitempty"`
+}
+
+type MirrorLayout struct {
+	Modes []*MirrorLayoutMode `json:"modes" yaml:"modes"`
+}
+
+type MirrorLayoutMode struct {
+	Type     string `json:"type" yaml:"type"`
+	Hash     string `json:"hash,omitempty" yaml:"hash,omitempty"`
+	HashMode string `json:"hash_mode,omitempty" yaml:"hash_mode,omitempty"`
 }

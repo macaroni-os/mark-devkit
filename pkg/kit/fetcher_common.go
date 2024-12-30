@@ -7,10 +7,12 @@ package kit
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
@@ -129,7 +131,7 @@ func (f *FetcherCommon) GetAtomsInError() *[]*AtomError {
 	return &f.AtomInError
 }
 
-func (f *FetcherCommon) PrepareSourcesKits(mkit *specs.MergeKit, opts *FetchOpts) error {
+func (f *FetcherCommon) PrepareSourcesKits(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
 	gitOpts := &CloneOptions{
 		GitCloneOptions: &git.CloneOptions{
 			SingleBranch: true,
@@ -186,7 +188,7 @@ func (f *FetcherCommon) PrepareSourcesKits(mkit *specs.MergeKit, opts *FetchOpts
 	return nil
 }
 
-func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.MergeKit, opts *FetchOpts) error {
+func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
 	err := helpers.EnsureDirWithoutIds(f.GetReposcanDir(), 0755)
 	if err != nil {
 		return err
@@ -228,8 +230,9 @@ func (f *FetcherCommon) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targ
 		eclassDirs, concurrency)
 }
 
-func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.MergeKit, atom *specs.RepoScanAtom) error {
+func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *specs.RepoScanAtom) error {
 	var err error
+	var lastError error
 	var uri *url.URL
 
 	fileNamesMap := make(map[string]bool, 0)
@@ -270,14 +273,8 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.MergeKit, atom *specs.Rep
 					break
 				}
 
-				if f.Config.GetGeneral().Debug {
-
-					f.Logger.Info(fmt.Sprintf(":cross_mark:[%s] (%s) %s - %s: %s",
-						atom.Atom, uri.Host, atomUrl, path.Base(atomUrl), err.Error()))
-				} else {
-					f.Logger.Info(fmt.Sprintf(":cross_mark:[%s] (%s) %s - %s",
-						atom.Atom, uri.Host, atomUrl, path.Base(atomUrl)))
-				}
+				f.Logger.Info(fmt.Sprintf(":cross_mark:[%s] (%s) %s - %s: %s",
+					atom.Atom, uri.Host, atomUrl, file.Name, err.Error()))
 			}
 
 		} else {
@@ -285,16 +282,179 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.MergeKit, atom *specs.Rep
 		}
 
 		if err != nil {
-			break
+
+			if len(mkit.FallbackMirrors) > 0 {
+				for _, mirrorEntry := range mkit.FallbackMirrors {
+					// In the fallback mirror I don't use the path defined
+
+					downloadedFile := false
+
+					if mirrorEntry.Layout == nil {
+						layout, err := f.getMirrorLayout(mirrorEntry.Uri[0])
+						if err != nil {
+							continue
+						}
+
+						if len(layout.Modes) == 0 {
+							continue
+						}
+
+						f.Logger.Info(fmt.Sprintf(":eye: For fallback mirror %s using layout %s (%s)",
+							mirrorEntry.Alias, layout.Modes[0].Type, layout.Modes[0].Hash))
+
+						mirrorEntry.Layout = layout
+					}
+
+					for _, mirrorUri := range mirrorEntry.Uri {
+
+						if mirrorUri[len(mirrorUri)-1:len(mirrorUri)] == "/" {
+							mirrorUri = mirrorUri[:len(mirrorUri)-1]
+						}
+
+						atomUrl := mirrorUri + mirrorEntry.Layout.Modes[0].GetAtomPath(
+							file.Name, file512, fileBlake2b,
+						)
+
+						if atomUrl == "" {
+							return fmt.Errorf("Unsupported mirror %s with layout mode %s",
+								mirrorEntry.Alias, mirrorEntry.Layout.Modes[0],
+							)
+						}
+
+						err = f.downloadArtefact(atomUrl, file.Name, file512, fileBlake2b)
+						if err == nil {
+							downloadedFile = true
+							break
+						}
+
+						f.Logger.Info(fmt.Sprintf(":cross_mark:[%s] (%s) %s - %s: %s",
+							atom.Atom, mirrorEntry.Alias, atomUrl, file.Name, err.Error()))
+					}
+
+					if downloadedFile {
+						break
+					}
+				}
+			}
+
+			if err != nil {
+				lastError = err
+				// The same files could be defined as multiple URLs
+				// I check later if all files are been downloaded correctly.
+				continue
+			}
 		}
 
 		f.Logger.Info(fmt.Sprintf(":check_mark: [%s] %s - %s",
-			atom.Atom, atomUrl, path.Base(atomUrl)))
+			atom.Atom, atomUrl, file.Name))
 
 		fileNamesMap[file.Name] = true
 	}
 
+	for _, file := range atom.Files {
+		if _, present := fileNamesMap[file.Name]; !present {
+			err = lastError
+			break
+		}
+	}
+
 	return err
+}
+
+func (f *FetcherCommon) getMirrorLayout(mirrorUri string) (*specs.MirrorLayout, error) {
+	ans := &specs.MirrorLayout{
+		Modes: []*specs.MirrorLayoutMode{},
+	}
+	layoutUrl := ""
+
+	if mirrorUri[len(mirrorUri)-1:len(mirrorUri)] == "/" {
+		layoutUrl = mirrorUri[:len(mirrorUri)-1] + "/layout.conf"
+	} else {
+		layoutUrl = mirrorUri + "/layout.conf"
+	}
+
+	uri, err := url.Parse(layoutUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	ssl := false
+
+	switch uri.Scheme {
+	case "https":
+		ssl = true
+	default:
+		ssl = false
+	}
+
+	node := guard_specs.NewRestNode(uri.Host,
+		uri.Host+path.Dir(uri.Path), ssl)
+
+	resource := path.Base(uri.Path)
+
+	service := guard_specs.NewRestService(uri.Host)
+	service.Retries = 3
+	service.AddNode(node)
+
+	t := service.GetTicket()
+	defer t.Rip()
+
+	_, err = f.RestGuard.CreateRequest(t, "GET", "/"+resource)
+	if err != nil {
+		return nil, err
+	}
+
+	err = f.RestGuard.Do(t)
+	if err != nil {
+		if t.Response != nil {
+			return nil, fmt.Errorf("%s - %s - %s", layoutUrl, err.Error(), t.Response.Status)
+		} else {
+			return nil, fmt.Errorf("%s - %s", layoutUrl, err.Error())
+		}
+	}
+
+	if t.Response.Body == nil {
+		return nil, fmt.Errorf("%s - Received invalid response body", layoutUrl)
+	}
+
+	content, err := io.ReadAll(t.Response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.Split(string(content), "\n")
+
+	for idx, line := range lines {
+		if idx == 0 {
+			if line != "[structure]" {
+				return nil, fmt.Errorf("%s - Invalid content")
+			}
+		} else {
+			words := strings.Split(line, " ")
+
+			if len(words) > 3 || len(words) == 0 || words[0] == "" {
+				continue
+			}
+
+			if strings.Index(words[0], "=") <= 0 {
+				return nil, fmt.Errorf("%s - Invalid entry", words[0])
+			}
+
+			layoutMode := &specs.MirrorLayoutMode{
+				// Read first words with type. Examples: 0=content-hash|1=flat|0=filename-hash
+				Type: strings.Split(words[0], "=")[1],
+			}
+
+			if len(words) == 3 {
+				layoutMode.Hash = words[1]
+				layoutMode.HashMode = words[2]
+			}
+
+			ans.Modes = append(ans.Modes, layoutMode)
+		}
+	}
+
+	return ans, nil
 }
 
 func (f *FetcherCommon) downloadArtefact(atomUrl, atomName, fileSha512, fileBlake2b string) error {
@@ -339,9 +499,9 @@ func (f *FetcherCommon) downloadArtefact(atomUrl, atomName, fileSha512, fileBlak
 		artefact, err := f.RestGuard.DoDownload(t, downloadedFilePath)
 		if err != nil {
 			if t.Response != nil {
-				return fmt.Errorf("%s - %s - %s", atomName, err.Error(), t.Response.Status)
+				return fmt.Errorf("%s - %s", err.Error(), t.Response.Status)
 			} else {
-				return fmt.Errorf("%s - %s", atomName, err.Error())
+				return fmt.Errorf("%s", err.Error())
 			}
 		}
 
