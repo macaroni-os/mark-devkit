@@ -103,6 +103,9 @@ func PushBranch(repoDir, branch string, opts *PushOptions) error {
 		RemoteName: opts.RemoteName,
 		Auth:       auth,
 	})
+	if err != nil {
+		return err
+	}
 
 	if currentBranch != branch {
 		// Return to previous branch
