@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	specs "github.com/macaroni-os/mark-devkit/pkg/specs"
@@ -67,6 +68,8 @@ func (f *FetcherDir) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error
 		for idx := range atoms {
 			f.Logger.Debug(fmt.Sprintf(":factory:[%s] Analyzing ...", atoms[idx].Atom))
 
+			f.Stats.IncrementElab()
+
 			if len(atoms[idx].Files) > 0 {
 				err := f.syncAtom(mkit, opts, &atoms[idx])
 				if err != nil {
@@ -84,15 +87,23 @@ func (f *FetcherDir) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error
 func (f *FetcherDir) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts, atom *specs.RepoScanAtom) error {
 
 	toDownload := false
-
-	// NOTE: At the moment we use old flat-dir mode only.
+	filesMap := make(map[string]string, 0)
+	atomSize := int64(0)
 
 	for _, file := range atom.Files {
 		// Check if the file is already present
 		downloadedFilePath := filepath.Join(f.GetDownloadDir(), file.Name)
+		if _, present := filesMap[file.Name]; !present {
+			size, _ := strconv.ParseInt(file.Size, 10, 64)
+			atomSize += size
+		}
+
+		filesMap[file.Name] = file.Size
+
 		if !utils.Exists(downloadedFilePath) {
 			toDownload = true
-			break
+			// Skip break to get all files size
+			// break
 		}
 	}
 
@@ -115,7 +126,9 @@ func (f *FetcherDir) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts, atom *
 			fmt.Sprintf(":medal: [%s] Already synced.", atom.Atom))
 	}
 
-	f.Stats.IncrementElab()
+	if atomSize > 0 {
+		f.Stats.IncrementSize(atomSize)
+	}
 
 	return nil
 }
