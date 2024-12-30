@@ -20,7 +20,7 @@ import (
 
 type DistfilesReport struct {
 	Stats         *kit.AtomsStats  `json:"stats,omitempty" yaml:"stats,omitempty"`
-	AtomsInErrors []*kit.AtomError `json:"atoms_errors,omitempty" yaml;"atoms_errors,omitempty"`
+	AtomsInErrors []*kit.AtomError `json:"atoms_errors,omitempty" yaml:"atoms_errors,omitempty"`
 }
 
 func (r *DistfilesReport) Yaml() ([]byte, error) {
