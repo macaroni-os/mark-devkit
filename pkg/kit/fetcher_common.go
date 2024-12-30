@@ -48,6 +48,7 @@ type AtomError struct {
 type AtomsStats struct {
 	TotAtoms  int `json:"tot_atoms,omitempty" yaml:"tot_atoms,omitempty"`
 	TotErrors int `json:"tot_errors,omitempty" yaml:"tot_errors,omitempty"`
+	TotElab   int `json:"tot_elaborated,omitempty" yaml:"tot_elaborated,omitempty"`
 
 	mutex sync.Mutex `json:"-" yaml:"-"`
 }
@@ -56,6 +57,7 @@ func NewAtomsStats() *AtomsStats {
 	return &AtomsStats{
 		TotAtoms:  0,
 		TotErrors: 0,
+		TotElab:   0,
 	}
 }
 
@@ -69,6 +71,12 @@ func (a *AtomsStats) IncrementAtoms() {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 	a.TotAtoms++
+}
+
+func (a *AtomsStats) IncrementElab() {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.TotElab++
 }
 
 func CheckRedirect(req *http.Request, via []*http.Request) error {

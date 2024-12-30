@@ -115,5 +115,7 @@ func (f *FetcherDir) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts, atom *
 			fmt.Sprintf(":medal: [%s] Already synced.", atom.Atom))
 	}
 
+	f.Stats.IncrementElab()
+
 	return nil
 }
