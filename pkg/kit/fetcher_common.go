@@ -294,9 +294,16 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *spec
 
 		} else {
 			err = f.downloadArtefact(atomUrl, file.Name, file512, fileBlake2b)
+
+			if err != nil {
+				f.Logger.Info(fmt.Sprintf(":cross_mark:[%s] %s - %s: %s",
+					atom.Atom, atomUrl, file.Name, err.Error()))
+			}
 		}
 
 		if err != nil {
+
+			lastError = err
 
 			if len(mkit.FallbackMirrors) > 0 {
 				for _, mirrorEntry := range mkit.FallbackMirrors {
@@ -353,7 +360,6 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *spec
 			}
 
 			if err != nil {
-				lastError = err
 				// The same files could be defined as multiple URLs
 				// I check later if all files are been downloaded correctly.
 				continue
