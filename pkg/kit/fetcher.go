@@ -37,12 +37,12 @@ func NewFetchOpts() *FetchOpts {
 	}
 }
 
-func NewFetcher(c *specs.MarkDevkitConfig, backend string) (Fetcher, error) {
+func NewFetcher(c *specs.MarkDevkitConfig, backend string, opts map[string]string) (Fetcher, error) {
 	switch backend {
 	case "dir":
 		return NewFetcherDir(c), nil
 	case "s3":
-		return nil, fmt.Errorf("backend %s not yet implemented", backend)
+		return NewFetcherS3(c, opts)
 	default:
 		return nil, fmt.Errorf("invalid fetcher backend %s", backend)
 	}

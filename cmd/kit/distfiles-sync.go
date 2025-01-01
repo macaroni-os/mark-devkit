@@ -78,6 +78,13 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			summaryFormat, _ := cmd.Flags().GetString("summary-format")
 			keepWorkdir, _ := cmd.Flags().GetBool("keep-workdir")
 
+			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
+			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
+			minioSecret, _ := cmd.Flags().GetString("minio-secret")
+			minioEndpoint, _ := cmd.Flags().GetString("minio-endpoint")
+			minioRegion, _ := cmd.Flags().GetString("minio-region")
+			minioPrefix, _ := cmd.Flags().GetString("minio-prefix")
+
 			if showSummary {
 				config.GetLogging().Level = "error"
 			}
@@ -86,13 +93,49 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
 			)
 
+			backendOpts := make(map[string]string, 0)
+
+			if backend == "s3" {
+				if minioEndpoint != "" {
+					backendOpts["minio-endpoint"] = minioEndpoint
+				} else {
+					backendOpts["minio-endpoint"] = os.Getenv("MINIO_URL")
+				}
+
+				if minioBucket != "" {
+					backendOpts["minio-bucket"] = minioBucket
+				} else {
+					backendOpts["minio-bucket"] = os.Getenv("MINIO_BUCKET")
+				}
+
+				if minioAccessId != "" {
+					backendOpts["minio-keyid"] = minioAccessId
+				} else {
+					backendOpts["minio-keyid"] = os.Getenv("MINIO_ID")
+				}
+
+				if minioSecret != "" {
+					backendOpts["minio-secret"] = minioSecret
+				} else {
+					backendOpts["minio-secret"] = os.Getenv("MINIO_SECRET")
+				}
+
+				backendOpts["minio-region"] = minioRegion
+
+				if minioPrefix != "" {
+					backendOpts["minio-prefix"] = minioPrefix
+				} else if os.Getenv("MINIO_PREFIX") != "" {
+					backendOpts["minio-prefix"] = os.Getenv("MINIO_PREFIX")
+				}
+			}
+
 			fetchOpts := kit.NewFetchOpts()
 			fetchOpts.Concurrency = concurrency
 			fetchOpts.Verbose = verbose
 			fetchOpts.GenReposcan = !skipGenReposcan
 			fetchOpts.CleanWorkingDir = !keepWorkdir
 
-			fetcher, err := kit.NewFetcher(config, backend)
+			fetcher, err := kit.NewFetcher(config, backend, backendOpts)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
@@ -151,6 +194,19 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"Write the sync summary to the specified file in YAML/JSON format.")
 	flags.String("summary-format", "yaml", "Specificy the summary format: json|yaml")
 	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
+
+	// Fetcher S3 / Minio backend flags
+	flags.String("minio-bucket", "",
+		"Set minio bucket to use or set env MINIO_BUCKET.")
+	flags.String("minio-endpoint", "",
+		"Set minio endpoint to use or set env MINIO_URL.")
+	flags.String("minio-keyid", "",
+		"Set minio Access Key to use or set env MINIO_ID.")
+	flags.String("minio-secret", "",
+		"Set minio Access Key to use or set env MINIO_SECRET.")
+	flags.String("minio-region", "", "Optionally define the minio region.")
+	flags.String("minio-prefix", "",
+		"Set the prefix path to use or set env MINIO_PREFIX. Note: The path is without initial /.")
 
 	return cmd
 }
