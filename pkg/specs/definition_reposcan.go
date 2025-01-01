@@ -56,7 +56,7 @@ type RepoScanFile struct {
 }
 
 type ReposcanAnalysis struct {
-	Kits []*ReposcanKit `yaml:"kits,omitempty" json:"kits,omitempty"`
+	Kits []*ReposcanKit `yaml:"sources,omitempty" json:"sources,omitempty"`
 }
 
 type ReposcanKit struct {

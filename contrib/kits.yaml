@@ -1,4 +1,4 @@
-kits:
+sources:
 - name: "core-kit"
   url: "https://github.com/macaroni-os/core-kit"
   branch: "mark-testing"
