@@ -58,6 +58,7 @@ func (m *ManifestFile) Write(f string) error {
 
 		blake2Bhash, withBlake2b := repoFile.Hashes["blake2b"]
 		sha512hash, withSha512 := repoFile.Hashes["sha512"]
+		md5hash, withMd5 := repoFile.Hashes["md5"]
 
 		fields := []string{
 			"DIST",
@@ -69,6 +70,9 @@ func (m *ManifestFile) Write(f string) error {
 		}
 		if withSha512 {
 			fields = append(fields, []string{"SHA512", sha512hash}...)
+		}
+		if withMd5 {
+			fields = append(fields, []string{"MD5", md5hash}...)
 		}
 
 		content += strings.Join(fields, " ") + "\n"
