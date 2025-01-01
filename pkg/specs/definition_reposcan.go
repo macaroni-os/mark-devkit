@@ -49,10 +49,10 @@ type RepoScanAtom struct {
 }
 
 type RepoScanFile struct {
-	SrcUri []string          `json:"src_uri"`
-	Size   string            `json:"size"`
-	Hashes map[string]string `json:"hashes"`
-	Name   string            `json:"name"`
+	SrcUri []string          `json:"src_uri" yaml:"src_uri"`
+	Size   string            `json:"size" yaml:"size"`
+	Hashes map[string]string `json:"hashes" yaml:"hashes"`
+	Name   string            `json:"name" yaml:"name"`
 }
 
 type ReposcanAnalysis struct {
