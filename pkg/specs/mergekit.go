@@ -89,8 +89,10 @@ func (m *MergeKit) GetFixupsInclude() *[]*MergeKitFixupInclude {
 func (m *MergeKit) GetMetadata() *MergeKitMetadata {
 	if m.Target.Metadata == nil {
 		m.Target.Metadata = &MergeKitMetadata{
-			LayoutMasters: "",
-			Aliases:       []string{},
+			LayoutMasters:          "",
+			Aliases:                []string{},
+			ManifestHashes:         []string{},
+			ManifestRequiredHashes: []string{},
 		}
 	}
 	return m.Target.Metadata
@@ -119,6 +121,14 @@ func (m *MergeKitMetadata) GetLayoutMasters() string {
 
 func (m *MergeKitMetadata) HasAliases() bool {
 	return len(m.Aliases) > 0
+}
+
+func (m *MergeKitMetadata) HasManifestHashes() bool {
+	return len(m.ManifestHashes) > 0
+}
+
+func (m *MergeKitMetadata) HashManifestReqHashes() bool {
+	return len(m.ManifestRequiredHashes) > 0
 }
 
 func (f *MergeKitFixupInclude) GetType() string {

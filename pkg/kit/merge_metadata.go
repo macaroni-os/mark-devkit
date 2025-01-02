@@ -53,6 +53,14 @@ func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
 		layoutData += fmt.Sprintf("aliases = %s\n",
 			strings.Join(metadata.Aliases, " "))
 	}
+	if metadata.HasManifestHashes() {
+		layoutData += fmt.Sprintf("manifest-hashes = %s\n",
+			strings.Join(metadata.ManifestHashes, " "))
+	}
+	if metadata.HashManifestReqHashes() {
+		layoutData += fmt.Sprintf("manifest-required-hashes = %s\n",
+			strings.Join(metadata.ManifestRequiredHashes, " "))
+	}
 
 	layoutDataMd5 := fmt.Sprintf("%x", md5.Sum([]byte(layoutData)))
 

@@ -26,8 +26,10 @@ type MergeKitTarget struct {
 }
 
 type MergeKitMetadata struct {
-	LayoutMasters string   `yaml:"layout_masters,omitempty" json:"layout_masters,omitempty"`
-	Aliases       []string `yaml:"aliases,omitempty" json:"aliases,omitempty"`
+	LayoutMasters          string   `yaml:"layout_masters,omitempty" json:"layout_masters,omitempty"`
+	Aliases                []string `yaml:"aliases,omitempty" json:"aliases,omitempty"`
+	ManifestHashes         []string `yaml:"manifest_hashes,omitempty" json:"manifest_hashes,omitempty"`
+	ManifestRequiredHashes []string `yaml:"manifest_required_hashes,omitempty" json:"manifest_required_hashes,omitempty"`
 }
 
 type MergeKitThirdPartyMirror struct {
