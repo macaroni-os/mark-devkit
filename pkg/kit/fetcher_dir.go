@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	specs "github.com/macaroni-os/mark-devkit/pkg/specs"
 
@@ -61,11 +62,51 @@ func (f *FetcherDir) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error
 		return err
 	}
 
+	// Create gentoo packages for filters
+	filters := []*gentoo.GentooPackage{}
+	if len(opts.Atoms) > 0 {
+		for _, atomstr := range opts.Atoms {
+			gp, err := gentoo.ParsePackageStr(atomstr)
+			if err != nil {
+				return fmt.Errorf(
+					"invalid atom filter %s: %s",
+					atomstr, err.Error())
+			}
+			filters = append(filters, gp)
+		}
+	}
+
 	for catpkg, atoms := range f.Resolver.Map {
 
 		f.Logger.Debug(fmt.Sprintf(":factory:[%s] Analyzing ...", catpkg))
 
 		for idx := range atoms {
+
+			if len(filters) > 0 {
+				atomGp, err := gentoo.ParsePackageStr(atoms[idx].Atom)
+				if err != nil {
+					return fmt.Errorf(
+						"unexpected error on parse %s: %s",
+						atoms[idx].Atom, err.Error())
+				}
+
+				admitted := false
+				for idx := range filters {
+					ok, _ := filters[idx].Admit(atomGp)
+					if ok {
+						admitted = true
+						break
+					}
+				}
+
+				if !admitted {
+					f.Logger.Debug(fmt.Sprintf(
+						":factory:[%s] Package filtered. Skipped.",
+						atoms[idx].Atom))
+					continue
+				}
+			}
+
 			f.Logger.Debug(fmt.Sprintf(":factory:[%s] Analyzing ...", atoms[idx].Atom))
 
 			f.Stats.IncrementElab()

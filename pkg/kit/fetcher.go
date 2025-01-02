@@ -26,6 +26,9 @@ type FetchOpts struct {
 	GenReposcan     bool
 	Verbose         bool
 	CleanWorkingDir bool
+	CheckOnlySize   bool
+
+	Atoms []string
 }
 
 func NewFetchOpts() *FetchOpts {
@@ -34,6 +37,8 @@ func NewFetchOpts() *FetchOpts {
 		GenReposcan:     true,
 		Verbose:         false,
 		CleanWorkingDir: false,
+		CheckOnlySize:   false,
+		Atoms:           []string{},
 	}
 }
 

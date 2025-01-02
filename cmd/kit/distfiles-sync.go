@@ -77,6 +77,8 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				"write-summary-file")
 			summaryFormat, _ := cmd.Flags().GetString("summary-format")
 			keepWorkdir, _ := cmd.Flags().GetBool("keep-workdir")
+			checkOnlySize, _ := cmd.Flags().GetBool("check-only-size")
+			atoms, _ := cmd.Flags().GetStringArray("pkg")
 
 			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
 			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
@@ -134,6 +136,8 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			fetchOpts.Verbose = verbose
 			fetchOpts.GenReposcan = !skipGenReposcan
 			fetchOpts.CleanWorkingDir = !keepWorkdir
+			fetchOpts.CheckOnlySize = checkOnlySize
+			fetchOpts.Atoms = atoms
 
 			fetcher, err := kit.NewFetcher(config, backend, backendOpts)
 			if err != nil {
@@ -194,6 +198,10 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"Write the sync summary to the specified file in YAML/JSON format.")
 	flags.String("summary-format", "yaml", "Specificy the summary format: json|yaml")
 	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
+
+	flags.StringArray("pkg", []string{}, "Sync only specified packages.")
+	flags.Bool("check-only-size", false,
+		"Just compare file size without MD5 checksum.")
 
 	// Fetcher S3 / Minio backend flags
 	flags.String("minio-bucket", "",

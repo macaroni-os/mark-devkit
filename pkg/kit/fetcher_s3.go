@@ -12,7 +12,9 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
+	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	specs "github.com/macaroni-os/mark-devkit/pkg/specs"
 
@@ -144,11 +146,51 @@ func (f *FetcherS3) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error 
 		return err
 	}
 
+	// Create gentoo packages for filters
+	filters := []*gentoo.GentooPackage{}
+	if len(opts.Atoms) > 0 {
+		for _, atomstr := range opts.Atoms {
+			gp, err := gentoo.ParsePackageStr(atomstr)
+			if err != nil {
+				return fmt.Errorf(
+					"invalid atom filter %s: %s",
+					atomstr, err.Error())
+			}
+			filters = append(filters, gp)
+		}
+	}
+
 	for catpkg, atoms := range f.Resolver.Map {
 
 		f.Logger.Debug(fmt.Sprintf(":factory:[%s] Analyzing ...", catpkg))
 
 		for idx := range atoms {
+
+			if len(filters) > 0 {
+				atomGp, err := gentoo.ParsePackageStr(atoms[idx].Atom)
+				if err != nil {
+					return fmt.Errorf(
+						"unexpected error on parse %s: %s",
+						atoms[idx].Atom, err.Error())
+				}
+
+				admitted := false
+				for idx := range filters {
+					ok, _ := filters[idx].Admit(atomGp)
+					if ok {
+						admitted = true
+						break
+					}
+				}
+
+				if !admitted {
+					f.Logger.Debug(fmt.Sprintf(
+						":factory:[%s] Package filtered. Skipped.",
+						atoms[idx].Atom))
+					continue
+				}
+			}
+
 			f.Logger.Debug(fmt.Sprintf(":factory:[%s] Analyzing ...", atoms[idx].Atom))
 
 			f.Stats.IncrementElab()
@@ -197,7 +239,24 @@ func (f *FetcherS3) RemoveFileFromObjectStorage(file string) error {
 		f.Bucket, file, opts)
 }
 
-func (f *FetcherS3) UploadFile2ObjectStorage(atom *specs.RepoScanAtom, file, s3path string) error {
+func (f *FetcherS3) GetObjectMetadataFromObjectStorage(file string) (map[string]string, error) {
+	ctx := context.Background()
+
+	ans := make(map[string]string, 0)
+
+	objectInfo, err := f.MinioClient.StatObject(
+		ctx, f.Bucket, file, minio.StatObjectOptions{})
+
+	// S3 Object add upper case to the first char of the key man.
+	for k, v := range objectInfo.UserMetadata {
+		ans[strings.ToLower(k)] = v
+	}
+
+	return ans, err
+}
+
+func (f *FetcherS3) UploadFile2ObjectStorage(atom *specs.RepoScanAtom, file, s3path string,
+	hashes *map[string]string) error {
 	fd, err := os.Open(file)
 	if err != nil {
 		return err
@@ -209,10 +268,16 @@ func (f *FetcherS3) UploadFile2ObjectStorage(atom *specs.RepoScanAtom, file, s3p
 		return err
 	}
 
+	userMetadata := make(map[string]string, 0)
+	for k, v := range *hashes {
+		userMetadata[k] = v
+	}
+
 	uploadInfo, err := f.MinioClient.PutObject(context.Background(),
 		f.Bucket, s3path, fd, fileStat.Size(),
 		minio.PutObjectOptions{
-			ContentType: "application/octet-stream",
+			UserMetadata: userMetadata,
+			ContentType:  "application/octet-stream",
 		},
 	)
 	if err != nil {
@@ -262,7 +327,7 @@ func (f *FetcherS3) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts,
 			// Check if size is equal
 			if size != oinfo.Size {
 				f.Logger.Warning(fmt.Sprintf(
-					":warning:[%s] File %s with size %d instead of %d.",
+					"[%s] File %s with size %d instead of %s.",
 					atom.Atom, file.Name, oinfo.Size, file.Size,
 				))
 				toUpload = true
@@ -270,44 +335,68 @@ func (f *FetcherS3) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts,
 				continue
 			}
 
-			// Check if md5 is equal
-			md5Hash, withMd5 := file.Hashes["md5"]
-
-			if withMd5 && md5Hash != oinfo.ETag {
-				f.Logger.Warning(fmt.Sprintf(
-					":warning:[%s] File %s with md5 %s instead of %s.",
-					atom.Atom, file.Name, oinfo.ETag, md5Hash,
-				))
-				toUpload = true
-				files2Remove[s3objectPath] = &file
-				continue
-			} else if !withMd5 {
-
-				// Download file from S3 Object Storage.
-				err := f.GetFileFromObjectStorage(s3objectPath, downloadedFilePath)
+			if !opts.CheckOnlySize {
+				// Retrieve user metadata from the object
+				metadata, err := f.GetObjectMetadataFromObjectStorage(s3objectPath)
 				if err != nil {
 					return err
 				}
 
-				md5Hash, err := helpers.GetFileMd5(downloadedFilePath)
-				if err != nil {
-					return err
-				}
+				blake2bhash, hasBlake2b := metadata["blake2b"]
+				sha512hash, hasSha512 := metadata["sha512"]
 
-				if md5Hash != oinfo.ETag {
+				localBlake2hash, hasLocalBlake2b := file.Hashes["blake2b"]
+				localSha512hash, hasLocalSha512 := file.Hashes["sha512"]
+
+				if blake2bhash == "" && sha512hash == "" {
 					f.Logger.Warning(fmt.Sprintf(
-						":warning:[%s] File %s downloaded with md5 %s instead of %s.",
-						atom.Atom, file.Name, oinfo.ETag, md5Hash,
+						"[%s] File %s without hashes headers. I will replace it.",
+						atom.Atom, file.Name,
 					))
 					toUpload = true
 					files2Remove[s3objectPath] = &file
 					continue
 				}
 
-			} else {
-				// POST: else md5 is correct
-				filesOk[s3objectPath] = &file
+				if hasBlake2b && hasLocalBlake2b {
+
+					if blake2bhash != localBlake2hash {
+						f.Logger.Warning(fmt.Sprintf(
+							"[%s] File %s with blake2b hash %s instead of %s.",
+							atom.Atom, file.Name, blake2bhash, localBlake2hash,
+						))
+						toUpload = true
+						files2Remove[s3objectPath] = &file
+						continue
+					}
+
+				} else if hasSha512 && hasLocalSha512 {
+
+					if sha512hash != localSha512hash {
+						f.Logger.Warning(fmt.Sprintf(
+							"[%s] File %s with sha512 hash %s instead of %s.",
+							atom.Atom, file.Name, sha512hash, localSha512hash,
+						))
+						toUpload = true
+						files2Remove[s3objectPath] = &file
+						continue
+					}
+
+				} else {
+					f.Logger.Warning(fmt.Sprintf(
+						"[%s] File %s without check hashes. I check only size.",
+						atom.Atom, file.Name,
+					))
+				}
+
 			}
+
+			f.Logger.Debug(fmt.Sprintf(
+				":smiling_face_with_sunglasses:[%s] File %s already synced.",
+				atom.Atom, file.Name,
+			))
+			// POST: else md5 is correct
+			filesOk[s3objectPath] = &file
 
 		} else {
 			// POST: file s3object not present.
@@ -376,7 +465,7 @@ func (f *FetcherS3) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts,
 			filesMap[file.Name] = file.Size
 
 			err := f.UploadFile2ObjectStorage(atom, downloadedFilePath,
-				s3objectPath,
+				s3objectPath, &file.Hashes,
 			)
 			if err != nil {
 				return err
