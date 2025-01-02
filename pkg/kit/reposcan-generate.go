@@ -13,7 +13,7 @@ import (
 )
 
 func RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile string,
-	eclassDirs []string, concurrency int) error {
+	eclassDirs []string, concurrency int, verbose bool) error {
 	anisePcBin := utils.TryResolveBinaryAbsPath("anise-portage-converter")
 
 	args := []string{
@@ -34,7 +34,9 @@ func RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile string,
 	}
 
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stdout = os.Stdout
+	if verbose {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
@@ -56,11 +58,11 @@ func RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile string,
 }
 
 func (m *MergeBot) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFile string,
-	eclassDirs []string, concurrency int) error {
+	eclassDirs []string, concurrency int, verbose bool) error {
 
 	m.Logger.Debug(fmt.Sprintf("Generating kit-cache file for kit %s...",
 		kitName))
 
 	return RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile,
-		eclassDirs, concurrency)
+		eclassDirs, concurrency, verbose)
 }

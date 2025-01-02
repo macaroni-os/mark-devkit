@@ -8,9 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
+	"github.com/macaroni-os/macaronictl/pkg/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,6 +34,23 @@ func (ra *ReposcanAnalysis) Yaml() ([]byte, error) {
 
 func (ra *ReposcanAnalysis) Json() ([]byte, error) {
 	return json.Marshal(ra)
+}
+
+func (ra *ReposcanAnalysis) GetKitsEclassDirs(cloneDir string) ([]string, error) {
+	// Prepare eclass dir list
+	eclassDirs := []string{}
+	for _, source := range ra.Kits {
+		eclassDir, err := filepath.Abs(filepath.Join(cloneDir, source.Name, "eclass"))
+		if err != nil {
+			return eclassDirs, err
+		}
+		if utils.Exists(eclassDir) {
+			kitDir, _ := filepath.Abs(filepath.Join(cloneDir, source.Name))
+			eclassDirs = append(eclassDirs, kitDir)
+		}
+	}
+
+	return eclassDirs, nil
 }
 
 func (ra *ReposcanAnalysis) WriteYamlFile(file string) error {

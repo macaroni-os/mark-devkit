@@ -589,16 +589,10 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 	}
 
 	// Prepare eclass dir list
-	eclassDirs := []string{}
-	for _, source := range mkit.Sources {
-		eclassDir, err := filepath.Abs(filepath.Join(m.GetSourcesDir(), source.Name, "eclass"))
-		if err != nil {
-			return err
-		}
-		if utils.Exists(eclassDir) {
-			kitDir, _ := filepath.Abs(filepath.Join(m.GetSourcesDir(), source.Name))
-			eclassDirs = append(eclassDirs, kitDir)
-		}
+	ra := &specs.ReposcanAnalysis{Kits: mkit.Sources}
+	eclassDirs, err := ra.GetKitsEclassDirs(m.GetSourcesDir())
+	if err != nil {
+		return err
 	}
 
 	for _, source := range mkit.Sources {
@@ -606,7 +600,7 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 		targetFile := filepath.Join(m.GetReposcanDir(), source.Name+"-"+source.Branch)
 
 		err := m.GenerateKitCacheFile(sourceDir, source.Name, source.Branch,
-			targetFile, eclassDirs, opts.Concurrency)
+			targetFile, eclassDirs, opts.Concurrency, true)
 		if err != nil {
 			return err
 		}
@@ -618,7 +612,7 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 		sourceDir := filepath.Join(m.GetTargetDir(), kit.Name)
 		targetFile := filepath.Join(m.GetReposcanDir(), "target-"+kit.Name+"-"+kit.Branch)
 		err = m.GenerateKitCacheFile(sourceDir, kit.Name, kit.Branch,
-			targetFile, eclassDirs, opts.Concurrency)
+			targetFile, eclassDirs, opts.Concurrency, true)
 		if err != nil {
 			return err
 		}

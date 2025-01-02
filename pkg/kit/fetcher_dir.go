@@ -46,6 +46,11 @@ func (f *FetcherDir) Sync(specfile string, opts *FetchOpts) error {
 		return err
 	}
 
+	err = f.SetupResolver(mkit, opts)
+	if err != nil {
+		return err
+	}
+
 	err = f.syncAtoms(mkit, opts)
 	if err != nil {
 		return err

@@ -175,7 +175,14 @@ func (f *FetcherCommon) PrepareSourcesKits(mkit *specs.DistfilesSpec, opts *Fetc
 		if err != nil {
 			return err
 		}
+
 	}
+
+	return nil
+}
+
+func (f *FetcherCommon) SetupResolver(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
+	var err error
 
 	// Check if the reposcan files are present and
 	// prepare resolver
@@ -196,11 +203,8 @@ func (f *FetcherCommon) PrepareSourcesKits(mkit *specs.DistfilesSpec, opts *Fetc
 
 	// Build resolver map
 	err = f.Resolver.BuildMap()
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
@@ -209,17 +213,10 @@ func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.DistfilesSpec, opts *F
 		return err
 	}
 
-	// Prepare eclass dir list
-	eclassDirs := []string{}
-	for _, source := range mkit.Sources {
-		eclassDir, err := filepath.Abs(filepath.Join(f.GetTargetDir(), source.Name, "eclass"))
-		if err != nil {
-			return err
-		}
-		if utils.Exists(eclassDir) {
-			kitDir, _ := filepath.Abs(filepath.Join(f.GetTargetDir(), source.Name))
-			eclassDirs = append(eclassDirs, kitDir)
-		}
+	ra := &specs.ReposcanAnalysis{Kits: mkit.Sources}
+	eclassDirs, err := ra.GetKitsEclassDirs(f.GetTargetDir())
+	if err != nil {
+		return err
 	}
 
 	for _, source := range mkit.Sources {
@@ -227,7 +224,7 @@ func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.DistfilesSpec, opts *F
 		targetFile := filepath.Join(f.GetReposcanDir(), source.Name+"-"+source.Branch)
 
 		err := f.GenerateKitCacheFile(sourceDir, source.Name, source.Branch,
-			targetFile, eclassDirs, opts.Concurrency)
+			targetFile, eclassDirs, opts.Concurrency, true)
 		if err != nil {
 			return err
 		}
@@ -237,12 +234,12 @@ func (f *FetcherCommon) GenerateReposcanFiles(mkit *specs.DistfilesSpec, opts *F
 }
 
 func (f *FetcherCommon) GenerateKitCacheFile(sourceDir, kitName, kitBranch, targetFile string,
-	eclassDirs []string, concurrency int) error {
+	eclassDirs []string, concurrency int, verbose bool) error {
 	f.Logger.Debug(fmt.Sprintf("Generating kit-cache file for kit %s...",
 		kitName))
 
 	return RunReposcanGenerate(sourceDir, kitName, kitBranch, targetFile,
-		eclassDirs, concurrency)
+		eclassDirs, concurrency, verbose)
 }
 
 func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *specs.RepoScanAtom) error {
