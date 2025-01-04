@@ -176,43 +176,14 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 
 	}
 
-	// Check if the reposcan files are present and
-	// prepare resolver
-	for _, source := range mkit.Sources {
-		targetFile := filepath.Join(m.GetReposcanDir(), source.Name+"-"+source.Branch)
-		if !utils.Exists(targetFile) {
-			return fmt.Errorf("Cache file %s-%s not found. Generate it!",
-				source.Name, source.Branch)
-		}
-		m.Resolver.JsonSources = append(m.Resolver.JsonSources, targetFile)
-	}
-
-	// Load reposcan files
-	err = m.Resolver.LoadJsonFiles(opts.Verbose)
-	if err != nil {
-		return err
-	}
-
-	// Build resolver map
-	err = m.Resolver.BuildMap()
+	err = m.SetupResolver(mkit, opts)
 	if err != nil {
 		return err
 	}
 
 	// Prepare target resolver
 	if !m.IsANewBranch {
-		m.TargetResolver.JsonSources = []string{
-			filepath.Join(m.GetReposcanDir(),
-				"target-"+targetKit.Name+"-"+targetKit.Branch)}
-
-		// Load reposcan files
-		err = m.TargetResolver.LoadJsonFiles(opts.Verbose)
-		if err != nil {
-			return err
-		}
-
-		// Build resolver map
-		err = m.TargetResolver.BuildMap()
+		err = m.SetupTargetResolver(mkit, opts, targetKit)
 		if err != nil {
 			return err
 		}
@@ -285,6 +256,50 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	if opts.Push && m.hasCommit {
 		err = m.Push(mkit, opts)
 	}
+
+	return err
+}
+
+func (m *MergeBot) SetupTargetResolver(mkit *specs.MergeKit,
+	opts *MergeBotOpts, targetKit *specs.ReposcanKit) error {
+
+	m.TargetResolver.JsonSources = []string{
+		filepath.Join(m.GetReposcanDir(),
+			"target-"+targetKit.Name+"-"+targetKit.Branch)}
+
+	// Load reposcan files
+	err := m.TargetResolver.LoadJsonFiles(opts.Verbose)
+	if err != nil {
+		return err
+	}
+
+	// Build resolver map
+	err = m.TargetResolver.BuildMap()
+
+	return err
+}
+
+func (m *MergeBot) SetupResolver(mkit *specs.MergeKit, opts *MergeBotOpts) error {
+
+	// Check if the reposcan files are present and
+	// prepare resolver
+	for _, source := range mkit.Sources {
+		targetFile := filepath.Join(m.GetReposcanDir(), source.Name+"-"+source.Branch)
+		if !utils.Exists(targetFile) {
+			return fmt.Errorf("Cache file %s-%s not found. Generate it!",
+				source.Name, source.Branch)
+		}
+		m.Resolver.JsonSources = append(m.Resolver.JsonSources, targetFile)
+	}
+
+	// Load reposcan files
+	err := m.Resolver.LoadJsonFiles(opts.Verbose)
+	if err != nil {
+		return err
+	}
+
+	// Build resolver map
+	err = m.Resolver.BuildMap()
 
 	return err
 }

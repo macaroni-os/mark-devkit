@@ -241,10 +241,10 @@ func (r *RepoScanResolver) AddPackageAtom(pkg string, atom *specs.RepoScanAtom) 
 	}
 }
 
-func (r *RepoScanResolver) GetLastPackage(pkg string, opts *PortageResolverOpts) (*specs.RepoScanAtom, error) {
-	var last *gentoo.GentooPackage
-	var ans *specs.RepoScanAtom
+func (r *RepoScanResolver) GetValidPackages(pkg string, opts *PortageResolverOpts) ([]*specs.RepoScanAtom, error) {
 	mAtoms := make(map[string]*specs.RepoScanAtom, 0)
+	ans := []*specs.RepoScanAtom{}
+	pkgs := []gentoo.GentooPackage{}
 
 	gp, err := gentoo.ParsePackageStr(pkg)
 	if err != nil {
@@ -265,8 +265,7 @@ func (r *RepoScanResolver) GetLastPackage(pkg string, opts *PortageResolverOpts)
 			gp.Condition.String(), gp.GetPackageName()))
 	}
 
-	if len(atoms) > 1 {
-		pkgs := []gentoo.GentooPackage{}
+	if len(atoms) > 0 {
 		for idx, atom := range atoms {
 			p, err := atom.ToGentooPackage()
 			if err != nil {
@@ -324,41 +323,41 @@ func (r *RepoScanResolver) GetLastPackage(pkg string, opts *PortageResolverOpts)
 			}
 		}
 
-		if len(pkgs) == 0 {
-			return nil, errors.New(fmt.Sprintf("No packages found matching %s", pkg))
-		}
+	}
 
+	if len(pkgs) > 0 {
 		sort.Sort(gentoo.GentooPackageSorter(pkgs))
-		last = &pkgs[len(pkgs)-1]
-		ans = mAtoms[last.GetPVR()]
 
-	} else {
-		availableGp, err := atoms[0].ToGentooPackage()
-		if err != nil {
-			return nil, err
-		}
-
-		// TODO: check of handle this in a better way
-		valid, err := r.KeywordsIsAdmit(&atoms[0], availableGp)
-		if err != nil {
-			r.Logger.DebugC(fmt.Sprintf(
-				"[%s/%s-%s] Check %s/%s:%s@%s: Invalid keyword.",
-				atoms[0].Category, atoms[0].Package, atoms[0].Revision,
-				availableGp.Category, availableGp.GetPF(), availableGp.Slot,
-				availableGp.Repository))
-		}
-
-		if valid {
-			valid, err = r.PackageIsAdmit(gp, availableGp, opts)
-			if err != nil {
-				return nil, err
+		for idx := range pkgs {
+			atom, ok := mAtoms[pkgs[idx].GetPVR()]
+			if !ok {
+				return nil, fmt.Errorf("unexpected error on retrieve atom for package %s!",
+					pkgs[idx].GetPVR())
 			}
+			ans = append(ans, atom)
 		}
+	}
 
-		if !valid {
-			return nil, errors.New(fmt.Sprintf("No package found matching %s", pkg))
+	return ans, nil
+}
+
+func (r *RepoScanResolver) GetLastPackage(pkg string, opts *PortageResolverOpts) (*specs.RepoScanAtom, error) {
+	var ans *specs.RepoScanAtom
+
+	atoms, err := r.GetValidPackages(pkg, opts)
+	if err != nil {
+		return ans, err
+	}
+
+	if len(atoms) > 0 {
+		// POST: the atoms are sorted. I need the last.
+		ans = atoms[len(atoms)-1]
+	} else {
+		if len(opts.Conditions) > 0 {
+			return nil, fmt.Errorf("No packages found matching %s with defined conditions.", pkg)
+		} else {
+			return nil, fmt.Errorf("No packages found matching %s.", pkg)
 		}
-		ans = &atoms[0]
 	}
 
 	r.Logger.DebugC(

@@ -265,3 +265,16 @@ func (r *RepoScanAtom) getDepends(depType string) ([]gentoo.GentooPackage, error
 
 	return ans, nil
 }
+
+func (r *RepoScanAtom) HasFile(name string) bool {
+	ans := false
+
+	for idx := range r.Files {
+		if r.Files[idx].Name == name {
+			ans = true
+			break
+		}
+	}
+
+	return ans
+}

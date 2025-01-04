@@ -46,6 +46,7 @@ type MergeKitAtom struct {
 	Package     string   `yaml:"pkg,omitempty" json:"pkg,omitempty"`
 	MaxVersions *int     `yaml:"max_versions,omitempty" json:"max_versions,omitempty"`
 	Conditions  []string `yaml:"conditions,omitempty" json:"conditions,omitempty"`
+	Versions    []string `yaml:"versions,omitempty" json:"versions,omitempty"`
 }
 
 type MergeKitFixups struct {

@@ -32,6 +32,36 @@ func (m *ManifestFile) AddFiles(files []specs.RepoScanFile) {
 	m.Files = append(m.Files, files...)
 }
 
+func (m *ManifestFile) HasFileName(name string) bool {
+	ans := false
+
+	for idx := range m.Files {
+		if m.Files[idx].Name == name {
+			ans = true
+			break
+		}
+	}
+
+	return ans
+}
+
+func (m *ManifestFile) RemoveFile(name string) {
+	newList := []specs.RepoScanFile{}
+	toUpdate := false
+
+	for idx := range m.Files {
+		if m.Files[idx].Name == name {
+			toUpdate = true
+		} else {
+			newList = append(newList, m.Files[idx])
+		}
+	}
+
+	if toUpdate {
+		m.Files = newList
+	}
+}
+
 func (m *ManifestFile) Write(f string) error {
 	// Create a map of the files for sort by name
 	mFiles := make(map[string]*specs.RepoScanFile, 0)
