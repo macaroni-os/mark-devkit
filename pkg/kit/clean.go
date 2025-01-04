@@ -269,7 +269,7 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 
 	if opts.PullRequest {
 		prBranchName := fmt.Sprintf(
-			"%s-%s",
+			"%s%s",
 			prBranchPurgePrefix,
 			strings.ReplaceAll(strings.ReplaceAll(catpkg, ".", "_"),
 				"/", "_"),
@@ -360,7 +360,7 @@ func (m *MergeBot) PushRemoves(mkit *specs.MergeKit, opts *MergeBotOpts,
 		for catpkg, candidates := range *candidates4PN {
 
 			prBranchName := fmt.Sprintf(
-				"%s-%s",
+				"%s%s",
 				prBranchPurgePrefix,
 				strings.ReplaceAll(strings.ReplaceAll(catpkg, ".", "_"),
 					"/", "_"),
