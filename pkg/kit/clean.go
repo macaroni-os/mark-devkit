@@ -11,12 +11,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/macaroni-os/mark-devkit/pkg/helpers"
+	"github.com/macaroni-os/mark-devkit/pkg/specs"
+
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
-	"github.com/macaroni-os/mark-devkit/pkg/helpers"
-	"github.com/macaroni-os/mark-devkit/pkg/specs"
 )
 
 func (m *MergeBot) Clean(specfile string, opts *MergeBotOpts) error {
@@ -312,6 +313,8 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 			return err
 		}
 
+		m.Logger.Info(fmt.Sprintf(":factory:[%s] Created branch %s.",
+			catpkg, prBranchName))
 	}
 
 	commitHash, err := m.commitFiles(kitDir, files, cMsg, opts, worktree)
@@ -329,7 +332,8 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 		targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
 		branchCoOpts := git.CheckoutOptions{
 			Branch: plumbing.ReferenceName(targetBranchRef),
-			Force:  true,
+			Create: false,
+			Keep:   true,
 		}
 		err := worktree.Checkout(&branchCoOpts)
 		if err != nil {

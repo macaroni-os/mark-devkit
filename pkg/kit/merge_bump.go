@@ -82,6 +82,9 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				return err
 			}
 
+			m.Logger.Info(fmt.Sprintf(":factory:[%s] Created branch %s.",
+				pkg, prBranchName))
+
 		}
 
 		cMsg := fmt.Sprintf("Bump %s", pkg)
@@ -102,7 +105,8 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 			targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
 			branchCoOpts := git.CheckoutOptions{
 				Branch: plumbing.ReferenceName(targetBranchRef),
-				Force:  true,
+				Create: false,
+				Keep:   true,
 			}
 			err := worktree.Checkout(&branchCoOpts)
 			if err != nil {
