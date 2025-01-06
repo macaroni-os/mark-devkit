@@ -1,4 +1,4 @@
-# dario.cat/mergo v1.0.0
+# dario.cat/mergo v1.0.1
 ## explicit; go 1.13
 dario.cat/mergo
 # github.com/BurntSushi/toml v1.3.2
@@ -14,15 +14,15 @@ github.com/Masterminds/semver/v3
 # github.com/Masterminds/sprig/v3 v3.2.3
 ## explicit; go 1.13
 github.com/Masterminds/sprig/v3
-# github.com/Microsoft/go-winio v0.6.1
-## explicit; go 1.17
+# github.com/Microsoft/go-winio v0.6.2
+## explicit; go 1.21
 github.com/Microsoft/go-winio
 github.com/Microsoft/go-winio/internal/fs
 github.com/Microsoft/go-winio/internal/socket
 github.com/Microsoft/go-winio/internal/stringbuffer
 github.com/Microsoft/go-winio/pkg/guid
-# github.com/ProtonMail/go-crypto v1.0.0
-## explicit; go 1.13
+# github.com/ProtonMail/go-crypto v1.1.3
+## explicit; go 1.17
 github.com/ProtonMail/go-crypto/bitcurves
 github.com/ProtonMail/go-crypto/brainpool
 github.com/ProtonMail/go-crypto/eax
@@ -33,6 +33,8 @@ github.com/ProtonMail/go-crypto/openpgp/aes/keywrap
 github.com/ProtonMail/go-crypto/openpgp/armor
 github.com/ProtonMail/go-crypto/openpgp/ecdh
 github.com/ProtonMail/go-crypto/openpgp/ecdsa
+github.com/ProtonMail/go-crypto/openpgp/ed25519
+github.com/ProtonMail/go-crypto/openpgp/ed448
 github.com/ProtonMail/go-crypto/openpgp/eddsa
 github.com/ProtonMail/go-crypto/openpgp/elgamal
 github.com/ProtonMail/go-crypto/openpgp/errors
@@ -41,8 +43,10 @@ github.com/ProtonMail/go-crypto/openpgp/internal/ecc
 github.com/ProtonMail/go-crypto/openpgp/internal/encoding
 github.com/ProtonMail/go-crypto/openpgp/packet
 github.com/ProtonMail/go-crypto/openpgp/s2k
-# github.com/cloudflare/circl v1.3.7
-## explicit; go 1.19
+github.com/ProtonMail/go-crypto/openpgp/x25519
+github.com/ProtonMail/go-crypto/openpgp/x448
+# github.com/cloudflare/circl v1.5.0
+## explicit; go 1.22.0
 github.com/cloudflare/circl/dh/x25519
 github.com/cloudflare/circl/dh/x448
 github.com/cloudflare/circl/ecc/goldilocks
@@ -55,8 +59,8 @@ github.com/cloudflare/circl/math/mlsbset
 github.com/cloudflare/circl/sign
 github.com/cloudflare/circl/sign/ed25519
 github.com/cloudflare/circl/sign/ed448
-# github.com/cyphar/filepath-securejoin v0.2.4
-## explicit; go 1.13
+# github.com/cyphar/filepath-securejoin v0.3.6
+## explicit; go 1.18
 github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
@@ -107,16 +111,16 @@ github.com/go-git/gcfg
 github.com/go-git/gcfg/scanner
 github.com/go-git/gcfg/token
 github.com/go-git/gcfg/types
-# github.com/go-git/go-billy/v5 v5.5.0
-## explicit; go 1.19
+# github.com/go-git/go-billy/v5 v5.6.1
+## explicit; go 1.21
 github.com/go-git/go-billy/v5
 github.com/go-git/go-billy/v5/helper/chroot
 github.com/go-git/go-billy/v5/helper/polyfill
 github.com/go-git/go-billy/v5/memfs
 github.com/go-git/go-billy/v5/osfs
 github.com/go-git/go-billy/v5/util
-# github.com/go-git/go-git/v5 v5.12.0
-## explicit; go 1.19
+# github.com/go-git/go-git/v5 v5.13.1
+## explicit; go 1.21
 github.com/go-git/go-git/v5
 github.com/go-git/go-git/v5/config
 github.com/go-git/go-git/v5/internal/path_util
@@ -208,8 +212,8 @@ github.com/goccy/go-json/internal/runtime
 ## explicit; go 1.15
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/sortkeys
-# github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
-## explicit
+# github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8
+## explicit; go 1.20
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.4
 ## explicit; go 1.17
@@ -345,6 +349,21 @@ github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.2
 ## explicit
 github.com/mitchellh/reflectwalk
+# github.com/mmcloughlin/avo v0.6.0
+## explicit; go 1.18
+github.com/mmcloughlin/avo/attr
+github.com/mmcloughlin/avo/build
+github.com/mmcloughlin/avo/buildtags
+github.com/mmcloughlin/avo/gotypes
+github.com/mmcloughlin/avo/internal/prnt
+github.com/mmcloughlin/avo/internal/stack
+github.com/mmcloughlin/avo/ir
+github.com/mmcloughlin/avo/operand
+github.com/mmcloughlin/avo/pass
+github.com/mmcloughlin/avo/printer
+github.com/mmcloughlin/avo/reg
+github.com/mmcloughlin/avo/src
+github.com/mmcloughlin/avo/x86
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 ## explicit
 github.com/modern-go/concurrent
@@ -396,8 +415,8 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
-# github.com/pjbgf/sha1cd v0.3.0
-## explicit; go 1.19
+# github.com/pjbgf/sha1cd v0.3.1
+## explicit; go 1.21
 github.com/pjbgf/sha1cd
 github.com/pjbgf/sha1cd/internal
 github.com/pjbgf/sha1cd/ubc
@@ -421,7 +440,7 @@ github.com/sergi/go-diff/diffmatchpatch
 github.com/shopspring/decimal
 # github.com/sirupsen/logrus v1.9.3
 ## explicit; go 1.13
-# github.com/skeema/knownhosts v1.2.2
+# github.com/skeema/knownhosts v1.3.0
 ## explicit; go 1.17
 github.com/skeema/knownhosts
 # github.com/sourcegraph/conc v0.3.0
@@ -543,7 +562,7 @@ golang.org/x/oauth2/internal
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.28.0
+# golang.org/x/sys v0.29.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -580,7 +599,6 @@ golang.org/x/text/unicode/norm
 golang.org/x/time/rate
 # golang.org/x/tools v0.28.0
 ## explicit; go 1.22.0
-golang.org/x/tools/cmd/stringer
 golang.org/x/tools/cover
 golang.org/x/tools/go/ast/inspector
 golang.org/x/tools/go/gcexportdata
