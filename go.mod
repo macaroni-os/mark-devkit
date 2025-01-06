@@ -5,7 +5,7 @@ go 1.22.0
 toolchain go1.22.5
 
 require (
-	github.com/geaaru/pkgs-checker v0.14.4
+	github.com/geaaru/pkgs-checker v0.15.0
 	github.com/geaaru/rest-guard v0.6.1
 	github.com/geaaru/tar-formers v0.9.1
 	github.com/go-git/go-git/v5 v5.13.1
@@ -92,7 +92,7 @@ require (
 	github.com/skeema/knownhosts v1.3.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.7.0 // indirect
+	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
@@ -102,7 +102,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/exp v0.0.0-20241210194714-1829a127f884 // indirect
+	golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.33.0 // indirect

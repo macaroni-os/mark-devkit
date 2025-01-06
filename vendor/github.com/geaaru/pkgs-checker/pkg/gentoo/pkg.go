@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2017-2021  Daniele Rondina <geaaru@sabayonlinux.org>
+Copyright (C) 2017-2025  Daniele Rondina <geaaru@macaronios.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -227,6 +227,61 @@ func (p *GentooPackage) GetPFB() string {
 		return fmt.Sprintf("%s-%s+%s", p.GetPN(), p.GetPVR(), p.VersionBuild)
 	}
 	return fmt.Sprintf("%s-%s", p.GetPN(), p.GetPVR())
+}
+
+func (p *GentooPackage) GetRevision() int {
+
+	ans := 0
+
+	if strings.Index(p.VersionSuffix, "-r") >= 0 {
+
+		v := p.VersionSuffix
+		if strings.Index(p.VersionSuffix, "+") > 0 {
+			v = p.VersionSuffix[0:strings.Index(p.VersionSuffix, "+")]
+		}
+
+		words := strings.Split(v, "-r")
+
+		// NOTE: -r is always at the end.
+		revision, _ := strconv.Atoi(words[1])
+		ans = revision
+
+	}
+
+	return ans
+}
+
+func (p *GentooPackage) IncrementRevision() {
+	if p.VersionSuffix == "" {
+		p.VersionSuffix = "-r1"
+	} else {
+		if strings.Index(p.VersionSuffix, "-r") >= 0 {
+
+			v := p.VersionSuffix
+			buildVersion := ""
+			if strings.Index(p.VersionSuffix, "+") > 0 {
+				v = p.VersionSuffix[0:strings.Index(p.VersionSuffix, "+")]
+				buildVersion = p.VersionSuffix[strings.Index(p.VersionSuffix, "+")+1 : len(p.VersionSuffix)]
+			}
+
+			words := strings.Split(v, "-r")
+
+			// NOTE: -r is always at the end.
+			revision, _ := strconv.Atoi(words[1])
+			revision++
+
+			if buildVersion != "" {
+				p.VersionSuffix = fmt.Sprintf("%s-r%d+%s",
+					words[0], revision, buildVersion)
+			} else {
+				p.VersionSuffix = fmt.Sprintf("%s-r%d",
+					words[0], revision)
+			}
+
+		} else {
+			p.VersionSuffix += "-r1"
+		}
+	}
 }
 
 func (p *GentooPackage) getVersions(i *GentooPackage) (*version.Version, *version.Version, error) {

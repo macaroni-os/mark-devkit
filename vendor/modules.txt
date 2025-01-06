@@ -92,7 +92,7 @@ github.com/emirpasic/gods/utils
 ## explicit; go 1.17
 github.com/fsnotify/fsnotify
 github.com/fsnotify/fsnotify/internal
-# github.com/geaaru/pkgs-checker v0.14.4
+# github.com/geaaru/pkgs-checker v0.15.0
 ## explicit; go 1.22.0
 github.com/geaaru/pkgs-checker/pkg/gentoo
 # github.com/geaaru/rest-guard v0.6.1
@@ -454,7 +454,7 @@ github.com/sourcegraph/conc/panics
 github.com/spf13/afero
 github.com/spf13/afero/internal/common
 github.com/spf13/afero/mem
-# github.com/spf13/cast v1.7.0
+# github.com/spf13/cast v1.7.1
 ## explicit; go 1.19
 github.com/spf13/cast
 # github.com/spf13/cobra v1.8.1
@@ -529,9 +529,8 @@ golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/knownhosts
-# golang.org/x/exp v0.0.0-20241210194714-1829a127f884
+# golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329
 ## explicit; go 1.22.0
-golang.org/x/exp/constraints
 golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal

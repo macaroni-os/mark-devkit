@@ -66,6 +66,8 @@ github.com/geaaru/pkgs-checker v0.14.3 h1:hTdc0wm8e40Raq/SC667oUPm6XFtyq6FB0ioBw
 github.com/geaaru/pkgs-checker v0.14.3/go.mod h1:mhr3OMZvp6nI9vOvttkUhvD+VviTNIh3BKesJMw0nns=
 github.com/geaaru/pkgs-checker v0.14.4 h1:OhVWgU6m9z9fgLEygoz8bqfr1EH6N95KffRNBrO78lQ=
 github.com/geaaru/pkgs-checker v0.14.4/go.mod h1:UlA+LHWdqH03ZXiSGMS15GU79tbEINFZ3JJDakuSkbM=
+github.com/geaaru/pkgs-checker v0.15.0 h1:LeGzjgVCbnD5KZWSXH3oP0ab33n2G6fTTOTcLWfVv94=
+github.com/geaaru/pkgs-checker v0.15.0/go.mod h1:UlA+LHWdqH03ZXiSGMS15GU79tbEINFZ3JJDakuSkbM=
 github.com/geaaru/rest-guard v0.4.0 h1:0ACmzl7+x0TP+5g0M4GoFpj9pXBzLMX6D4PtuRzou0Y=
 github.com/geaaru/rest-guard v0.4.0/go.mod h1:+nBFvX5y5XJdXfQlCnFtIug+e6Yq2OlBHuQdvpfdJeo=
 github.com/geaaru/rest-guard v0.5.0 h1:7Q0qGHUmU9gc4aSxapRcQZezhzHYTLPUDklk4RuM68k=
@@ -261,6 +263,8 @@ github.com/spf13/afero v1.11.0/go.mod h1:GH9Y3pIexgf1MTIWtNGyogA5MwRIDXGUr+hbWNo
 github.com/spf13/cast v1.3.1/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
 github.com/spf13/cast v1.7.0 h1:ntdiHjuueXFgm5nzDRdOS4yfT43P5Fnud6DH50rz/7w=
 github.com/spf13/cast v1.7.0/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
+github.com/spf13/cast v1.7.1 h1:cuNEagBQEHWN1FnbGEjCXL2szYEXqfJPbP2HNUaca9Y=
+github.com/spf13/cast v1.7.1/go.mod h1:ancEpBxwJDODSW/UG4rDrAqiKolqNNh2DX3mk86cAdo=
 github.com/spf13/cobra v1.8.1 h1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=
 github.com/spf13/cobra v1.8.1/go.mod h1:wHxEcudfqmLYa8iTfL+OuZPbBZkmvliBWKIezN3kD9Y=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
@@ -320,6 +324,8 @@ golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa h1:ELnwvuAXPNtPk1TJRuGkI9fDT
 golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa/go.mod h1:akd2r19cwCdwSwWeIdzYQGa/EZZyqcOdwWiwj5L5eKQ=
 golang.org/x/exp v0.0.0-20241210194714-1829a127f884 h1:Y/Mj/94zIQQGHVSv1tTtQBDaQaJe62U9bkDZKKyhPCU=
 golang.org/x/exp v0.0.0-20241210194714-1829a127f884/go.mod h1:qj5a5QZpwLU2NLQudwIN5koi3beDhSAlJwa67PuM98c=
+golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329 h1:9kj3STMvgqy3YA4VQXBrN7925ICMxD5wzMRcgA30588=
+golang.org/x/exp v0.0.0-20250103183323-7d7fa50e5329/go.mod h1:qj5a5QZpwLU2NLQudwIN5koi3beDhSAlJwa67PuM98c=
 golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 h1:VLliZ0d+/avPrXXH+OakdXhpJuEoBZuwh1m2j7U6Iug=
 golang.org/x/lint v0.0.0-20210508222113-6edffad5e616/go.mod h1:3xt1FjdF8hUf6vQPIChWIBhFzV8gjjsPE/fR3IyQdNY=
 golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
