@@ -32,11 +32,13 @@ type MergeBot struct {
 	IsANewBranch bool
 	WorkDir      string
 
-	hasCommit     bool
-	files4Commit  map[string][]string
-	manifestFiles map[string][]specs.RepoScanFile
-	fixupBranches map[string]*specs.MergeKitFixupInclude
-	eclassUpdate  bool
+	hasCommit      bool
+	files4Commit   map[string][]string
+	manifestFiles  map[string][]specs.RepoScanFile
+	fixupBranches  map[string]*specs.MergeKitFixupInclude
+	eclassUpdate   bool
+	profilesUpdate bool
+	metadataUpdate bool
 
 	GithubClient *github.Client
 }
@@ -90,6 +92,8 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		fixupBranches:  make(map[string]*specs.MergeKitFixupInclude, 0),
 		GithubClient:   nil,
 		eclassUpdate:   false,
+		profilesUpdate: false,
+		metadataUpdate: false,
 	}
 }
 
@@ -432,6 +436,80 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 			}
 
 			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for eclasses: %s",
+				targetKit.Name, pr.GetHTMLURL()))
+		}
+
+		if m.profilesUpdate {
+
+			prBranchName := fmt.Sprintf(
+				"%s%s",
+				prBranchPrefix, "profiles-update",
+			)
+
+			err = PushBranch(kitDir, prBranchName, pushOpts)
+			if err != nil {
+				return err
+			}
+
+			pr, err := CreatePullRequest(m.GithubClient, ctx,
+				// title
+				"mark-devkit: Update/Add Profiles",
+				// source branch
+				prBranchName,
+				// target branch
+				targetKit.Branch,
+				// body
+				fmt.Sprintf(
+					"Automatic update for add/update profiles to branch %s for specfile %s by mark-bot",
+					targetKit.Branch, mkit.File),
+				// github User
+				opts.GithubUser,
+				// github target repository
+				targetKit.Name,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for profiles: %s",
+				targetKit.Name, pr.GetHTMLURL()))
+		}
+
+		if m.metadataUpdate {
+
+			prBranchName := fmt.Sprintf(
+				"%s%s",
+				prBranchPrefix, "metadata-update",
+			)
+
+			err = PushBranch(kitDir, prBranchName, pushOpts)
+			if err != nil {
+				return err
+			}
+
+			pr, err := CreatePullRequest(m.GithubClient, ctx,
+				// title
+				"mark-devkit: Update/Add Metadata",
+				// source branch
+				prBranchName,
+				// target branch
+				targetKit.Branch,
+				// body
+				fmt.Sprintf(
+					"Automatic update for add/update metadata to branch %s for specfile %s by mark-bot",
+					targetKit.Branch, mkit.File),
+				// github User
+				opts.GithubUser,
+				// github target repository
+				targetKit.Name,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			m.Logger.Info(fmt.Sprintf("[%s] Created correctly PR for profiles: %s",
 				targetKit.Name, pr.GetHTMLURL()))
 		}
 

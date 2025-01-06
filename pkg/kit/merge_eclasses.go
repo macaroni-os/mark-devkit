@@ -94,6 +94,10 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 				prBranchPrefix, kit.Branch, "eclasses",
 			)
 
+			// Restore committed files in order to avoid
+			// that the same changes will be added in new commit.
+			defer m.restoreFiles(kitDir, files, opts, worktree)
+
 			prBranchExists, err := BranchExists(kit.Url, prBranchName)
 			if err != nil {
 				return err
@@ -148,13 +152,6 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 				Keep:   true,
 			}
 			err := worktree.Checkout(&branchCoOpts)
-			if err != nil {
-				return err
-			}
-
-			// Restore committed files in order to avoid
-			// that the same changes will be added in new commit.
-			err = m.restoreFiles(kitDir, files, opts, worktree)
 			if err != nil {
 				return err
 			}

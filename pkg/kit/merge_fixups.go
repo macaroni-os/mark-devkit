@@ -83,6 +83,10 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				m.Logger.InfoC(fmt.Sprintf(
 					"[%s] PR branch already present for fixup %s. Nothing to do.",
 					prBranchName, name))
+				err = m.restoreFiles(kitDir, files, opts, worktree)
+				if err != nil {
+					return err
+				}
 				continue
 			}
 

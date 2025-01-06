@@ -15,6 +15,7 @@ import (
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
@@ -94,8 +95,58 @@ func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
 			return err
 		}
 
-		commitHash, err := m.commitFiles(kitDir, []string{layoutConf},
-			cMsg, opts, worktree)
+		headRef, err := repo.Head()
+		if err != nil {
+			return err
+		}
+
+		prBranchName := fmt.Sprintf(
+			"%s%s",
+			prBranchPrefix, "metadata-update",
+		)
+
+		// Restore committed files in order to avoid
+		// that the same changes will be added in new commit.
+		files := []string{layoutConf}
+		defer m.restoreFiles(kitDir, files, opts, worktree)
+
+		if opts.PullRequest {
+			// NOTE: pull request for a new branch it doesn't make sense
+			// Probably we need to add a check.
+			prBranchExists, err := BranchExists(kit.Url, prBranchName)
+			if err != nil {
+				return err
+			}
+
+			if prBranchExists {
+				// PR is already been pushed.
+				m.Logger.InfoC(fmt.Sprintf(
+					"[%s] PR branch already present for metadata. Nothing to do.",
+					prBranchName))
+				return nil
+			}
+
+			branchRef := plumbing.NewBranchReferenceName(prBranchName)
+			ref := plumbing.NewHashReference(branchRef, headRef.Hash())
+			// The created reference is saved in the storage.
+			err = repo.Storer.SetReference(ref)
+			if err != nil {
+				return err
+			}
+
+			// Creating the new branch for the PR.
+			branchCoOpts := git.CheckoutOptions{
+				Branch: plumbing.ReferenceName(branchRef),
+				Create: false,
+				Keep:   true,
+			}
+
+			if err := worktree.Checkout(&branchCoOpts); err != nil {
+				return err
+			}
+		}
+
+		commitHash, err := m.commitFiles(kitDir, files, cMsg, opts, worktree)
 		if err != nil {
 			return err
 		}
@@ -105,7 +156,25 @@ func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
 			m.Logger.InfoC(fmt.Sprintf("%s", commit))
 		}
 
-		m.hasCommit = true
+		if opts.PullRequest {
+
+			// Return to working branch
+			targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
+			branchCoOpts := git.CheckoutOptions{
+				Branch: plumbing.ReferenceName(targetBranchRef),
+				Create: false,
+				Keep:   true,
+			}
+			err := worktree.Checkout(&branchCoOpts)
+			if err != nil {
+				return err
+			}
+
+			m.metadataUpdate = true
+
+		} else {
+			m.hasCommit = true
+		}
 	}
 
 	return nil
