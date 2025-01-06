@@ -10,8 +10,6 @@
 
 The Macaroni OS M.A.R.K. Development tool.
 
-See [mark-stages](https://github.com/macaroni-os/mark-stages) repository for the documentation.
-
 
 # Kit Merge
 
@@ -152,8 +150,6 @@ target:
   atoms:
     - pkg: dev-util/mark-devkit
       max_versions: 2
-      #versions:
-      #  - "0.8.0"
 ```
 
 and if it's been pinned a specific version:
@@ -252,6 +248,42 @@ Global Flags:
   -d, --debug           Enable debug output.
 ```
 
+# Kit clone
+
+The command `kit clone` permits to clone a list of kits and optionally generate:
+
+* a YAML file with the list of the kits and the hash of the last commit
+
+* generate the *reposcan* JSON files through the *anise-portage-converter* tool.
+
+```
+mark-devkit kit clone --help
+Clone/Sync kits locally from a YAML specs rules file.
+
+Usage:
+   kit clone [flags]
+
+Aliases:
+  clone, c, cl, sync
+
+Flags:
+      --concurrency int             Define the elaboration concurrency. (default 3)
+      --deep int                    Define the limit of commits to fetch. (default 5)
+      --generate-reposcan-files     Generate reposcan files of the pulled kits.
+  -h, --help                        help for clone
+      --kit-cache-dir string        Directory where generate reposcan files. (default "kit-cache")
+      --show-summary                Show YAML summary results
+      --single-branch               Pull only the used branch. (default true)
+      --specfile string             The specfiles of the jobs.
+      --to string                   Target dir where sync kits. (default "output")
+      --verbose                     Show additional informations.
+      --write-summary-file string   Write the sync summary to the specified file in YAML format.
+
+Global Flags:
+  -c, --config string   MARK Devkit configuration file
+  -d, --debug           Enable debug output.
+```
+
 # Metro run
 
 The command `metro run` replace the Funtoo *metro* tool and permit to generate Stage tarballs.
@@ -282,3 +314,6 @@ Global Flags:
   -c, --config string   MARK Devkit configuration file
   -d, --debug           Enable debug output.
 ```
+
+See [mark-stages](https://github.com/macaroni-os/mark-stages) repository for the documentation.
+
