@@ -217,6 +217,26 @@ It supports two backends:
   a specific hash of the target object `mark-devkit` sets custom Metadata attributes with the
   tarball BLAKE2B and/or SHA512 hashes.
 
+It permits to defined additional mirrors where download tarballs if the main URLs are no more valid
+with different layouts: *flat* or *content-hash*.
+
+```yaml
+fallback_mirrors:
+  - alias: macaroni-cdn-hash
+    uri:
+      - https://distfiles.macaronios.org/distfiles
+      - https://distfiles-flat.macaronios.org/
+    layout:
+      modes:
+        - type: "content-hash"
+          hash: "SHA512"
+          hash_mode: "8:8:8"
+
+  - alias: macaroni-cdn-flat
+    uri:
+      - https://distfiles-flat.macaronios.org/distfiles
+```
+
 # Kit bump-release
 
 The command `kit bump-release` permits to bump a revision to a specific `meta-repo`.
