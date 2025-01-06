@@ -60,7 +60,7 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 		atom.Atom, yamlAtom))
 
 	// Create ebuild
-	ebuildFile, err := m.copyEbuild(sourcePkgDir, targetPkgDir, atom)
+	ebuildFile, oldEbuildFile, err := m.copyEbuild(sourcePkgDir, targetPkgDir, atom)
 	if err != nil {
 		return err
 	}
@@ -73,6 +73,9 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 	}
 
 	files4commit := []string{ebuildFile, manifestFile}
+	if oldEbuildFile != "" {
+		files4commit = append(files4commit, oldEbuildFile)
+	}
 
 	filesDir := filepath.Join(sourcePkgDir, "files")
 	if utils.Exists(filesDir) {
@@ -229,15 +232,36 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 }
 
 func (m *MergeBot) copyEbuild(sourcePkgDir, targetPkgDir string,
-	atom *specs.RepoScanAtom) (string, error) {
+	atom *specs.RepoScanAtom) (string, string, error) {
 	gpkg, err := atom.ToGentooPackage()
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
+	oldEbuildFile := filepath.Join(
+		targetPkgDir,
+		fmt.Sprintf("%s-%s.ebuild", atom.Package, gpkg.GetPVR()))
 	ebuildName := fmt.Sprintf("%s-%s.ebuild", atom.Package, gpkg.GetPVR())
 	source := filepath.Join(sourcePkgDir, ebuildName)
 	target := filepath.Join(targetPkgDir, ebuildName)
 
-	return target, helpers.CopyFile(source, target)
+	if utils.Exists(target) {
+		// If the package already exist i will bump a new release.
+		gpkg.IncrementRevision()
+		atom.Atom = gpkg.GetPF()
+
+		// Remove the old file
+		err = os.Remove(target)
+		if err != nil {
+			return "", "", err
+		}
+
+		ebuildName := fmt.Sprintf("%s-%s.ebuild", atom.Package, gpkg.GetPVR())
+		target = filepath.Join(targetPkgDir, ebuildName)
+
+	} else {
+		oldEbuildFile = ""
+	}
+
+	return target, oldEbuildFile, helpers.CopyFile(source, target)
 }
