@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v5"
+	git_config "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/google/go-github/v68/github"
@@ -83,15 +84,19 @@ func PushBranch(repoDir, branch string, opts *PushOptions) error {
 
 	currentBranch := headRef.Name().Short()
 
+	targetBranchRef := plumbing.NewBranchReferenceName(branch)
+
 	// Checkout on specific branch
 	if currentBranch != branch {
-		targetBranchRef := plumbing.NewBranchReferenceName(branch)
 		branchCoOpts := git.CheckoutOptions{
 			Branch: plumbing.ReferenceName(targetBranchRef),
+			Create: false,
+			Keep:   true,
 		}
 		err := worktree.Checkout(&branchCoOpts)
 		if err != nil {
-			return err
+			return fmt.Errorf("error on checkout to branch %s: %s",
+				branch, err.Error())
 		}
 	}
 
@@ -102,9 +107,13 @@ func PushBranch(repoDir, branch string, opts *PushOptions) error {
 	err = repo.Push(&git.PushOptions{
 		RemoteName: opts.RemoteName,
 		Auth:       auth,
+		RefSpecs: []git_config.RefSpec{
+			git_config.RefSpec(fmt.Sprintf("+%s:%s", targetBranchRef.String(), targetBranchRef.String())),
+		},
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error on push branch %s: %s",
+			branch, err.Error())
 	}
 
 	if currentBranch != branch {
@@ -112,10 +121,13 @@ func PushBranch(repoDir, branch string, opts *PushOptions) error {
 		targetBranchRef := plumbing.NewBranchReferenceName(currentBranch)
 		branchCoOpts := git.CheckoutOptions{
 			Branch: plumbing.ReferenceName(targetBranchRef),
+			Create: false,
+			Keep:   true,
 		}
 		err := worktree.Checkout(&branchCoOpts)
 		if err != nil {
-			return err
+			return fmt.Errorf("error on return branch %s: %s",
+				branch, err.Error())
 		}
 	}
 
