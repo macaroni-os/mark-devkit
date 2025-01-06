@@ -248,7 +248,7 @@ func (m *MergeBot) copyEbuild(sourcePkgDir, targetPkgDir string,
 	if utils.Exists(target) {
 		// If the package already exist i will bump a new release.
 		gpkg.IncrementRevision()
-		atom.Atom = gpkg.GetPF()
+		atom.Atom = fmt.Sprintf("%s-%s", gpkg.GetPackageName(), gpkg.GetPVR())
 
 		// Remove the old file
 		err = os.Remove(target)
