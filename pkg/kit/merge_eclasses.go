@@ -69,6 +69,11 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 			return err
 		}
 
+		headRef, err := repo.Head()
+		if err != nil {
+			return err
+		}
+
 		files := []string{}
 		for _, file := range eclassMap4Commit {
 			files = append(files, file)
@@ -100,11 +105,6 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 					"[%s] PR branch %s already present. Nothing to do.",
 					"eclasses", prBranchName))
 				return nil
-			}
-
-			headRef, err := repo.Head()
-			if err != nil {
-				return err
 			}
 
 			branchRef := plumbing.NewBranchReferenceName(prBranchName)
@@ -144,9 +144,17 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 			targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
 			branchCoOpts := git.CheckoutOptions{
 				Branch: plumbing.ReferenceName(targetBranchRef),
-				Force:  true,
+				Create: false,
+				Keep:   true,
 			}
 			err := worktree.Checkout(&branchCoOpts)
+			if err != nil {
+				return err
+			}
+
+			// Restore committed files in order to avoid
+			// that the same changes will be added in new commit.
+			err = m.restoreFiles(kitDir, files, opts, worktree)
 			if err != nil {
 				return err
 			}

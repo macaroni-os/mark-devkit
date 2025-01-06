@@ -38,6 +38,11 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		return err
 	}
 
+	headRef, err := repo.Head()
+	if err != nil {
+		return err
+	}
+
 	for _, include := range *fixupIncludes {
 		files, err := m.mergeFixupInclude(kitDir, include, mkit, opts)
 		if err != nil {
@@ -81,11 +86,6 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				continue
 			}
 
-			headRef, err := repo.Head()
-			if err != nil {
-				return err
-			}
-
 			branchRef := plumbing.NewBranchReferenceName(prBranchName)
 			ref := plumbing.NewHashReference(branchRef, headRef.Hash())
 			// The created reference is saved in the storage.
@@ -125,9 +125,17 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 			targetBranchRef := plumbing.NewBranchReferenceName(kit.Branch)
 			branchCoOpts := git.CheckoutOptions{
 				Branch: plumbing.ReferenceName(targetBranchRef),
-				Force:  true,
+				Create: false,
+				Keep:   true,
 			}
 			err := worktree.Checkout(&branchCoOpts)
+			if err != nil {
+				return err
+			}
+
+			// Restore committed files in order to avoid
+			// that the same changes will be added in new commit.
+			err = m.restoreFiles(kitDir, files, opts, worktree)
 			if err != nil {
 				return err
 			}
