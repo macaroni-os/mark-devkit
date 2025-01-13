@@ -68,6 +68,7 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 
 			specfile, _ := cmd.Flags().GetString("specfile")
 			to, _ := cmd.Flags().GetString("to")
+			downloadDir, _ := cmd.Flags().GetString("download-dir")
 			backend, _ := cmd.Flags().GetString("backend")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			skipGenReposcan, _ := cmd.Flags().GetBool("skip-reposcan-generation")
@@ -145,6 +146,9 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			}
 
 			fetcher.SetWorkDir(to)
+			if downloadDir != "" {
+				fetcher.SetDownloadDir(downloadDir)
+			}
 			err = fetcher.Sync(specfile, fetchOpts)
 			if err != nil {
 				log.Fatal(err.Error())
@@ -188,6 +192,7 @@ func KitDistfilesSyncCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags := cmd.Flags()
 	flags.String("specfile", "", "The specfiles of the jobs.")
 	flags.String("to", "workdir", "Override default work directory.")
+	flags.String("download-dir", "", "Override the default ${workdir}/downloads directory.")
 	flags.String("backend", "dir", "Set the fetcher backend to use: dir|s3.")
 	flags.Int("concurrency", 3, "Define the elaboration concurrency.")
 	flags.Bool("skip-reposcan-generation", false,
