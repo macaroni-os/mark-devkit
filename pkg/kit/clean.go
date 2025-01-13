@@ -48,13 +48,13 @@ func (m *MergeBot) Clean(specfile string, opts *MergeBotOpts) error {
 		//       in order to have all eclasses
 		//       files needed for generate the
 		//       reposcan file of the target kit.
-		err = m.cloneSourcesKits(mkit, opts)
+		err = m.CloneSourcesKits(mkit, opts)
 		if err != nil {
 			return err
 		}
 
 		// Clone target kit
-		err = m.cloneTargetKit(mkit, opts)
+		err = m.CloneTargetKit(mkit, opts)
 		if err != nil {
 			return err
 		}
