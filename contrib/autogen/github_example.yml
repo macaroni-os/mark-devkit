@@ -1,0 +1,26 @@
+macaroni:
+  generator: builtin-github
+  template:
+    engine: helm
+
+  defaults:
+    category: dev-util
+    github:
+      user: macaroni-os
+  packages:
+    - mark-devkit:
+        selector:
+          - '<0.10.0'
+        #transform:
+        #  - kind: string
+        #    match: 'version_'
+        #    replace: ''
+        github:
+          repo: mark-devkit
+          query: releases
+
+          assets:
+            - name: "mark-devkit-v{{ .Values.version }}-source.tar.gz"
+              matcher: "mark-devkit-.*-source.tar.gz"
+
+

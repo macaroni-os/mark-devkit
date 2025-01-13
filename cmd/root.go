@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	cliName = `Copyright (c) 2024 Macaroni OS - Daniele Rondina
+	cliName = `Copyright (c) 2024-2025 Macaroni OS - Daniele Rondina
 
 M.A.R.K. Development Tool
 
@@ -62,6 +62,7 @@ func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
 	config.Viper.BindPFlag("general.debug", pflags.Lookup("debug"))
 
 	rootCmd.AddCommand(
+		autogenCmdCommand(config),
 		metroCmdCommand(config),
 		diagnoseCmdCommand(config),
 		kitCmdCommand(config),
