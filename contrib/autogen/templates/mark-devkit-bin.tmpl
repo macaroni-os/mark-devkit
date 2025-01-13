@@ -1,0 +1,21 @@
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=7
+
+DESCRIPTION="Macaroni OS - M.A.R.K. Development Kit"
+HOMEPAGE="https://github.com/macaroni-os/mark-devkit"
+SRC_URI="{{- range $k, $v := .Values.artefacts }}
+{{ $v.Use }}? ( {{ $v.SrcUri | first }} -> {{ $v.Name }} )
+{{- end }}"
+
+LICENSE="GPL-3"
+SLOT="0"
+KEYWORDS="-* amd64 arm64"
+IUSE="amd64 arm64"
+
+src_install() {
+	dobin "${PN}"
+	dodoc README.md
+}
+
+# vim: filetype=ebuild

@@ -8,6 +8,7 @@ package generators
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
@@ -31,6 +32,51 @@ func (g *GithubGenerator) GetType() string {
 }
 
 func (g *GithubGenerator) SetClient(c *github.Client) { g.Client = c }
+
+func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
+	release *github.RepositoryRelease,
+	mapref *map[string]interface{}) ([]*specs.AutogenArtefact, error) {
+
+	values := *mapref
+	ans := []*specs.AutogenArtefact{}
+
+	for _, asset := range atom.Assets {
+
+		name, err := helpers.RenderContentWithTemplates(
+			asset.Name,
+			"", "", "asset.name", values, []string{},
+		)
+		if err != nil {
+			return ans, err
+		}
+
+		r := regexp.MustCompile(asset.Matcher)
+		if r == nil {
+			return ans, fmt.Errorf("[%s] invalid regex on asset %s", atom.Name, asset.Name)
+		}
+
+		assetFound := false
+
+		for idx := range release.Assets {
+			if r.MatchString(release.Assets[idx].GetName()) {
+				assetFound = true
+				ans = append(ans, &specs.AutogenArtefact{
+					SrcUri: []string{release.Assets[idx].GetBrowserDownloadURL()},
+					Use:    asset.Use,
+					Name:   name,
+				})
+				break
+			}
+		}
+
+		if !assetFound {
+			return ans, fmt.Errorf("[%s] no asset found for matcher %s", atom.Name, asset.Matcher)
+		}
+
+	}
+
+	return ans, nil
+}
 
 func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	mapref *map[string]interface{}) error {
@@ -83,11 +129,18 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	artefacts := []*specs.AutogenArtefact{}
 
-	if release != nil && release.GetTarballURL() != "" {
-		artefacts = append(artefacts, &specs.AutogenArtefact{
-			SrcUri: []string{release.GetTarballURL()},
-			Name:   tarballName,
-		})
+	if release != nil && (atom.HasAssets() || release.GetTarballURL() != "") {
+		if atom.HasAssets() {
+			artefacts, err = g.GetAssets(atom, release, mapref)
+			if err != nil {
+				return err
+			}
+		} else {
+			artefacts = append(artefacts, &specs.AutogenArtefact{
+				SrcUri: []string{release.GetTarballURL()},
+				Name:   tarballName,
+			})
+		}
 
 	} else {
 		artefacts = append(artefacts, &specs.AutogenArtefact{
@@ -97,9 +150,6 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	}
 
 	values["artefacts"] = artefacts
-
-	//data, _ := yaml.Marshal(values)
-	//fmt.Println("DATA\n", string(data))
 
 	return nil
 }

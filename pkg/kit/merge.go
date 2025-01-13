@@ -182,7 +182,7 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		m.Logger.InfoC(m.Logger.Aurora.Bold(
 			fmt.Sprintf(":brain:[%s] Generating reposcan files...",
 				targetKit.Name)))
-		err = m.GenerateReposcanFiles(mkit, opts)
+		err = m.GenerateReposcanFiles(mkit, opts, true)
 		if err != nil {
 			return err
 		}
@@ -697,7 +697,7 @@ func (m *MergeBot) CloneSourcesKits(mkit *specs.MergeKit, opts *MergeBotOpts) er
 	return nil
 }
 
-func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpts) error {
+func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpts, genSources bool) error {
 	err := helpers.EnsureDirWithoutIds(m.GetReposcanDir(), 0755)
 	if err != nil {
 		return err
@@ -710,14 +710,16 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 		return err
 	}
 
-	for _, source := range mkit.Sources {
-		sourceDir := filepath.Join(m.GetSourcesDir(), source.Name)
-		targetFile := filepath.Join(m.GetReposcanDir(), source.Name+"-"+source.Branch)
+	if genSources {
+		for _, source := range mkit.Sources {
+			sourceDir := filepath.Join(m.GetSourcesDir(), source.Name)
+			targetFile := filepath.Join(m.GetReposcanDir(), source.Name+"-"+source.Branch)
 
-		err := m.GenerateKitCacheFile(sourceDir, source.Name, source.Branch,
-			targetFile, eclassDirs, opts.Concurrency, true)
-		if err != nil {
-			return err
+			err := m.GenerateKitCacheFile(sourceDir, source.Name, source.Branch,
+				targetFile, eclassDirs, opts.Concurrency, true)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

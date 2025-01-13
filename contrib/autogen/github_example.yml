@@ -9,7 +9,7 @@ macaroni:
       user: macaroni-os
       query: releases
   packages:
-    - mark-devkit:
+    #- mark-devkit:
         #selector:
         #  - '<0.10.0'
         #transform:
@@ -22,4 +22,15 @@ macaroni:
         #github:
         #  repo: mark-devkit
 
+    - mark-devkit-bin:
+        github:
+          repo: mark-devkit
+        assets:
+          - name: "mark-devkit-v{{ .Values.version }}-linux-amd64"
+            matcher: "mark-devkit-.*-linux-amd64$"
+            use: amd64
+
+          - name: "mark-devkit-v{{ .Values.version }}-linux-arm64"
+            matcher: "mark-devkit-.*-linux-arm64$"
+            use: arm64
 
