@@ -28,7 +28,7 @@ func NewPushOptions() *PushOptions {
 	}
 }
 
-func getGithubAuth(opts *PushOptions) (*http.BasicAuth, error) {
+func GetGithubAuth(opts *PushOptions) (*http.BasicAuth, error) {
 	token := opts.Token
 	if opts.Token == "" {
 		// Retrieve token from env
@@ -53,7 +53,7 @@ func Push(repoDir string, opts *PushOptions) error {
 		return err
 	}
 
-	auth, err := getGithubAuth(opts)
+	auth, err := GetGithubAuth(opts)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func PushBranch(repoDir, branch string, opts *PushOptions) error {
 		}
 	}
 
-	auth, err := getGithubAuth(opts)
+	auth, err := GetGithubAuth(opts)
 	if err != nil {
 		return err
 	}
