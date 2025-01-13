@@ -22,6 +22,7 @@ import (
 	guard_specs "github.com/geaaru/rest-guard/pkg/specs"
 	"github.com/google/go-github/v68/github"
 	"golang.org/x/oauth2"
+	"gopkg.in/yaml.v3"
 )
 
 type AutogenBot struct {
@@ -45,13 +46,15 @@ type AutogenBot struct {
 }
 
 type AutogenBotOpts struct {
-	PullSources     bool
-	Push            bool
-	PullRequest     bool
-	Verbose         bool
-	CleanWorkingDir bool
-	GenReposcan     bool
-	SyncFiles       bool
+	PullSources         bool
+	Push                bool
+	PullRequest         bool
+	Verbose             bool
+	CleanWorkingDir     bool
+	GenReposcan         bool
+	SyncFiles           bool
+	MergeAutogen        bool
+	ShowGeneratedValues bool
 
 	GitDeepFetch int
 	Concurrency  int
@@ -65,13 +68,15 @@ type AutogenBotOpts struct {
 
 func NewAutogenBotOpts() *AutogenBotOpts {
 	return &AutogenBotOpts{
-		Push:            true,
-		PullSources:     true,
-		PullRequest:     false,
-		SyncFiles:       true,
-		Concurrency:     10,
-		CleanWorkingDir: true,
-		GithubUser:      "macaroni-os",
+		Push:                true,
+		PullSources:         true,
+		PullRequest:         false,
+		SyncFiles:           true,
+		Concurrency:         10,
+		CleanWorkingDir:     true,
+		GithubUser:          "macaroni-os",
+		MergeAutogen:        true,
+		ShowGeneratedValues: false,
 	}
 }
 
@@ -197,7 +202,7 @@ func (a *AutogenBot) setupTargetKit(mkit *specs.MergeKit, opts *AutogenBotOpts) 
 			fmt.Sprintf(":brain:[%s] Generating reposcan files...",
 				targetKit.Name)))
 
-		err = a.MergeBot.GenerateReposcanFiles(mkit, a.MergeOpts)
+		err = a.MergeBot.GenerateReposcanFiles(mkit, a.MergeOpts, false)
 		if err != nil {
 			return err
 		}
@@ -305,6 +310,11 @@ func (a *AutogenBot) Run(specfile, kitFile string, opts *AutogenBotOpts) error {
 		return err
 	}
 
+	if !opts.MergeAutogen {
+		// Stop processing
+		return nil
+	}
+
 	// Bump packages
 	err = a.MergeBot.ElaborateMerge(mkit, a.MergeOpts, targetKit)
 	if err != nil {
@@ -398,7 +408,7 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 			a.Logger.Info(fmt.Sprintf(
 				":factory:[%s] Processing atom %s...", nameDef, atom.Name))
 
-			err = a.ProcessPackage(mkit, aspec, atom, def.Defaults, generator, templateEngine)
+			err = a.ProcessPackage(mkit, aspec, atom, def.Defaults, generator, templateEngine, opts)
 			if err != nil {
 				return err
 			}
@@ -438,7 +448,8 @@ func (a *AutogenBot) GetTemplateEngine(t *specs.AutogenTemplateEngine) (tmpleng.
 
 func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	aspec *specs.AutogenSpec, atom, def *specs.AutogenAtom,
-	generator generators.Generator, tmplEngine tmpleng.TemplateEngine) error {
+	generator generators.Generator, tmplEngine tmpleng.TemplateEngine,
+	opts *AutogenBotOpts) error {
 
 	// Retrieve package metadata and last versions
 	valuesRef, err := generator.Process(atom, def)
@@ -496,6 +507,16 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		}
 	}
 
+	if opts.ShowGeneratedValues {
+		data, err := yaml.Marshal(values)
+		if err != nil {
+			return err
+		}
+		a.Logger.InfoC(fmt.Sprintf(
+			":eyes:[%s] Values:\n%s", atom.Name,
+			string(data)))
+	}
+
 	// Prepare metadata of the selected version
 	err = generator.SetVersion(atom, selectedVersion, &values)
 	if err != nil {
@@ -508,10 +529,10 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	}
 
 	if !toAdd {
-		a.Logger.Info(fmt.Sprintf(
+		a.Logger.InfoC(fmt.Sprintf(
 			":smiling_face_with_sunglasses:[%s] Package already present.",
 			atom.Name))
-		//return nil
+		return nil
 	}
 
 	// Download artefacts and prepare stagings dir.

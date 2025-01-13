@@ -40,6 +40,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			to, _ := cmd.Flags().GetString("to")
 			downloadDir, _ := cmd.Flags().GetString("download-dir")
 			backend, _ := cmd.Flags().GetString("backend")
+			skipMerge, _ := cmd.Flags().GetBool("skip-merge")
 			skipPullSources, _ := cmd.Flags().GetBool("skip-pull-sources")
 			skipGenReposcan, _ := cmd.Flags().GetBool("skip-reposcan-generation")
 			signatureName, _ := cmd.Flags().GetString("signature-name")
@@ -50,6 +51,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			githubUser, _ := cmd.Flags().GetString("github-user")
 			pr, _ := cmd.Flags().GetBool("pr")
 			sync, _ := cmd.Flags().GetBool("sync")
+			showValues, _ := cmd.Flags().GetBool("show-values")
 
 			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
 			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
@@ -110,6 +112,8 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			autogenOpts.CleanWorkingDir = !keepWorkdir
 			autogenOpts.PullSources = !skipPullSources
 			autogenOpts.GenReposcan = !skipGenReposcan
+			autogenOpts.MergeAutogen = !skipMerge
+			autogenOpts.ShowGeneratedValues = showValues
 
 			if githubUser != "" {
 				autogenOpts.GithubUser = githubUser
@@ -146,10 +150,14 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"Skip reposcan files generation.")
 	flags.Bool("skip-pull-sources", false,
 		"Skip pull of sources repositories.")
+	flags.Bool("skip-merge", false,
+		"Just generate the ebuild without merge to target kit. To use with --keep-workdir.")
 	flags.Bool("push", false, "Push commits to origin.")
 	flags.Bool("sync", true, "Sync artefacts to S3 backend server.")
 	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
 	flags.Bool("pr", false, "Push commit over specific branch and as Pull Request.")
+	flags.Bool("show-values", false,
+		"For debug purpose print generated values for any elaborated package in YAML format.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")
