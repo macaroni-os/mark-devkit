@@ -45,13 +45,27 @@ func (a *AutogenSpec) Prepare() {
 	for idx := range a.Definitions {
 		if len(a.Definitions[idx].Packages) > 0 {
 			for j := range a.Definitions[idx].Packages {
-				for pname, _ := range a.Definitions[idx].Packages[j] {
-					if a.Definitions[idx].Packages[j][pname].Name == "" {
-						a.Definitions[idx].Packages[j][pname].Name = pname
+				for pname, atom := range a.Definitions[idx].Packages[j] {
+					if atom == nil {
+						// This is possible when there options defined
+						a.Definitions[idx].Packages[j][pname] = NewAutogenAtom(pname)
+					} else {
+						if a.Definitions[idx].Packages[j][pname].Name == "" {
+							a.Definitions[idx].Packages[j][pname].Name = pname
+						}
 					}
 				}
 			}
 		}
+	}
+}
+
+func NewAutogenAtom(name string) *AutogenAtom {
+	return &AutogenAtom{
+		Name:       name,
+		Vars:       make(map[string]interface{}, 0),
+		Selector:   []string{},
+		Transforms: []*AutogenTransform{},
 	}
 }
 
