@@ -19,8 +19,9 @@ const (
 type MarkDevkitConfig struct {
 	Viper *v.Viper `yaml:"-" json:"-"`
 
-	General MarkDevkitGeneral `mapstructure:"general" json:"general,omitempty" yaml:"general,omitempty"`
-	Logging MarkDevkitLogging `mapstructure:"logging" json:"logging,omitempty" yaml:"logging,omitempty"`
+	General        MarkDevkitGeneral        `mapstructure:"general" json:"general,omitempty" yaml:"general,omitempty"`
+	Logging        MarkDevkitLogging        `mapstructure:"logging" json:"logging,omitempty" yaml:"logging,omitempty"`
+	Authentication MarkDevkitAuthentication `mapstructure:"authentication" json:"authentication,omitempty" yaml:"authentication,omitempty"`
 }
 
 type MarkDevkitGeneral struct {
@@ -44,6 +45,23 @@ type MarkDevkitLogging struct {
 	Color bool `mapstructure:"color,omitempty" json:"color,omitempty" yaml:"color,omitempty"`
 }
 
+type MarkDevkitAuthentication struct {
+	Remotes map[string]*MarkDevkitRemoteAuth `mapstructure:"-,inline" json:"-,inline" yaml:"-,inline"`
+}
+
+type MarkDevkitRemoteAuth struct {
+	Username   string `mapstructure:"username,omitempty" json:"username,omitempty" yaml:"username,omitempty"`
+	Password   string `mapstructure:"password,omitempty" json:"password,omitempty" yaml:"password,omitempty"`
+	Token      string `mapstructure:"token,omitempty" json:"token,omitempty" yaml:"token,omitempty"`
+	ApiVersion string `mapstructure:"api_version,omitempty" json:"api_version,omitempty" yaml:"api_version,omitempty"`
+	Url        string `mapstructure:"url,omitempty" json:"url,omitempty" yaml:"url,omitempty"`
+}
+
+func (a *MarkDevkitAuthentication) GetRemote(r string) (*MarkDevkitRemoteAuth, bool) {
+	remote, present := a.Remotes[r]
+	return remote, present
+}
+
 func NewMarkDevkitConfig(viper *v.Viper) *MarkDevkitConfig {
 	if viper == nil {
 		viper = v.New()
@@ -51,6 +69,10 @@ func NewMarkDevkitConfig(viper *v.Viper) *MarkDevkitConfig {
 
 	GenDefault(viper)
 	return &MarkDevkitConfig{Viper: viper}
+}
+
+func (c *MarkDevkitConfig) GetAuthentication() *MarkDevkitAuthentication {
+	return &c.Authentication
 }
 
 func (c *MarkDevkitConfig) GetGeneral() *MarkDevkitGeneral {
