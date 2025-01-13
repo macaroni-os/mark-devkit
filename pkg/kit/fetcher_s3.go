@@ -105,6 +105,8 @@ func NewFetcherS3(c *specs.MarkDevkitConfig, opts map[string]string) (*FetcherS3
 	return ans, nil
 }
 
+func (f *FetcherS3) GetType() string { return "s3" }
+
 func (f *FetcherS3) Sync(specfile string, opts *FetchOpts) error {
 	// Load MergeKit specs
 	mkit := specs.NewDistfilesSpec()
@@ -481,6 +483,14 @@ func (f *FetcherS3) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts,
 	return nil
 }
 
+func (f *FetcherS3) SyncFile(name, source, target string, hashes *map[string]string) error {
+	s3objectPath := filepath.Join(f.Prefix, target)
+	atom := &specs.RepoScanAtom{
+		Atom: name,
+	}
+	return f.UploadFile2ObjectStorage(atom, source, s3objectPath, hashes)
+}
+
 func (f *FetcherS3) getS3Files(mkit *specs.DistfilesSpec,
 	opts *FetchOpts) (*map[string]*minio.ObjectInfo, error) {
 
@@ -507,4 +517,26 @@ func (f *FetcherS3) getS3Files(mkit *specs.DistfilesSpec,
 	// NOTE: GetObjectAttributes method is not supported by CDN77 object storage.
 
 	return &ans, nil
+}
+
+func (f *FetcherS3) GetFilesList() ([]string, error) {
+	ans := []string{}
+	listOpts := minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    f.Prefix,
+		//WithMetadata: true,
+	}
+
+	ctx := context.Background()
+
+	// List all objects from a bucket-name with a matching prefix.
+	for object := range f.MinioClient.ListObjects(ctx, f.Bucket, listOpts) {
+		if object.Err != nil {
+			return ans, fmt.Errorf("error on retrieve list of objects: %s",
+				object.Err.Error())
+		}
+		ans = append(ans, object.Key)
+	}
+
+	return ans, nil
 }

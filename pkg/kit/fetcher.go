@@ -12,11 +12,15 @@ import (
 
 type Fetcher interface {
 	Sync(specfile string, opts *FetchOpts) error
+	SyncFile(name, source, target string, hashes *map[string]string) error
 	SetWorkDir(d string)
+	SetDownloadDir(d string)
 	GetWorkDir() string
 	GetTargetDir() string
 	GetReposcanDir() string
 	GetDownloadDir() string
+	GetFilesList() ([]string, error)
+	GetType() string
 	GetStats() *AtomsStats
 	GetAtomsInError() *[]*AtomError
 }

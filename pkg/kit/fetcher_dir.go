@@ -27,6 +27,35 @@ func NewFetcherDir(c *specs.MarkDevkitConfig) *FetcherDir {
 	}
 }
 
+func (f *FetcherDir) GetType() string { return "dir" }
+
+func (f *FetcherDir) SyncFile(name, source, target string, hashes *map[string]string) error {
+	return fmt.Errorf("Not implemented for this backend")
+}
+
+func (f *FetcherDir) GetFilesList() ([]string, error) {
+	ans := []string{}
+
+	dir := f.GetDownloadDir()
+	entries, err := os.ReadDir(dir)
+	// NOTE: I read files from the first level at the moment.
+	//       We want flat mode distfiles.
+	if err != nil {
+		return ans, err
+	}
+
+	if len(entries) > 0 {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			ans = append(ans, filepath.Join(dir, entry.Name()))
+		}
+	}
+
+	return ans, nil
+}
+
 func (f *FetcherDir) Sync(specfile string, opts *FetchOpts) error {
 	// Load MergeKit specs
 	mkit := specs.NewDistfilesSpec()

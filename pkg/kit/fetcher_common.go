@@ -31,7 +31,8 @@ type FetcherCommon struct {
 
 	Resolver *RepoScanResolver
 
-	WorkDir string
+	WorkDir     string
+	DownloadDir string
 
 	Stats     *AtomsStats
 	RestGuard *guard.RestGuard
@@ -124,12 +125,16 @@ func (f *FetcherCommon) GetReposcanDir() string {
 }
 
 func (f *FetcherCommon) GetDownloadDir() string {
+	if f.DownloadDir != "" {
+		return f.DownloadDir
+	}
 	return filepath.Join(f.WorkDir, "download")
 }
 
-func (f *FetcherCommon) GetStats() *AtomsStats { return f.Stats }
-func (f *FetcherCommon) SetWorkDir(d string)   { f.WorkDir = d }
-func (f *FetcherCommon) GetWorkDir() string    { return f.WorkDir }
+func (f *FetcherCommon) GetStats() *AtomsStats   { return f.Stats }
+func (f *FetcherCommon) SetWorkDir(d string)     { f.WorkDir = d }
+func (f *FetcherCommon) GetWorkDir() string      { return f.WorkDir }
+func (f *FetcherCommon) SetDownloadDir(d string) { f.DownloadDir = d }
 
 func (f *FetcherCommon) AddAtomInError(a *specs.RepoScanAtom, err error) {
 	f.mutex.Lock()
