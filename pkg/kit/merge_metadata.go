@@ -28,7 +28,7 @@ cache-formats = md5-dict
 `
 )
 
-func (m *MergeBot) prepareMetadataDir(mkit *specs.MergeKit,
+func (m *MergeBot) PrepareMetadataDir(mkit *specs.MergeKit,
 	opts *MergeBotOpts) error {
 	var err error
 	kit, _ := mkit.GetTargetKit()

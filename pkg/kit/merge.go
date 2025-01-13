@@ -45,7 +45,6 @@ type MergeBot struct {
 
 type MergeBotOpts struct {
 	GenReposcan     bool
-	DryRun          bool
 	PullSources     bool
 	Push            bool
 	PullRequest     bool
@@ -65,7 +64,6 @@ type MergeBotOpts struct {
 func NewMergeBotOpts() *MergeBotOpts {
 	return &MergeBotOpts{
 		GenReposcan:     true,
-		DryRun:          false,
 		Push:            true,
 		PullSources:     true,
 		PullRequest:     false,
@@ -97,6 +95,12 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 	}
 }
 
+func (m *MergeBot) HasCommit() bool             { return m.hasCommit }
+func (m *MergeBot) HasEclassUpdate() bool       { return m.eclassUpdate }
+func (m *MergeBot) HasProfilesUpdate() bool     { return m.profilesUpdate }
+func (m *MergeBot) HasMetadataUpdate() bool     { return m.metadataUpdate }
+func (m *MergeBot) TargetKitIsANewBranch() bool { return m.IsANewBranch }
+
 func (m *MergeBot) GetSourcesDir() string {
 	return filepath.Join(m.WorkDir, "sources")
 }
@@ -116,7 +120,12 @@ func (m *MergeBot) SetupGithubClient(ctx context.Context) error {
 	if m.GithubClient == nil {
 		pushOpts := NewPushOptions()
 
-		auth, err := getGithubAuth(pushOpts)
+		remote, available := m.Config.GetAuthentication().GetRemote("github.com")
+		if available {
+			pushOpts.Token = remote.Token
+		}
+
+		auth, err := GetGithubAuth(pushOpts)
 		if err != nil {
 			return err
 		}
@@ -155,14 +164,14 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 
 	if opts.PullSources {
 		// Clone sources
-		err = m.cloneSourcesKits(mkit, opts)
+		err = m.CloneSourcesKits(mkit, opts)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Clone target kit
-	err = m.cloneTargetKit(mkit, opts)
+	err = m.CloneTargetKit(mkit, opts)
 	if err != nil {
 		return err
 	}
@@ -193,6 +202,11 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		}
 	}
 
+	return m.ElaborateMerge(mkit, opts, targetKit)
+}
+
+func (m *MergeBot) ElaborateMerge(mkit *specs.MergeKit,
+	opts *MergeBotOpts, targetKit *specs.ReposcanKit) error {
 	// Search Atoms
 	candidates, err := m.SearchAtoms(mkit, opts)
 	if err != nil {
@@ -240,13 +254,13 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	}
 
 	// Prepare metadata directory of the kit
-	err = m.prepareMetadataDir(mkit, opts)
+	err = m.PrepareMetadataDir(mkit, opts)
 	if err != nil {
 		return err
 	}
 
 	// Prepare profiles directory of the kit
-	err = m.prepareProfilesDir(mkit, candidates, opts)
+	err = m.PrepareProfilesDir(mkit, candidates, opts)
 	if err != nil {
 		return err
 	}
@@ -523,8 +537,16 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*specs.RepoScanAtom, error) {
 	ans := []*specs.RepoScanAtom{}
 	for _, atom := range mkit.Target.Atoms {
+
 		m.Logger.InfoC(fmt.Sprintf(":lollipop:[%s] Checking...",
 			atom.Package))
+
+		// Ignoring packages not available
+		if !m.Resolver.IsPresentPackage(atom.Package) {
+			m.Logger.DebugC(fmt.Sprintf(":warning:[%s] Package not found. Skipped.",
+				atom.Package))
+			continue
+		}
 
 		candidate, err := m.searchAtom(atom, mkit, opts)
 		if err != nil {
@@ -649,7 +671,7 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 	return ans, nil
 }
 
-func (m *MergeBot) cloneSourcesKits(mkit *specs.MergeKit, opts *MergeBotOpts) error {
+func (m *MergeBot) CloneSourcesKits(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	gitOpts := &CloneOptions{
 		GitCloneOptions: &git.CloneOptions{
 			SingleBranch: true,
@@ -714,7 +736,7 @@ func (m *MergeBot) GenerateReposcanFiles(mkit *specs.MergeKit, opts *MergeBotOpt
 	return nil
 }
 
-func (m *MergeBot) cloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) error {
+func (m *MergeBot) CloneTargetKit(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	kit, err := mkit.GetTargetKit()
 	if err != nil {
 		return err

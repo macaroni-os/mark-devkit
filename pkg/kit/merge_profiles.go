@@ -20,7 +20,7 @@ import (
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
-func (m *MergeBot) prepareProfilesDir(mkit *specs.MergeKit,
+func (m *MergeBot) PrepareProfilesDir(mkit *specs.MergeKit,
 	candidates []*specs.RepoScanAtom,
 	opts *MergeBotOpts) error {
 
