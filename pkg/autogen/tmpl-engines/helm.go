@@ -39,6 +39,9 @@ func (t *HelmTemplateEngine) Render(aspec *specs.AutogenSpec,
 		string(data),
 		"", "", targetFile, values, []string{},
 	)
+	if err != nil {
+		return err
+	}
 
 	// Write the file
 	return os.WriteFile(targetFile, []byte(content), 0644)
