@@ -8,7 +8,8 @@ const (
 	GeneratorBuiltinGitub      = "builtin-github"
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
 
-	TmplEngineHelm = "helm"
+	TmplEngineHelm   = "helm"
+	TmplEnginePongo2 = "pongo2"
 )
 
 type AutogenSpec struct {

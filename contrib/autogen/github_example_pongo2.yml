@@ -1,0 +1,15 @@
+macaroni:
+  generator: builtin-github
+  template:
+    engine: pongo2
+
+  defaults:
+    category: dev-util
+    github:
+      user: macaroni-os
+      query: releases
+  packages:
+    - mark-devkit:
+        template: templates/mark-devkit-pongo2.tmpl
+
+
