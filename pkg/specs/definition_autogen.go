@@ -10,6 +10,7 @@ const (
 
 	TmplEngineHelm   = "helm"
 	TmplEnginePongo2 = "pongo2"
+	TmplEngineJ2cli  = "j2cli"
 )
 
 type AutogenSpec struct {

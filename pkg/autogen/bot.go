@@ -437,7 +437,7 @@ func (a *AutogenBot) GetTemplateEngine(t *specs.AutogenTemplateEngine) (tmpleng.
 	if t != nil {
 		engine = t.Engine
 	}
-	ans, err := tmpleng.NewTemplateEngine(engine)
+	ans, err := tmpleng.NewTemplateEngine(engine, t.Opts)
 	if err != nil {
 		return nil, err
 	}

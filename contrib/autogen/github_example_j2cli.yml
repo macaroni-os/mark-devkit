@@ -1,0 +1,13 @@
+macaroni:
+  generator: builtin-github
+  template:
+    engine: j2cli
+
+  defaults:
+    category: dev-util
+    github:
+      user: macaroni-os
+      query: releases
+  packages:
+    - mark-devkit:
+        template: templates/mark-devkit-j2.tmpl

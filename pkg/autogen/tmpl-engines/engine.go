@@ -16,12 +16,14 @@ type TemplateEngine interface {
 	SetLogger(l *log.MarkDevkitLogger)
 }
 
-func NewTemplateEngine(t string) (TemplateEngine, error) {
+func NewTemplateEngine(t string, opts []string) (TemplateEngine, error) {
 	switch t {
 	case specs.TmplEngineHelm:
 		return NewHelmTemplateEngine(), nil
 	case specs.TmplEnginePongo2:
 		return NewPongo2TemplateEngine(), nil
+	case specs.TmplEngineJ2cli:
+		return NewJ2CliTemplateEngine(opts), nil
 	default:
 		return nil, fmt.Errorf("Invalid template engine %s", t)
 	}
