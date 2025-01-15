@@ -25,9 +25,14 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			log := logger.GetDefaultLogger()
 			specfile, _ := cmd.Flags().GetString("specfile")
+			kitfile, _ := cmd.Flags().GetString("kitfile")
 
 			if specfile == "" {
 				log.Fatal("No specfile param defined.")
+			}
+
+			if kitfile == "" {
+				log.Fatal("No kitfile param defined.")
 			}
 
 		},
