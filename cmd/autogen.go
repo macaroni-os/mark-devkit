@@ -19,7 +19,7 @@ import (
 func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     "autogen",
-		Aliases: []string{"k"},
+		Aliases: []string{"a"},
 		Short:   "Autogen specs.",
 		Long:    `Executes Autogen elaboration.`,
 		PreRun: func(cmd *cobra.Command, args []string) {
