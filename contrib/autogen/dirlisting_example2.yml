@@ -11,6 +11,8 @@ x11libs:
 
   packages:
     - libX11:
+        vars:
+          desc: "X.Org X11 library"
         dir:
           matcher: "libX11-.*.tar.xz$"
         transform:
