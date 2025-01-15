@@ -1,0 +1,44 @@
+x11libs:
+  generator: builtin-dirlisting
+  template:
+    engine: helm
+
+  defaults:
+    category: x11-libs
+    dir:
+      url: https://www.x.org/releases/individual/lib/
+      exclude: "-deps|-alpha|-beta|.99"
+
+  packages:
+    - libX11:
+        dir:
+          matcher: "libX11-.*.tar.xz$"
+        transform:
+          - kind: string
+            match: 'libX11-'
+            replace: ''
+          - kind: string
+            match: '.tar.xz'
+            replace: ''
+
+    - libXpm:
+        dir:
+          matcher: "libXpm-.*.tar.xz$"
+        transform:
+          - kind: string
+            match: 'libXpm-'
+            replace: ''
+          - kind: string
+            match: '.tar.xz'
+            replace: ''
+
+    - libXfixes:
+        dir:
+          matcher: "libXfixes-.*.tar.xz$"
+        transform:
+          - kind: string
+            match: 'libXfixes-'
+            replace: ''
+          - kind: string
+            match: '.tar.xz'
+            replace: ''

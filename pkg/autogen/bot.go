@@ -434,10 +434,12 @@ func (a *AutogenBot) GetGenerator(generatorType string) (generators.Generator, e
 
 func (a *AutogenBot) GetTemplateEngine(t *specs.AutogenTemplateEngine) (tmpleng.TemplateEngine, error) {
 	engine := "helm"
+	opts := []string{}
 	if t != nil {
 		engine = t.Engine
+		opts = t.Opts
 	}
-	ans, err := tmpleng.NewTemplateEngine(engine, t.Opts)
+	ans, err := tmpleng.NewTemplateEngine(engine, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -451,12 +453,26 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	generator generators.Generator, tmplEngine tmpleng.TemplateEngine,
 	opts *AutogenBotOpts) error {
 
+	if def == nil {
+		// Create an empty default object if not present.
+		def = &specs.AutogenAtom{
+			Github: &specs.AutogenGithubProps{},
+			Dir:    &specs.AutogenDirlistingProps{},
+		}
+	}
+
 	// Retrieve package metadata and last versions
 	valuesRef, err := generator.Process(atom, def)
 	if err != nil {
 		return err
 	}
 	values := *valuesRef
+
+	if len(atom.Vars) > 0 {
+		for k, v := range atom.Vars {
+			values[k] = v
+		}
+	}
 
 	versionsI, present := values["versions"]
 	if !present {
@@ -468,6 +484,17 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	sanitizedVersions := []string{}
 	var vMap *map[string]string
 	if atom.HasTransforms() {
+
+		if opts.ShowGeneratedValues {
+			data, err := yaml.Marshal(values)
+			if err != nil {
+				return err
+			}
+			a.Logger.InfoC(fmt.Sprintf(
+				":eyes:[%s] Values Before Transforms:\n%s", atom.Name,
+				string(data)))
+		}
+
 		vMap, err = a.transformsVersions(atom, versions)
 		if err != nil {
 			return err
@@ -475,8 +502,18 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		for _, sv := range *vMap {
 			sanitizedVersions = append(sanitizedVersions, sv)
 		}
+
+		sanitizedVersions, err = a.sortVersions(atom, def, sanitizedVersions)
+		if err != nil {
+			return err
+		}
+
 	} else {
 		sanitizedVersions = versions
+	}
+
+	if len(sanitizedVersions) == 0 {
+		return fmt.Errorf("[%s] No versions found", atom.Name)
 	}
 
 	// Select version
@@ -497,6 +534,7 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	values["version"] = selectedVersion
 	values["category"] = atom.GetCategory(def)
 	values["original_version"] = selectedVersion
+	values["pn"] = atom.Name
 	if atom.HasTransforms() {
 		// Retrieve original version
 		for v, sv := range *vMap {

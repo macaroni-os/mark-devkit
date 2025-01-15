@@ -85,7 +85,10 @@ func (a *AutogenAtom) GetCategory(def *AutogenAtom) string {
 	if a.Category != "" {
 		return a.Category
 	}
-	return def.Category
+	if def != nil {
+		return def.Category
+	}
+	return ""
 }
 
 func (a *AutogenAtom) GetTemplate(def *AutogenAtom) string {
@@ -93,7 +96,7 @@ func (a *AutogenAtom) GetTemplate(def *AutogenAtom) string {
 		return a.Template
 	}
 
-	if def.Template != "" {
+	if def != nil && def.Template != "" {
 		return def.Template
 	}
 
@@ -114,6 +117,14 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			User:  a.Github.User,
 			Repo:  a.Github.Repo,
 			Query: a.Github.Query,
+		}
+	}
+
+	if a.Dir != nil {
+		ans.Dir = &AutogenDirlistingProps{
+			Url:             a.Dir.Url,
+			Matcher:         a.Dir.Matcher,
+			ExcludesMatcher: a.Dir.ExcludesMatcher,
 		}
 	}
 

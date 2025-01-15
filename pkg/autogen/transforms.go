@@ -6,9 +6,12 @@ package autogen
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
+
+	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 )
 
 func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []string) (*map[string]string, error) {
@@ -35,4 +38,33 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 	}
 
 	return &ans, nil
+}
+
+func (a *AutogenBot) sortVersions(atom, def *specs.AutogenAtom, versions []string) ([]string, error) {
+	// In order to avoid issues with go-version on parse particular versions
+	// I prefer to use GentooPackage that already support different versions and sorting.
+
+	ans := []string{}
+	pkgs := []gentoo.GentooPackage{}
+
+	for idx := range versions {
+		gp, err := gentoo.ParsePackageStr(fmt.Sprintf("%s/%s-%s",
+			atom.GetCategory(def),
+			atom.Name,
+			versions[idx],
+		))
+		if err != nil {
+			return ans, err
+		}
+
+		pkgs = append(pkgs, *gp)
+	}
+
+	sort.Sort(sort.Reverse(gentoo.GentooPackageSorter(pkgs)))
+
+	for idx := range pkgs {
+		ans = append(ans, pkgs[idx].GetPVR())
+	}
+
+	return ans, nil
 }

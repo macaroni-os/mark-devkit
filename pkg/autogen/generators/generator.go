@@ -20,6 +20,8 @@ func NewGenerator(t string) (Generator, error) {
 	switch t {
 	case specs.GeneratorBuiltinGitub:
 		return NewGithubGenerator(), nil
+	case specs.GeneratorBuiltinDirListing:
+		return NewDirlistingGenerator(), nil
 	default:
 		return nil, fmt.Errorf("Invalid generator type %s", t)
 	}

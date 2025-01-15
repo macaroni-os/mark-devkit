@@ -34,11 +34,12 @@ type AutogenArtefact struct {
 }
 
 type AutogenAtom struct {
-	Name     string                 `json:"-" yaml:"-"`
-	Tarball  string                 `json:"tarball,omitempty" yaml:"tarball,omitempty"`
-	Github   *AutogenGithubProps    `json:"github,omitempty" yaml:"github,omitempty"`
-	Vars     map[string]interface{} `json:"vars,omitempty" yaml:"vars,omitempty"`
-	Category string                 `json:"category,omitempty" yaml:"category,omitempty"`
+	Name     string                  `json:"-" yaml:"-"`
+	Tarball  string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
+	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
+	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
+	Vars     map[string]interface{}  `json:"vars,omitempty" yaml:"vars,omitempty"`
+	Category string                  `json:"category,omitempty" yaml:"category,omitempty"`
 
 	Template string `json:"template,omitempty" yaml:"template,omitempty"`
 
@@ -55,6 +56,7 @@ type AutogenAsset struct {
 	Use     string `json:"use,omitempty" yaml:"use,omitempty"`
 	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
 	Matcher string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
+	Prefix  string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
 }
 
 type AutogenTransform struct {
@@ -76,4 +78,10 @@ type AutogenGithubProps struct {
 	PerPage  *int `json:"per_page,omitempty" yaml:"per_page,omitempty"`
 	Page     *int `json:"page,omitempty" yaml:"page,omitempty"`
 	NumPages *int `json:"num_pages,omitempty" yaml:"num_pages,omitempty"`
+}
+
+type AutogenDirlistingProps struct {
+	Url             string `json:"url,omitempty" yaml:"url,omitempty"`
+	Matcher         string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
+	ExcludesMatcher string `json:"exclude,omitempty" yaml:"exclude,omitempty"`
 }

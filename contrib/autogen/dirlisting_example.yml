@@ -1,0 +1,23 @@
+apache:
+  generator: builtin-dirlisting
+  template:
+    engine: j2cli
+
+  packages:
+    - apache:
+        category: www-servers
+        dir:
+          url: https://archive.apache.org/dist/httpd/
+          # NOTE: the native Golang regex engine doesn't support the negative Perl annotations.
+          #       We need to investigate on github.com/h2so5/goback project.
+          matcher: "httpd-.*.tar.bz2$"
+          exclude: "-deps|-alpha|-beta"
+        transform:
+          - kind: string
+            match: 'httpd-'
+            replace: ''
+          - kind: string
+            match: '.tar.bz2'
+            replace: ''
+        assets:
+          - name: "httpd-{{ .Values.version }}.tar.bz2"
