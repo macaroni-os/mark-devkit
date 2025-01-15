@@ -87,11 +87,13 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	var release *github.RepositoryRelease
 	var err error
 
+	originalVersion, _ := values["original_version"].(string)
+
 	// Set release metadata if present
 	if _, present := values["releases"]; present {
 
 		releases, _ := values["releases"].(map[string]*github.RepositoryRelease)
-		release = releases[version]
+		release = releases[originalVersion]
 		values["release"] = release
 
 		tags, _ := values["tags"].(map[string]*github.RepositoryTag)
@@ -101,7 +103,7 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	} else {
 		// Set only the tag
 		tags, _ := values["tags"].(map[string]*github.RepositoryTag)
-		tag = tags[version]
+		tag = tags[originalVersion]
 		values["tag"] = tag
 
 	}
@@ -111,8 +113,6 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	delete(values, "releases")
 	delete(values, "tags")
 	delete(values, "versions")
-
-	values["pn"] = atom.Name
 
 	tarballName := atom.Tarball
 	if tarballName == "" {
