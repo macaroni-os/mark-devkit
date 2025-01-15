@@ -44,7 +44,7 @@ type AutogenAtom struct {
 
 	Template string `json:"template,omitempty" yaml:"template,omitempty"`
 
-	Extensions []string        `json:"extentions,omitempty" yaml:"extentions,omitempty"`
+	Extensions []string        `json:"extensions,omitempty" yaml:"extensions,omitempty"`
 	Assets     []*AutogenAsset `json:"assets,omitempty" yaml:"assets,omitempty"`
 
 	Transforms []*AutogenTransform `json:"transform,omitempty" yaml:"transform,omitempty"`

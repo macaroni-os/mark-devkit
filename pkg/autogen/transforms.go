@@ -29,7 +29,7 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 			case "string":
 				v = strings.ReplaceAll(v, transform.Match, transform.Replace)
 			default:
-				return nil, fmt.Errorf("unsupported kind of tranform %s for atom %s",
+				return nil, fmt.Errorf("unsupported kind of transform %s for atom %s",
 					transform.Kind, atom.Name)
 			}
 

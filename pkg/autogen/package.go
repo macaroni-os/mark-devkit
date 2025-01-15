@@ -186,6 +186,9 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	// Retrieve all availables version in order to return true
 	// and check for differences.
 	atomsAvailables, err := a.MergeBot.TargetResolver.GetValidPackages(catpkg, pOpts)
+	if err != nil {
+		return false, err
+	}
 
 	// Prepare GentooPackage of the selected version
 	gpkg, err := gentoo.ParsePackageStr(fmt.Sprintf("%s-%s", catpkg, version))
