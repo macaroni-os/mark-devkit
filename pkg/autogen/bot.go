@@ -282,9 +282,11 @@ func (a *AutogenBot) Run(specfile, kitFile string, opts *AutogenBotOpts) error {
 			a.WorkDir, targetKit.Name)))
 
 	// Setup target kit
-	err = a.setupTargetKit(mkit, opts)
-	if err != nil {
-		return err
+	if opts.MergeAutogen {
+		err = a.setupTargetKit(mkit, opts)
+		if err != nil {
+			return err
+		}
 	}
 
 	// NOTE: This must be done only if there are
