@@ -17,6 +17,7 @@ import (
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	guard_specs "github.com/geaaru/rest-guard/pkg/specs"
+	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
 
 func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
@@ -75,9 +76,22 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 			}
 		}
 
-		// Generate Manifest
 		manifestPath := filepath.Join(pkgDirStaging, "Manifest")
-		manifest := kit.NewManifestFile(ans.Files)
+		var manifest *kit.ManifestFile
+		// Check if exists already a Manifest with other files.
+		// For example the same package is been defined multiple time
+		// with multiple selector.
+		if utils.Exists(manifestPath) {
+			manifest, err = kit.ParseManifest(manifestPath)
+			if err != nil {
+				return nil, err
+			}
+			manifest.AddFiles(ans.Files)
+		} else {
+			manifest = kit.NewManifestFile(ans.Files)
+		}
+
+		// Generate Manifest
 		err := manifest.Write(manifestPath)
 		if err != nil {
 			return nil, err

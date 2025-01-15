@@ -16,6 +16,16 @@ x11libs:
           - name: "libX11-{{ .Values.version}}.tar.xz"
             prefix: https://www.x.org/releases/individual/lib/
 
+    - libX11:
+        vars:
+          desc: "X.Org X11 library"
+          versions:
+            - "1.7.0"
+
+        assets:
+          - name: "libX11-{{ .Values.version}}.tar.bz2"
+            prefix: https://www.x.org/releases/individual/lib/
+
     - metatools:
         category: sys-apps
         vars:
