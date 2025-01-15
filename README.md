@@ -447,7 +447,7 @@ Global Flags:
   -d, --debug           Enable debug output.
 ```
 
-# Autogen Thin or `doit`
+# Autogen Thin a.k.a. `doit`
 
 To help developers and contributors this command permits to execute a subset of the
 steps of the `autogen` command. In particular, it used to generates locally the new ebuilds
