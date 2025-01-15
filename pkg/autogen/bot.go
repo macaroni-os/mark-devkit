@@ -472,7 +472,31 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 
 	if len(atom.Vars) > 0 {
 		for k, v := range atom.Vars {
-			values[k] = v
+			if k == "versions" {
+
+				ilist, ok := v.([]interface{})
+				if !ok {
+					return fmt.Errorf(
+						"Invalid type on versions var for package %s",
+						atom.Name)
+				}
+
+				// Special case.
+				// I need to convert []interface{} to []string
+				vlist := []string{}
+				for _, vv := range ilist {
+					str, ok := vv.(string)
+					if !ok {
+						return fmt.Errorf(
+							"Invalid value %v on versions var for package %s",
+							vv, atom.Name)
+					}
+					vlist = append(vlist, str)
+				}
+				values[k] = vlist
+			} else {
+				values[k] = v
+			}
 		}
 	}
 

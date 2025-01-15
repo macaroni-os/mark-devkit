@@ -22,6 +22,8 @@ func NewGenerator(t string) (Generator, error) {
 		return NewGithubGenerator(), nil
 	case specs.GeneratorBuiltinDirListing:
 		return NewDirlistingGenerator(), nil
+	case specs.GeneratorBuiltinNoop:
+		return NewNoopGenerator(), nil
 	default:
 		return nil, fmt.Errorf("Invalid generator type %s", t)
 	}

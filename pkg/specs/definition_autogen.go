@@ -7,6 +7,7 @@ package specs
 const (
 	GeneratorBuiltinGitub      = "builtin-github"
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
+	GeneratorBuiltinNoop       = "builtin-noop"
 
 	TmplEngineHelm   = "helm"
 	TmplEnginePongo2 = "pongo2"
@@ -57,6 +58,7 @@ type AutogenAsset struct {
 	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
 	Matcher string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
 	Prefix  string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
+	Url     string `json:"url,omitempty" yaml:"url,omitempty"`
 }
 
 type AutogenTransform struct {
