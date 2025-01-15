@@ -63,6 +63,7 @@ func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
 
 	rootCmd.AddCommand(
 		autogenCmdCommand(config),
+		autogenThinCmdCommand(config),
 		metroCmdCommand(config),
 		diagnoseCmdCommand(config),
 		kitCmdCommand(config),
