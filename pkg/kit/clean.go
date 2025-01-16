@@ -422,6 +422,20 @@ func (m *MergeBot) SearchAtoms2Clean(mkit *specs.MergeKit, opts *MergeBotOpts) (
 		m.Logger.InfoC(fmt.Sprintf(":lollipop:[%s] Checking...",
 			atom.Package))
 
+		gpkg, err := gentoo.ParsePackageStr(atom.Package)
+		if err != nil {
+			m.Logger.Error(fmt.Sprintf("[%s] Package invalid: %s. Skipped.",
+				atom.Package, err.Error()))
+			continue
+		}
+
+		// Ignoring packages not available
+		if !m.TargetResolver.IsPresentPackage(gpkg.GetPackageName()) {
+			m.Logger.InfoC(fmt.Sprintf(":warning:[%s] Package not found. Skipped.",
+				atom.Package))
+			continue
+		}
+
 		candidates, err := m.searchAtom2Clean(atom, mkit, opts)
 		if err != nil {
 			return nil, err
