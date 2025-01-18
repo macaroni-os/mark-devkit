@@ -460,6 +460,7 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		def = &specs.AutogenAtom{
 			Github: &specs.AutogenGithubProps{},
 			Dir:    &specs.AutogenDirlistingProps{},
+			Vars:   make(map[string]interface{}, 0),
 		}
 	}
 
@@ -470,8 +471,8 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	}
 	values := *valuesRef
 
-	if len(atom.Vars) > 0 {
-		for k, v := range atom.Vars {
+	mergeF := func(vars *map[string]interface{}) error {
+		for k, v := range *vars {
 			if k == "versions" {
 
 				ilist, ok := v.([]interface{})
@@ -497,6 +498,22 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 			} else {
 				values[k] = v
 			}
+		}
+
+		return nil
+	}
+
+	if len(def.Vars) > 0 {
+		err = mergeF(&def.Vars)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(atom.Vars) > 0 {
+		err = mergeF(&atom.Vars)
+		if err != nil {
+			return err
 		}
 	}
 
