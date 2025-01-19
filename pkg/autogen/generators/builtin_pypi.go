@@ -375,7 +375,7 @@ func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 		values["py_depend"], err = g.stringifyDeps(pydepsDepend)
 	}
 
-	return nil
+	return err
 }
 
 func (g *PypiGenerator) stringifyDeps(deps []*specs.PythonDep) (string, error) {
