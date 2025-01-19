@@ -196,7 +196,7 @@ func (g *PypiGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 	ans["pypi_meta"] = pypiMeta
 	ans["pypi_info"] = info
 	ans["pypi_name"] = info.Name
-	ans["description"] = info.Summary
+	ans["desc"] = info.Summary
 	ans["license"] = info.License
 	if atom.Python.PythonCompat != "" {
 		ans["python_compat"] = atom.Python.PythonCompat
