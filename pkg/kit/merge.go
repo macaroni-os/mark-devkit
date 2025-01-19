@@ -557,7 +557,9 @@ func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*spe
 
 		candidate, err := m.searchAtom(atom, mkit, opts)
 		if err != nil {
-			return ans, err
+			m.Logger.Info(fmt.Sprintf(":warning:[%s] error on search atoms: %s. Skipped.",
+				atom.Package, err.Error()))
+			continue
 		}
 
 		if candidate != nil {
