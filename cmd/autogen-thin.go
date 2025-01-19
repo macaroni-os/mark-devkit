@@ -44,6 +44,7 @@ func autogenThinCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			downloadDir, _ := cmd.Flags().GetString("download-dir")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			showValues, _ := cmd.Flags().GetBool("show-values")
+			atoms, _ := cmd.Flags().GetStringArray("pkg")
 
 			backendOpts := make(map[string]string, 0)
 
@@ -63,6 +64,7 @@ func autogenThinCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			autogenOpts.GenReposcan = false
 			autogenOpts.MergeAutogen = false
 			autogenOpts.ShowGeneratedValues = showValues
+			autogenOpts.Atoms = atoms
 
 			autogenBot := autogen.NewAutogenBot(config)
 			autogenBot.SetWorkDir(to)
@@ -93,6 +95,7 @@ func autogenThinCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Int("concurrency", 3, "Define the elaboration concurrency.")
 	flags.Bool("show-values", false,
 		"For debug purpose print generated values for any elaborated package in YAML format.")
+	flags.StringArray("pkg", []string{}, "Elaborate only specified packages.")
 
 	return cmd
 }

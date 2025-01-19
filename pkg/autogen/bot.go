@@ -55,6 +55,7 @@ type AutogenBotOpts struct {
 	SyncFiles           bool
 	MergeAutogen        bool
 	ShowGeneratedValues bool
+	Atoms               []string
 
 	GitDeepFetch int
 	Concurrency  int
@@ -77,7 +78,21 @@ func NewAutogenBotOpts() *AutogenBotOpts {
 		GithubUser:          "macaroni-os",
 		MergeAutogen:        true,
 		ShowGeneratedValues: false,
+		Atoms:               []string{},
 	}
+}
+
+func (o *AutogenBotOpts) HasAtoms() bool {
+	return len(o.Atoms) > 0
+}
+
+func (o *AutogenBotOpts) AtomInFilter(atom string) bool {
+	for _, name := range o.Atoms {
+		if name == atom {
+			return true
+		}
+	}
+	return false
 }
 
 func NewAutogenBot(c *specs.MarkDevkitConfig) *AutogenBot {
@@ -403,9 +418,17 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 		return err
 	}
 
+	atomFiltered := opts.HasAtoms()
+
 	// Process packages
 	for _, pkg := range def.Packages {
 		for _, atom := range pkg {
+
+			if atomFiltered && !opts.AtomInFilter(atom.Name) {
+				a.Logger.Debug(fmt.Sprintf(
+					":factory:[%s] Atom %s filtered.", nameDef, atom.Name))
+				continue
+			}
 
 			a.Logger.Info(fmt.Sprintf(
 				":factory:[%s] Processing atom %s...", nameDef, atom.Name))
