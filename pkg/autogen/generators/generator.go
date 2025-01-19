@@ -11,7 +11,7 @@ import (
 )
 
 type Generator interface {
-	Process(atom *specs.AutogenAtom, def *specs.AutogenAtom) (*map[string]interface{}, error)
+	Process(atom *specs.AutogenAtom) (*map[string]interface{}, error)
 	GetType() string
 	SetVersion(atom *specs.AutogenAtom, v string, mapref *map[string]interface{}) error
 }
@@ -24,6 +24,8 @@ func NewGenerator(t string) (Generator, error) {
 		return NewDirlistingGenerator(), nil
 	case specs.GeneratorBuiltinNoop:
 		return NewNoopGenerator(), nil
+	case specs.GeneratorBuiltinPypi:
+		return NewPypiGenerator(), nil
 	default:
 		return nil, fmt.Errorf("Invalid generator type %s", t)
 	}

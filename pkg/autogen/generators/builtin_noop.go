@@ -96,8 +96,7 @@ func (g *NoopGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	return nil
 }
 
-func (g *NoopGenerator) Process(atom *specs.AutogenAtom,
-	def *specs.AutogenAtom) (*map[string]interface{}, error) {
+func (g *NoopGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {
 	ans := make(map[string]interface{}, 0)
 
 	return &ans, nil

@@ -8,6 +8,7 @@ const (
 	GeneratorBuiltinGitub      = "builtin-github"
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
 	GeneratorBuiltinNoop       = "builtin-noop"
+	GeneratorBuiltinPypi       = "builtin-pypi"
 
 	TmplEngineHelm   = "helm"
 	TmplEnginePongo2 = "pongo2"
@@ -29,9 +30,10 @@ type AutogenDefinition struct {
 }
 
 type AutogenArtefact struct {
-	Use    string   `json:"use,omitempty" yaml:"use,omitempty"`
-	SrcUri []string `json:"src_uri" yaml:"src_uri"`
-	Name   string   `json:"name" yaml:"name"`
+	Use    string            `json:"use,omitempty" yaml:"use,omitempty"`
+	SrcUri []string          `json:"src_uri" yaml:"src_uri"`
+	Name   string            `json:"name" yaml:"name"`
+	Hashes map[string]string `json:"hashes,omitempty" yaml:"hashes,omitempty"`
 }
 
 type AutogenAtom struct {
@@ -39,6 +41,7 @@ type AutogenAtom struct {
 	Tarball  string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
 	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
 	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
+	Python   *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
 	Vars     map[string]interface{}  `json:"vars,omitempty" yaml:"vars,omitempty"`
 	Category string                  `json:"category,omitempty" yaml:"category,omitempty"`
 
@@ -49,8 +52,14 @@ type AutogenAtom struct {
 
 	Transforms []*AutogenTransform `json:"transform,omitempty" yaml:"transform,omitempty"`
 	Selector   []string            `json:"selector,omitempty" yaml:"selector,omitempty"`
+}
 
-	PythonCompat string `json:"python_compat,omitempty" yaml:"python_compat,omitempty"`
+type AutogenPythonOpts struct {
+	PythonCompat         string              `json:"python_compat,omitempty" yaml:"python_compat,omitempty"`
+	PythonRequiresIgnore string              `json:"python_requires_ignore,omitempty" yaml:"python_requires_ignore,omitempty"`
+	PypiName             string              `json:"pypi_name,omitempty" yaml:"pypi_name,omitempty"`
+	DistutilsPEP517      string              `json:"du_pep517,omitempty" yaml:"du_pep517,omitempty"`
+	Pydeps               map[string][]string `json:"pydeps,omitempty" yaml:"pydeps,omitempty"`
 }
 
 type AutogenAsset struct {

@@ -103,13 +103,119 @@ func (a *AutogenAtom) GetTemplate(def *AutogenAtom) string {
 	return fmt.Sprintf("templates/%s.tmpl", a.Name)
 }
 
+func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
+	ans := a.Clone()
+
+	if atom.Name != "" {
+		ans.Name = atom.Name
+	}
+	if atom.Tarball != "" {
+		ans.Tarball = atom.Tarball
+	}
+	if atom.Github != nil {
+		if a.Github == nil {
+			ans.Github = atom.Github
+		} else {
+			if atom.Github.User != "" {
+				ans.Github.User = atom.Github.User
+			}
+			if atom.Github.Repo != "" {
+				ans.Github.Repo = atom.Github.Repo
+			}
+			if atom.Github.Query != "" {
+				ans.Github.Query = atom.Github.Query
+			}
+			if atom.Github.PerPage != nil {
+				ans.Github.PerPage = atom.Github.PerPage
+			}
+			if atom.Github.Page != nil {
+				ans.Github.Page = atom.Github.Page
+			}
+			if atom.Github.NumPages != nil {
+				ans.Github.NumPages = atom.Github.NumPages
+			}
+		}
+	}
+
+	if atom.Dir != nil {
+		if ans.Dir == nil {
+			ans.Dir = atom.Dir
+		} else {
+			if atom.Dir.Url != "" {
+				ans.Dir.Url = atom.Dir.Url
+			}
+			if atom.Dir.Matcher != "" {
+				ans.Dir.Matcher = atom.Dir.Matcher
+			}
+			if atom.Dir.ExcludesMatcher != "" {
+				ans.Dir.ExcludesMatcher = atom.Dir.ExcludesMatcher
+			}
+		}
+	}
+
+	if atom.Python != nil {
+		if ans.Python == nil {
+			ans.Python = atom.Python
+		} else {
+			if atom.Python.PythonCompat != "" {
+				ans.Python.PythonCompat = atom.Python.PythonCompat
+			}
+			if atom.Python.PypiName != "" {
+				ans.Python.PypiName = atom.Python.PypiName
+			}
+			if atom.Python.DistutilsPEP517 != "" {
+				ans.Python.DistutilsPEP517 = atom.Python.DistutilsPEP517
+			}
+			if atom.Python.PythonRequiresIgnore != "" {
+				ans.Python.PythonRequiresIgnore = atom.Python.PythonRequiresIgnore
+			}
+			if len(atom.Python.Pydeps) > 0 {
+				for k, v := range atom.Python.Pydeps {
+					ans.Python.Pydeps[k] = v
+				}
+			}
+		}
+	}
+
+	if len(ans.Vars) > 0 && len(atom.Vars) > 0 {
+		for k, v := range atom.Vars {
+			ans.Vars[k] = v
+		}
+
+	} else {
+		ans.Vars = atom.Vars
+	}
+
+	if atom.Category != "" {
+		ans.Category = atom.Category
+	}
+	if atom.Template != "" {
+		ans.Template = atom.Template
+	}
+
+	if len(atom.Extensions) > 0 {
+		ans.Extensions = atom.Extensions
+	}
+
+	if atom.HasAssets() {
+		ans.Assets = atom.Assets
+	}
+	if atom.HasTransforms() {
+		ans.Transforms = atom.Transforms
+	}
+	if atom.HasSelector() {
+		ans.Selector = atom.Selector
+	}
+
+	return ans
+}
+
 func (a *AutogenAtom) Clone() *AutogenAtom {
 	ans := &AutogenAtom{
-		Name:         a.Name,
-		Tarball:      a.Tarball,
-		Vars:         a.Vars,
-		Category:     a.Category,
-		PythonCompat: a.PythonCompat,
+		Name:     a.Name,
+		Tarball:  a.Tarball,
+		Vars:     a.Vars,
+		Category: a.Category,
 	}
 
 	if a.Github != nil {
@@ -125,6 +231,15 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			Url:             a.Dir.Url,
 			Matcher:         a.Dir.Matcher,
 			ExcludesMatcher: a.Dir.ExcludesMatcher,
+		}
+	}
+
+	if a.Python != nil {
+		ans.Python = &AutogenPythonOpts{
+			PythonCompat:    a.Python.PythonCompat,
+			PypiName:        a.Python.PypiName,
+			DistutilsPEP517: a.Python.DistutilsPEP517,
+			Pydeps:          make(map[string][]string, 0),
 		}
 	}
 

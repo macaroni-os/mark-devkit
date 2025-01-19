@@ -460,12 +460,26 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		def = &specs.AutogenAtom{
 			Github: &specs.AutogenGithubProps{},
 			Dir:    &specs.AutogenDirlistingProps{},
+			Python: &specs.AutogenPythonOpts{},
 			Vars:   make(map[string]interface{}, 0),
+		}
+	} else {
+		// Ensure that object are not nil to avoid segfault.
+		if def.Github == nil {
+			def.Github = &specs.AutogenGithubProps{}
+		}
+		if def.Dir == nil {
+			def.Dir = &specs.AutogenDirlistingProps{}
+		}
+		if def.Python == nil {
+			def.Python = &specs.AutogenPythonOpts{}
 		}
 	}
 
+	atom = def.Clone().Merge(atom)
+
 	// Retrieve package metadata and last versions
-	valuesRef, err := generator.Process(atom, def)
+	valuesRef, err := generator.Process(atom)
 	if err != nil {
 		return err
 	}
@@ -546,13 +560,16 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 			sanitizedVersions = append(sanitizedVersions, sv)
 		}
 
-		sanitizedVersions, err = a.sortVersions(atom, def, sanitizedVersions)
+		sanitizedVersions, err = a.sortVersions(atom, sanitizedVersions)
 		if err != nil {
 			return err
 		}
 
 	} else {
-		sanitizedVersions = versions
+		sanitizedVersions, err = a.sortVersions(atom, versions)
+		if err != nil {
+			return err
+		}
 	}
 
 	if len(sanitizedVersions) == 0 {
@@ -602,6 +619,16 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	err = generator.SetVersion(atom, selectedVersion, &values)
 	if err != nil {
 		return err
+	}
+
+	if opts.ShowGeneratedValues {
+		data, err := yaml.Marshal(values)
+		if err != nil {
+			return err
+		}
+		a.Logger.InfoC(fmt.Sprintf(
+			":eyes:[%s] Values for templates:\n%s", atom.Name,
+			string(data)))
 	}
 
 	toAdd, err := a.isVersion2Add(atom, def, selectedVersion)

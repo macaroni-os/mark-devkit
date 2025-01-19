@@ -40,7 +40,7 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 	return &ans, nil
 }
 
-func (a *AutogenBot) sortVersions(atom, def *specs.AutogenAtom, versions []string) ([]string, error) {
+func (a *AutogenBot) sortVersions(atom *specs.AutogenAtom, versions []string) ([]string, error) {
 	// In order to avoid issues with go-version on parse particular versions
 	// I prefer to use GentooPackage that already support different versions and sorting.
 
@@ -49,12 +49,17 @@ func (a *AutogenBot) sortVersions(atom, def *specs.AutogenAtom, versions []strin
 
 	for idx := range versions {
 		gp, err := gentoo.ParsePackageStr(fmt.Sprintf("%s/%s-%s",
-			atom.GetCategory(def),
+			atom.Category,
 			atom.Name,
 			versions[idx],
 		))
 		if err != nil {
 			return ans, err
+		}
+		if gp.Version == "" {
+			a.Logger.Debug(fmt.Sprintf(
+				":warning: [%s] Ignoring version %s", atom.Name, versions[idx]))
+			continue
 		}
 
 		pkgs = append(pkgs, *gp)

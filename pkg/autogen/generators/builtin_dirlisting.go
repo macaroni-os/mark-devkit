@@ -104,45 +104,30 @@ func (g *DirlistingGenerator) SetVersion(atom *specs.AutogenAtom, version string
 	return nil
 }
 
-func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom,
-	def *specs.AutogenAtom) (*map[string]interface{}, error) {
+func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {
 	ans := make(map[string]interface{}, 0)
 
-	dData := def.Clone()
-
-	if atom.Dir != nil {
-		if atom.Dir.Url != "" {
-			dData.Dir.Url = atom.Dir.Url
-		}
-		if atom.Dir.Matcher != "" {
-			dData.Dir.Matcher = atom.Dir.Matcher
-		}
-		if atom.Dir.ExcludesMatcher != "" {
-			dData.Dir.ExcludesMatcher = atom.Dir.ExcludesMatcher
-		}
-	}
-
-	if dData.Dir.Matcher == "" {
+	if atom.Dir.Matcher == "" {
 		return nil, fmt.Errorf("[%s] No matcher defined!", atom.Name)
 	}
-	if dData.Dir.Url == "" {
+	if atom.Dir.Url == "" {
 		return nil, fmt.Errorf("[%s] No url defined!", atom.Name)
 	}
 
 	var rexclude *regexp.Regexp = nil
 
-	r := regexp.MustCompile(dData.Dir.Matcher)
+	r := regexp.MustCompile(atom.Dir.Matcher)
 	if r == nil {
 		return nil, fmt.Errorf("[%s] invalid regex on matcher", atom.Name)
 	}
-	if dData.Dir.ExcludesMatcher != "" {
-		rexclude = regexp.MustCompile(dData.Dir.ExcludesMatcher)
+	if atom.Dir.ExcludesMatcher != "" {
+		rexclude = regexp.MustCompile(atom.Dir.ExcludesMatcher)
 		if rexclude == nil {
 			return nil, fmt.Errorf("[%s] invalid regex on exclude", atom.Name)
 		}
 	}
 
-	uri, err := url.Parse(dData.Dir.Url)
+	uri, err := url.Parse(atom.Dir.Url)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +142,7 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom,
 		uri.Host+path.Dir(uri.Path), ssl)
 
 	resource := ""
-	if !strings.HasSuffix(dData.Dir.Url, "/") {
+	if !strings.HasSuffix(atom.Dir.Url, "/") {
 		resource = path.Base(uri.Path)
 	}
 
@@ -208,10 +193,10 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom,
 					if strings.HasPrefix(attr.Val, "https") || strings.HasPrefix(attr.Val, "http") {
 						links[path.Base(attr.Val)] = attr.Val
 					} else {
-						if strings.HasSuffix(dData.Dir.Url, "/") {
-							links[path.Base(attr.Val)] = dData.Dir.Url + attr.Val
+						if strings.HasSuffix(atom.Dir.Url, "/") {
+							links[path.Base(attr.Val)] = atom.Dir.Url + attr.Val
 						} else {
-							links[path.Base(attr.Val)] = dData.Dir.Url + "/" + attr.Val
+							links[path.Base(attr.Val)] = atom.Dir.Url + "/" + attr.Val
 						}
 					}
 				}
@@ -223,7 +208,7 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom,
 	}
 	findLinks(doc)
 
-	ans["url"] = dData.Dir.Url
+	ans["url"] = atom.Dir.Url
 	ans["versions"] = versions
 	ans["links"] = links
 

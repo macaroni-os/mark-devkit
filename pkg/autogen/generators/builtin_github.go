@@ -154,51 +154,27 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	return nil
 }
 
-func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
-	def *specs.AutogenAtom) (*map[string]interface{}, error) {
+func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {
 	ans := make(map[string]interface{}, 0)
 	ctx := context.Background()
 
-	ghData := def.Clone()
-
-	if atom.Github != nil {
-		if atom.Github.User != "" {
-			ghData.Github.User = atom.Github.User
-		}
-		if atom.Github.Repo != "" {
-			ghData.Github.Repo = atom.Github.Repo
-		}
-		if atom.Github.Query != "" {
-			ghData.Github.Query = atom.Github.Query
-		}
-		if atom.Github.PerPage != nil {
-			ghData.Github.PerPage = atom.Github.PerPage
-		}
-		if atom.Github.Page != nil {
-			ghData.Github.Page = atom.Github.Page
-		}
-		if atom.Github.NumPages != nil {
-			ghData.Github.NumPages = atom.Github.NumPages
-		}
+	if atom.Github.Repo == "" {
+		atom.Github.Repo = atom.Name
 	}
 
-	if ghData.Github.Repo == "" {
-		ghData.Github.Repo = atom.Name
-	}
-
-	if ghData.Github.Repo == "" {
+	if atom.Github.Repo == "" {
 		return nil, fmt.Errorf("no github repo defined for atom %s",
 			atom.Name)
 	}
-	if ghData.Github.User == "" {
+	if atom.Github.User == "" {
 		return nil, fmt.Errorf("no github user defined for atom %s",
 			atom.Name)
 	}
-	if ghData.Github.Query == "" {
+	if atom.Github.Query == "" {
 		return nil, fmt.Errorf("no github query defined for atom %s",
 			atom.Name)
 	}
-	if ghData.Github.Query != "releases" && ghData.Github.Query != "tags" {
+	if atom.Github.Query != "releases" && atom.Github.Query != "tags" {
 		return nil, fmt.Errorf("github query with invalid query for atom %s",
 			atom.Name)
 	}
@@ -207,25 +183,25 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
 	validTags := make(map[string]*github.RepositoryTag, 0)
 	versions := []string{}
 
-	if ghData.Github.Page != nil || ghData.Github.PerPage != nil {
+	if atom.Github.Page != nil || atom.Github.PerPage != nil {
 		lopts = &github.ListOptions{}
-		if ghData.Github.Page != nil {
-			lopts.Page = *ghData.Github.Page
+		if atom.Github.Page != nil {
+			lopts.Page = *atom.Github.Page
 		} else {
 			lopts.Page = 1
 		}
-		if ghData.Github.PerPage != nil {
-			lopts.PerPage = *ghData.Github.PerPage
+		if atom.Github.PerPage != nil {
+			lopts.PerPage = *atom.Github.PerPage
 		}
 	}
 
-	if ghData.Github.Query == "tags" {
+	if atom.Github.Query == "tags" {
 		tt := []*github.RepositoryTag{}
 
-		if ghData.Github.NumPages != nil {
-			for page := 1; page < *ghData.Github.NumPages; page++ {
+		if atom.Github.NumPages != nil {
+			for page := 1; page < *atom.Github.NumPages; page++ {
 				tags, resp, err := g.Client.Repositories.ListTags(
-					ctx, ghData.Github.User, ghData.Github.Repo,
+					ctx, atom.Github.User, atom.Github.Repo,
 					lopts,
 				)
 				if err != nil {
@@ -243,7 +219,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
 		} else {
 			// POST: Read only one page.
 			tags, _, err := g.Client.Repositories.ListTags(
-				ctx, ghData.Github.User, ghData.Github.Repo, lopts,
+				ctx, atom.Github.User, atom.Github.Repo, lopts,
 			)
 			if err != nil {
 				return nil, err
@@ -267,17 +243,17 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
 		rr := []*github.RepositoryRelease{}
 		tagsMap := make(map[string]*github.RepositoryTag, 0)
 
-		if ghData.Github.NumPages != nil {
-			for page := 1; page < *ghData.Github.NumPages; page++ {
+		if atom.Github.NumPages != nil {
+			for page := 1; page < *atom.Github.NumPages; page++ {
 				releases, resp, err := g.Client.Repositories.ListReleases(
-					ctx, ghData.Github.User, ghData.Github.Repo, lopts,
+					ctx, atom.Github.User, atom.Github.Repo, lopts,
 				)
 				if err != nil {
 					return nil, err
 				}
 
 				tags, resp, err := g.Client.Repositories.ListTags(
-					ctx, ghData.Github.User, ghData.Github.Repo, lopts,
+					ctx, atom.Github.User, atom.Github.Repo, lopts,
 				)
 				if err != nil {
 					return nil, err
@@ -298,14 +274,14 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
 		} else {
 			// POST: Read only one page.
 			releases, _, err := g.Client.Repositories.ListReleases(
-				ctx, ghData.Github.User, ghData.Github.Repo, lopts,
+				ctx, atom.Github.User, atom.Github.Repo, lopts,
 			)
 			if err != nil {
 				return nil, err
 			}
 
 			tags, _, err := g.Client.Repositories.ListTags(
-				ctx, ghData.Github.User, ghData.Github.Repo, lopts,
+				ctx, atom.Github.User, atom.Github.Repo, lopts,
 			)
 			if err != nil {
 				return nil, err
@@ -344,8 +320,8 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom,
 
 	ans["versions"] = versions
 	ans["tags"] = validTags
-	ans["github_user"] = ghData.Github.User
-	ans["github_repo"] = ghData.Github.Repo
+	ans["github_user"] = atom.Github.User
+	ans["github_repo"] = atom.Github.Repo
 
 	return &ans, nil
 }
