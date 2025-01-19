@@ -52,6 +52,8 @@ type AutogenAtom struct {
 
 	Transforms []*AutogenTransform `json:"transform,omitempty" yaml:"transform,omitempty"`
 	Selector   []string            `json:"selector,omitempty" yaml:"selector,omitempty"`
+
+	IgnoreArtefacts *bool `json:"ignore_artefacts,omitempty" yaml:"ignore_artefacts,omitempty"`
 }
 
 type AutogenPythonOpts struct {

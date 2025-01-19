@@ -56,7 +56,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		return nil, err
 	}
 
-	if len(artefacts) > 0 {
+	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
 		// Download tarballs
 		for idx, art := range artefacts {
 			filename := art.Name

@@ -207,15 +207,20 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 		ans.Selector = atom.Selector
 	}
 
+	if atom.IgnoreArtefacts != nil {
+		ans.IgnoreArtefacts = atom.IgnoreArtefacts
+	}
+
 	return ans
 }
 
 func (a *AutogenAtom) Clone() *AutogenAtom {
 	ans := &AutogenAtom{
-		Name:     a.Name,
-		Tarball:  a.Tarball,
-		Vars:     a.Vars,
-		Category: a.Category,
+		Name:            a.Name,
+		Tarball:         a.Tarball,
+		Vars:            a.Vars,
+		Category:        a.Category,
+		IgnoreArtefacts: a.IgnoreArtefacts,
 	}
 
 	if a.Github != nil {
