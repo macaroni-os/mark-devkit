@@ -26,18 +26,26 @@ x11libs:
           - name: "libX11-{{ .Values.version}}.tar.bz2"
             prefix: https://www.x.org/releases/individual/lib/
 
-    - metatools:
-        category: sys-apps
-        vars:
-          github_user: macaroni-os
-          github_repo: funtoo-metatools
-          homepage: https://github.com/macaroni-os/funtoo-metatools
-          license: Apache-2.0
-          desc: "M.A.R.K. metatools -- autogeneration framework."
-          versions:
-            - 1.3.8_pre20240818
-          snapshot: 3ca77d7dac6b9256e161d0bce47c7f7eb85e6e96
+funtoo:
+  generator: builtin-noop
+  template:
+    engine: helm
 
+  defaults:
+    category: sys-apps
+    vars:
+      github_user: macaroni-os
+      github_repo: funtoo-metatools
+      homepage: https://github.com/macaroni-os/funtoo-metatools
+      license: Apache-2.0
+      desc: "M.A.R.K. metatools -- autogeneration framework."
+      versions:
+        - 1.3.8_pre20240818
+      snapshot: 3ca77d7dac6b9256e161d0bce47c7f7eb85e6e96
+
+  packages:
+
+    - metatools:
         assets:
           - name: "{{ .Values.pn }}-{{ .Values.version }}-{{ substr 0 7 .Values.snapshot }}.zip"
             url: "https://github.com/{{ .Values.github_user }}/{{ .Values.github_repo }}/archive/{{ .Values.snapshot }}.zip"
