@@ -72,7 +72,10 @@ func (m *MergeBot) mergeAtom(atom *specs.RepoScanAtom,
 			atom.Atom, err.Error())
 	}
 
-	files4commit := []string{ebuildFile, manifestFile}
+	files4commit := []string{ebuildFile}
+	if manifestFile != "" {
+		files4commit = append(files4commit, manifestFile)
+	}
 	if oldEbuildFile != "" {
 		files4commit = append(files4commit, oldEbuildFile)
 	}
@@ -228,7 +231,10 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 	manifest := NewManifestFile(files)
 	manifestFile := filepath.Join(targetPkgDir, "Manifest")
 
-	return manifestFile, manifest.Write(manifestFile)
+	if len(files) > 0 {
+		return manifestFile, manifest.Write(manifestFile)
+	}
+	return "", nil
 }
 
 func (m *MergeBot) copyEbuild(sourcePkgDir, targetPkgDir string,
