@@ -46,6 +46,7 @@ type AutogenAtom struct {
 	Category string                  `json:"category,omitempty" yaml:"category,omitempty"`
 
 	Template string `json:"template,omitempty" yaml:"template,omitempty"`
+	FilesDir string `json:"files_dir,omitempty" yaml:"files_dir,omitempty"`
 
 	Extensions []string        `json:"extensions,omitempty" yaml:"extensions,omitempty"`
 	Assets     []*AutogenAsset `json:"assets,omitempty" yaml:"assets,omitempty"`

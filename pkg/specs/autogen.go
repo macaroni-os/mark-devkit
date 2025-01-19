@@ -192,6 +192,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 	if atom.Template != "" {
 		ans.Template = atom.Template
 	}
+	if atom.FilesDir != "" {
+		ans.FilesDir = atom.FilesDir
+	}
 
 	if len(atom.Extensions) > 0 {
 		ans.Extensions = atom.Extensions
@@ -221,6 +224,8 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 		Vars:            a.Vars,
 		Category:        a.Category,
 		IgnoreArtefacts: a.IgnoreArtefacts,
+		Template:        a.Template,
+		FilesDir:        a.FilesDir,
 	}
 
 	if a.Github != nil {

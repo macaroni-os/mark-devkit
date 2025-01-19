@@ -6,7 +6,9 @@ package autogen
 
 import (
 	"fmt"
+	"io/fs"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -104,7 +106,105 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		return ans, err
 	}
 
-	return ans, nil
+	filesDirPath := filepath.Join(filepath.Dir(aspec.File), atom.Category, pn, "files")
+
+	// Process files dir
+	if atom.FilesDir != "" {
+		filesDirPath, err = helpers.RenderContentWithTemplates(
+			atom.FilesDir,
+			"", "", "atom.filesdir", values, []string{},
+		)
+		if err != nil {
+			return ans, err
+		}
+	}
+
+	if utils.Exists(filesDirPath) {
+		pkgFilesDir := filepath.Join(pkgDirStaging, "files")
+		err = a.copyFilesDir(filesDirPath, pkgFilesDir)
+	}
+
+	return ans, err
+}
+
+func (a *AutogenBot) copyFilesDir(sourcedir, targetdir string) error {
+
+	a.Logger.Debug(fmt.Sprintf("Analyzing directory %s...", sourcedir))
+
+	entries, err := os.ReadDir(sourcedir)
+	if err != nil {
+		return fmt.Errorf("error on reading dir %s: %s",
+			sourcedir, err.Error())
+	}
+
+	if !utils.Exists(targetdir) {
+		err = helpers.EnsureDirWithoutIds(targetdir, 0755)
+		if err != nil {
+			return fmt.Errorf(
+				"error on create dir %s: %s",
+				targetdir, err.Error())
+		}
+	}
+
+	if len(entries) == 0 {
+		return nil
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			err := a.copyFilesDir(
+				filepath.Join(sourcedir, entry.Name()),
+				filepath.Join(targetdir, entry.Name()),
+			)
+			if err != nil {
+				return fmt.Errorf(
+					"error on copy subdir %s: %s",
+					entry.Name(), err.Error())
+			}
+
+		} else {
+
+			sourceFile := filepath.Join(sourcedir, entry.Name())
+			targetFile := filepath.Join(targetdir, entry.Name())
+
+			fi, _ := os.Lstat(sourceFile)
+			if fi.Mode()&fs.ModeSymlink != 0 {
+				// POST: file is a link.
+
+				if utils.Exists(targetFile) {
+					// Keep things easy. If the path
+					// exists I just avoid to manage all the
+					// possible use cases. We can fix the link
+					// manually eventually.
+					continue
+				}
+
+				symlink, err := os.Readlink(sourceFile)
+				if err != nil {
+					return fmt.Errorf(
+						"error on readlink %s: %s",
+						sourceFile, err.Error())
+				}
+
+				if err = os.Symlink(symlink, targetFile); err != nil {
+					return fmt.Errorf(
+						"error on create symlink %s -> %s: %s",
+						symlink, targetFile, err.Error())
+				}
+
+			} else {
+				err = helpers.CopyFile(sourceFile, targetFile)
+				if err != nil {
+					return fmt.Errorf(
+						"error on copy file %s -> %s: %s",
+						sourceFile, targetFile,
+						err.Error())
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 func (a *AutogenBot) downloadArtefact(atomUrl, tarballName string) (*specs.RepoScanFile, error) {
