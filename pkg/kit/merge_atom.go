@@ -206,6 +206,7 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 	atom *specs.RepoScanAtom) (string, error) {
 	// Retrive manifest files of existing ebuilds
 	existingAtoms, _ := m.TargetResolver.GetPackageVersions(atom.CatPkg)
+	originalVersion, _ := atom.Metadata["original_version"]
 
 	files := atom.Files
 
@@ -224,6 +225,19 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 
 	if len(existingAtoms) > 0 {
 		for _, a := range existingAtoms {
+			if originalVersion != "" {
+				existingAtomGp, err := a.ToGentooPackage()
+				if err != nil {
+					return "", err
+				}
+
+				if originalVersion == existingAtomGp.GetPVR() {
+					// Skipping tarballs. We use the tarball of the
+					// new bump.
+					continue
+				}
+			}
+
 			files = append(files, a.Files...)
 		}
 	}
@@ -252,6 +266,11 @@ func (m *MergeBot) copyEbuild(sourcePkgDir, targetPkgDir string,
 	target := filepath.Join(targetPkgDir, ebuildName)
 
 	if utils.Exists(target) {
+		// Store the original version in the atom metadata in
+		// order to exclude existing tarball from the Manifest
+		// generation.
+		atom.Metadata["original_version"] = gpkg.GetPVR()
+
 		// If the package already exist i will bump a new release.
 		gpkg.IncrementRevision()
 		atom.Atom = fmt.Sprintf("%s-%s", gpkg.GetPackageName(), gpkg.GetPVR())
