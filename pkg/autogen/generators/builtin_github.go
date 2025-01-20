@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
+	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	"github.com/google/go-github/v68/github"
@@ -154,9 +155,48 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	return nil
 }
 
+func (g *GithubGenerator) getTags(atom *specs.AutogenAtom,
+	lopts *github.ListOptions) ([]*github.RepositoryTag, error) {
+	tt := []*github.RepositoryTag{}
+	ctx := context.Background()
+
+	if atom.Github.NumPages != nil {
+		for page := 1; page < *atom.Github.NumPages; page++ {
+			tags, resp, err := g.Client.Repositories.ListTags(
+				ctx, atom.Github.User, atom.Github.Repo,
+				lopts,
+			)
+			if err != nil {
+				return tt, err
+			}
+
+			tt = append(tt, tags...)
+
+			lopts.Page = resp.NextPage
+			if lopts.Page > resp.LastPage {
+				break
+			}
+		}
+
+	} else {
+		// POST: Read only one page.
+		tags, _, err := g.Client.Repositories.ListTags(
+			ctx, atom.Github.User, atom.Github.Repo, lopts,
+		)
+		if err != nil {
+			return tt, err
+		}
+
+		tt = tags
+	}
+
+	return tt, nil
+}
+
 func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {
 	ans := make(map[string]interface{}, 0)
 	ctx := context.Background()
+	log := logger.GetDefaultLogger()
 
 	if atom.Github.Repo == "" {
 		atom.Github.Repo = atom.Name
@@ -183,12 +223,16 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	validTags := make(map[string]*github.RepositoryTag, 0)
 	versions := []string{}
 
-	if atom.Github.Page != nil || atom.Github.PerPage != nil {
+	if atom.Github.Page != nil || atom.Github.PerPage != nil || atom.Github.NumPages != nil {
 		lopts = &github.ListOptions{}
 		if atom.Github.Page != nil {
 			lopts.Page = *atom.Github.Page
 		} else {
 			lopts.Page = 1
+		}
+		if atom.Github.NumPages == nil {
+			npages := 1
+			atom.Github.NumPages = &npages
 		}
 		if atom.Github.PerPage != nil {
 			lopts.PerPage = *atom.Github.PerPage
@@ -196,36 +240,10 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	}
 
 	if atom.Github.Query == "tags" {
-		tt := []*github.RepositoryTag{}
 
-		if atom.Github.NumPages != nil {
-			for page := 1; page < *atom.Github.NumPages; page++ {
-				tags, resp, err := g.Client.Repositories.ListTags(
-					ctx, atom.Github.User, atom.Github.Repo,
-					lopts,
-				)
-				if err != nil {
-					return nil, err
-				}
-
-				tt = append(tt, tags...)
-
-				lopts.Page = resp.NextPage
-				if lopts.Page > resp.LastPage {
-					break
-				}
-			}
-
-		} else {
-			// POST: Read only one page.
-			tags, _, err := g.Client.Repositories.ListTags(
-				ctx, atom.Github.User, atom.Github.Repo, lopts,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			tt = tags
+		tt, err := g.getTags(atom, lopts)
+		if err != nil {
+			return nil, err
 		}
 
 		for idx := range tt {
@@ -240,8 +258,19 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 		}
 
 	} else {
+		// POST: query == releases
+
 		rr := []*github.RepositoryRelease{}
 		tagsMap := make(map[string]*github.RepositoryTag, 0)
+
+		tags, err := g.getTags(atom, lopts)
+		if err != nil {
+			return nil, err
+		}
+
+		for i := range tags {
+			tagsMap[tags[i].GetName()] = tags[i]
+		}
 
 		if atom.Github.NumPages != nil {
 			for page := 1; page < *atom.Github.NumPages; page++ {
@@ -250,17 +279,6 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 				)
 				if err != nil {
 					return nil, err
-				}
-
-				tags, resp, err := g.Client.Repositories.ListTags(
-					ctx, atom.Github.User, atom.Github.Repo, lopts,
-				)
-				if err != nil {
-					return nil, err
-				}
-
-				for i := range tags {
-					tagsMap[tags[i].GetName()] = tags[i]
 				}
 
 				rr = append(rr, releases...)
@@ -280,21 +298,11 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 				return nil, err
 			}
 
-			tags, _, err := g.Client.Repositories.ListTags(
-				ctx, atom.Github.User, atom.Github.Repo, lopts,
-			)
-			if err != nil {
-				return nil, err
-			}
-
-			for i := range tags {
-				tagsMap[tags[i].GetName()] = tags[i]
-			}
-
 			rr = releases
 		}
 
 		validReleases := make(map[string]*github.RepositoryRelease, 0)
+		var present bool
 
 		for idx := range rr {
 			if (rr[idx].Prerelease != nil && *rr[idx].Prerelease) ||
@@ -302,7 +310,15 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 				continue
 			}
 
-			validTags[rr[idx].GetTagName()], _ = tagsMap[rr[idx].GetTagName()]
+			validTags[rr[idx].GetTagName()], present = tagsMap[rr[idx].GetTagName()]
+			if !present {
+				if log.Config.GetGeneral().Debug {
+					log.Debug(fmt.Sprintf(
+						"[%s] Release %s without tag. Skipped. Try to increase pages.",
+						atom.Name, rr[idx].GetName()))
+				}
+				continue
+			}
 			version := rr[idx].GetName()
 
 			if strings.HasPrefix(version, "v") {
