@@ -365,6 +365,8 @@ The generator availables at the moment are:
 
 * `builtin-noop`: this generator permits to define static versions and/or snapshot.
 
+* `builtin-pypi`: this generator permits to use Pypi JSON API to retrieve releases
+
 ## Definitions
 
 In the *autogen* language every block of YAML is called *definition* and is managed
