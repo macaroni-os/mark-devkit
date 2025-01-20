@@ -230,9 +230,12 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 
 	if a.Github != nil {
 		ans.Github = &AutogenGithubProps{
-			User:  a.Github.User,
-			Repo:  a.Github.Repo,
-			Query: a.Github.Query,
+			User:     a.Github.User,
+			Repo:     a.Github.Repo,
+			Query:    a.Github.Query,
+			PerPage:  a.Github.PerPage,
+			Page:     a.Github.Page,
+			NumPages: a.Github.NumPages,
 		}
 	}
 
