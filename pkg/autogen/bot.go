@@ -499,7 +499,8 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		}
 	}
 
-	atom = def.Clone().Merge(atom)
+	def = def.Clone()
+	atom = def.Merge(atom)
 
 	// Retrieve package metadata and last versions
 	valuesRef, err := generator.Process(atom)

@@ -221,11 +221,17 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 	ans := &AutogenAtom{
 		Name:            a.Name,
 		Tarball:         a.Tarball,
-		Vars:            a.Vars,
+		Vars:            make(map[string]interface{}, 0),
 		Category:        a.Category,
 		IgnoreArtefacts: a.IgnoreArtefacts,
 		Template:        a.Template,
 		FilesDir:        a.FilesDir,
+	}
+
+	if len(a.Vars) > 0 {
+		for k, v := range a.Vars {
+			ans.Vars[k] = v
+		}
 	}
 
 	if a.Github != nil {
@@ -254,6 +260,13 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			DistutilsPEP517: a.Python.DistutilsPEP517,
 			Pydeps:          make(map[string][]string, 0),
 		}
+
+		if len(a.Python.Pydeps) > 0 {
+			for k, v := range a.Python.Pydeps {
+				ans.Python.Pydeps[k] = v
+			}
+		}
+
 	}
 
 	return ans
