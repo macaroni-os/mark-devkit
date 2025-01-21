@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -538,6 +539,22 @@ func (f *FetcherCommon) downloadArtefact(atomUrl, atomName, fileSha512, fileBlak
 				atomName, artefact.Sha512, fileBlake2b)
 		}
 
+	}
+
+	return nil
+}
+
+func (f *FetcherCommon) EnsureLayout(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
+	layoutConfFile := filepath.Join(f.GetDownloadDir(), "layout.conf")
+	if !utils.Exists(layoutConfFile) {
+		// We support only flat mode for now.
+		data := []byte(`[structure]
+0=flat
+`)
+		err := os.WriteFile(layoutConfFile, data, 0640)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

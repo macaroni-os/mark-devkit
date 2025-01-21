@@ -96,6 +96,11 @@ func (f *FetcherDir) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error
 		return err
 	}
 
+	err = f.EnsureLayout(mkit, opts)
+	if err != nil {
+		return err
+	}
+
 	// Create gentoo packages for filters
 	filters := []*gentoo.GentooPackage{}
 	if len(opts.Atoms) > 0 {

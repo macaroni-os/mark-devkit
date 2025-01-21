@@ -140,7 +140,6 @@ func (f *FetcherS3) Sync(specfile string, opts *FetchOpts) error {
 }
 
 func (f *FetcherS3) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error {
-
 	// Prepare download directory
 	err := helpers.EnsureDirWithoutIds(f.GetDownloadDir(), 0755)
 	if err != nil {
@@ -151,6 +150,29 @@ func (f *FetcherS3) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error 
 	mapFilesObjects, err := f.getS3Files(mkit, opts)
 	if err != nil {
 		return err
+	}
+
+	if _, present := (*mapFilesObjects)["layout.conf"]; !present {
+		err = f.EnsureLayout(mkit, opts)
+		if err != nil {
+			return err
+		}
+		layoutConfFile := filepath.Join(f.GetDownloadDir(), "layout.conf")
+
+		fHashReader, err := helpers.GetFileHashes(layoutConfFile)
+		if err != nil {
+			return err
+		}
+
+		hashes := make(map[string]string, 0)
+		hashes["blake2b"] = fHashReader.Blake2b()
+		hashes["sha512"] = fHashReader.Sha512()
+		hashes["md5"] = fHashReader.MD5()
+
+		err = f.SyncFile("layout.conf", layoutConfFile, "layout.conf", &hashes)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Create gentoo packages for filters
