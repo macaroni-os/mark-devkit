@@ -152,7 +152,8 @@ func (f *FetcherS3) syncAtoms(mkit *specs.DistfilesSpec, opts *FetchOpts) error 
 		return err
 	}
 
-	if _, present := (*mapFilesObjects)["layout.conf"]; !present {
+	layoutS3Path := filepath.Join(f.Prefix, "layout.conf")
+	if _, present := (*mapFilesObjects)[layoutS3Path]; !present {
 		err = f.EnsureLayout(mkit, opts)
 		if err != nil {
 			return err
