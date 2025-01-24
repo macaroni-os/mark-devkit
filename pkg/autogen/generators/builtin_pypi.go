@@ -16,6 +16,7 @@ import (
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/kit"
+	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
@@ -218,6 +219,7 @@ func (g *PypiGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 
 func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 	version string, mapref *map[string]interface{}, info *specs.PypiPackageInfo) error {
+	log := logger.GetDefaultLogger()
 
 	var err error
 	values := *mapref
@@ -307,20 +309,56 @@ func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 		}
 
 	} else if len(info.RequiresDist) > 0 {
+
+		// Prepare regex filters
+		filters := []*regexp.Regexp{}
+
+		if len(atom.Python.DepsIgnore) > 0 {
+			for _, d := range atom.Python.DepsIgnore {
+				rr := regexp.MustCompile(d)
+				if rr != nil {
+					filters = append(filters, rr)
+				} else {
+					// TODO: add warning
+				}
+			}
+
+		}
+
 		// Try to use requires from pypi JSON
 
 		for _, str := range info.RequiresDist {
+
+			if len(filters) > 0 {
+				toSkip := false
+				for _, r := range filters {
+					if r.MatchString(str) {
+						toSkip = true
+						if log.Config.GetGeneral().Debug {
+							log.Debug(fmt.Sprintf(
+								"[%s] Skip depend %s filtered.",
+								atom.Name, str))
+						}
+						break
+					}
+				}
+				if toSkip {
+					continue
+				}
+			}
+
 			// Ignore extra note
 			rdWords := strings.Split(str, ";")
 
-			pnameidx := strings.Index(rdWords[0], "<")
-			if strings.Index(rdWords[0], ">") > 0 && strings.Index(rdWords[0], ">") < pnameidx {
+			pnameidx := len(rdWords[0])
+
+			if strings.Index(rdWords[0], "<") > 0 {
+				pnameidx = strings.Index(rdWords[0], "<")
+			} else if strings.Index(rdWords[0], ">") > 0 && strings.Index(rdWords[0], ">") < pnameidx {
 				pnameidx = strings.Index(rdWords[0], ">")
-			}
-			if strings.Index(rdWords[0], "!=") > 0 && strings.Index(rdWords[0], "!=") < pnameidx {
+			} else if strings.Index(rdWords[0], "!=") > 0 && strings.Index(rdWords[0], "!=") < pnameidx {
 				pnameidx = strings.Index(rdWords[0], "!=")
-			}
-			if strings.Index(rdWords[0], "==") > 0 && strings.Index(rdWords[0], "==") < pnameidx {
+			} else if strings.Index(rdWords[0], "==") > 0 && strings.Index(rdWords[0], "==") < pnameidx {
 				pnameidx = strings.Index(rdWords[0], "==")
 			}
 

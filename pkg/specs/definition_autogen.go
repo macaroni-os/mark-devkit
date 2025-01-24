@@ -60,6 +60,7 @@ type AutogenAtom struct {
 type AutogenPythonOpts struct {
 	PythonCompat         string              `json:"python_compat,omitempty" yaml:"python_compat,omitempty"`
 	PythonRequiresIgnore string              `json:"python_requires_ignore,omitempty" yaml:"python_requires_ignore,omitempty"`
+	DepsIgnore           []string            `json:"pydeps_ignore,omitempty" yaml:"pydeps_ignore,omitempty"`
 	PypiName             string              `json:"pypi_name,omitempty" yaml:"pypi_name,omitempty"`
 	DistutilsPEP517      string              `json:"du_pep517,omitempty" yaml:"du_pep517,omitempty"`
 	Pydeps               map[string][]string `json:"pydeps,omitempty" yaml:"pydeps,omitempty"`

@@ -174,6 +174,11 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 					ans.Python.Pydeps[k] = v
 				}
 			}
+			if len(atom.Python.DepsIgnore) > 0 {
+				for _, d := range atom.Python.DepsIgnore {
+					ans.Python.DepsIgnore = append(ans.Python.DepsIgnore, d)
+				}
+			}
 		}
 	}
 
@@ -255,10 +260,18 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 
 	if a.Python != nil {
 		ans.Python = &AutogenPythonOpts{
-			PythonCompat:    a.Python.PythonCompat,
-			PypiName:        a.Python.PypiName,
-			DistutilsPEP517: a.Python.DistutilsPEP517,
-			Pydeps:          make(map[string][]string, 0),
+			PythonCompat:         a.Python.PythonCompat,
+			PythonRequiresIgnore: a.Python.PythonRequiresIgnore,
+			DepsIgnore:           []string{},
+			PypiName:             a.Python.PypiName,
+			DistutilsPEP517:      a.Python.DistutilsPEP517,
+			Pydeps:               make(map[string][]string, 0),
+		}
+
+		if len(a.Python.DepsIgnore) > 0 {
+			for _, d := range a.Python.DepsIgnore {
+				ans.Python.DepsIgnore = append(ans.Python.DepsIgnore, d)
+			}
 		}
 
 		if len(a.Python.Pydeps) > 0 {
