@@ -300,7 +300,8 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	for idx := range atomsAvailables {
 		agpg, _ := atomsAvailables[idx].ToGentooPackage()
 		if equal, _ := agpg.Equal(gpkg); equal {
-			return true, nil
+			toAdd = false
+			break
 		}
 
 		if toskip, _ := agpg.GreaterThan(gpkg); toskip {
