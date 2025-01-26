@@ -270,7 +270,7 @@ func (a *AutogenBot) downloadArtefact(atomUrl, tarballName string) (*specs.RepoS
 }
 
 func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
-	version string) (bool, error) {
+	version string, opts *AutogenBotOpts) (bool, error) {
 
 	if a.MergeBot.TargetKitIsANewBranch() {
 		return true, nil
@@ -300,17 +300,16 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	for idx := range atomsAvailables {
 		agpg, _ := atomsAvailables[idx].ToGentooPackage()
 		if equal, _ := agpg.Equal(gpkg); equal {
-			toAdd = false
-			break
+			if !opts.MergeForced {
+				toAdd = false
+				break
+			}
 		}
 
 		if toskip, _ := agpg.GreaterThan(gpkg); toskip {
 			toAdd = false
 		}
 	}
-
-	// Free memory
-	atomsAvailables = nil
 
 	return toAdd, nil
 }

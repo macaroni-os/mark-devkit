@@ -57,6 +57,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			pr, _ := cmd.Flags().GetBool("pr")
 			sync, _ := cmd.Flags().GetBool("sync")
 			showValues, _ := cmd.Flags().GetBool("show-values")
+			forceMergeCheck, _ := cmd.Flags().GetBool("force-merge-check")
 
 			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
 			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
@@ -118,6 +119,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			autogenOpts.PullSources = !skipPullSources
 			autogenOpts.GenReposcan = !skipGenReposcan
 			autogenOpts.MergeAutogen = !skipMerge
+			autogenOpts.MergeForced = forceMergeCheck
 			autogenOpts.ShowGeneratedValues = showValues
 
 			if githubUser != "" {
@@ -163,6 +165,8 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Bool("pr", false, "Push commit over specific branch and as Pull Request.")
 	flags.Bool("show-values", false,
 		"For debug purpose print generated values for any elaborated package in YAML format.")
+	flags.Bool("force-merge-check", false,
+		"Force merge comparision for package with the same version.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")

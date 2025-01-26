@@ -54,6 +54,7 @@ type AutogenBotOpts struct {
 	GenReposcan         bool
 	SyncFiles           bool
 	MergeAutogen        bool
+	MergeForced         bool
 	ShowGeneratedValues bool
 	Atoms               []string
 
@@ -77,6 +78,7 @@ func NewAutogenBotOpts() *AutogenBotOpts {
 		CleanWorkingDir:     true,
 		GithubUser:          "macaroni-os",
 		MergeAutogen:        true,
+		MergeForced:         true,
 		ShowGeneratedValues: false,
 		Atoms:               []string{},
 	}
@@ -655,7 +657,8 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 			string(data)))
 	}
 
-	toAdd, err := a.isVersion2Add(atom, def, selectedVersion)
+	toAdd, err := a.isVersion2Add(
+		atom, def, selectedVersion, opts)
 	if err != nil {
 		return err
 	}
