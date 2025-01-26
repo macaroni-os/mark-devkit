@@ -117,6 +117,8 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		if err != nil {
 			return ans, err
 		}
+		// Always create the path based on spec file path as base
+		filesDirPath = filepath.Join(filepath.Dir(aspec.File), filesDirPath)
 	}
 
 	if utils.Exists(filesDirPath) {
