@@ -58,6 +58,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			sync, _ := cmd.Flags().GetBool("sync")
 			showValues, _ := cmd.Flags().GetBool("show-values")
 			forceMergeCheck, _ := cmd.Flags().GetBool("force-merge-check")
+			atoms, _ := cmd.Flags().GetStringArray("pkg")
 
 			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
 			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
@@ -121,6 +122,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			autogenOpts.MergeAutogen = !skipMerge
 			autogenOpts.MergeForced = forceMergeCheck
 			autogenOpts.ShowGeneratedValues = showValues
+			autogenOpts.Atoms = atoms
 
 			if githubUser != "" {
 				autogenOpts.GithubUser = githubUser
@@ -185,6 +187,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.String("minio-region", "", "Optionally define the minio region.")
 	flags.String("minio-prefix", "",
 		"Set the prefix path to use or set env MINIO_PREFIX. Note: The path is without initial /.")
+	flags.StringArray("pkg", []string{}, "Elaborate only specified packages.")
 
 	return cmd
 }
