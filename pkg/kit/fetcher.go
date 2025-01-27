@@ -19,6 +19,7 @@ type Fetcher interface {
 	GetTargetDir() string
 	GetReposcanDir() string
 	GetDownloadDir() string
+	GetFilePath(f string) string
 	GetFilesList() ([]string, error)
 	GetType() string
 	GetStats() *AtomsStats

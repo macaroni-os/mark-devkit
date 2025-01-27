@@ -506,12 +506,16 @@ func (f *FetcherS3) syncAtom(mkit *specs.DistfilesSpec, opts *FetchOpts,
 	return nil
 }
 
+func (f *FetcherS3) GetFilePath(target string) string {
+	ans := filepath.Join(f.Prefix, target)
+	return ans
+}
+
 func (f *FetcherS3) SyncFile(name, source, target string, hashes *map[string]string) error {
-	s3objectPath := filepath.Join(f.Prefix, target)
 	atom := &specs.RepoScanAtom{
 		Atom: name,
 	}
-	return f.UploadFile2ObjectStorage(atom, source, s3objectPath, hashes)
+	return f.UploadFile2ObjectStorage(atom, source, f.GetFilePath(target), hashes)
 }
 
 func (f *FetcherS3) getS3Files(mkit *specs.DistfilesSpec,

@@ -35,8 +35,9 @@ func (a *AutogenBot) syncTarballs(opts *AutogenBotOpts) error {
 
 		for _, file := range atom.Files {
 
+			targetFilePath := a.Fetcher.GetFilePath(file.Name)
 			// Check if the files is already present on server
-			if _, present := serverfilesMap[file.Name]; present {
+			if _, present := serverfilesMap[targetFilePath]; present {
 				continue
 			}
 

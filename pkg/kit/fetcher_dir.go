@@ -56,6 +56,10 @@ func (f *FetcherDir) GetFilesList() ([]string, error) {
 	return ans, nil
 }
 
+func (f *FetcherDir) GetFilePath(target string) string {
+	return filepath.Join(f.GetDownloadDir(), target)
+}
+
 func (f *FetcherDir) Sync(specfile string, opts *FetchOpts) error {
 	// Load MergeKit specs
 	mkit := specs.NewDistfilesSpec()
