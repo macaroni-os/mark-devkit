@@ -5,6 +5,7 @@ See AUTHORS and LICENSE for the license details and contributors.
 package autogen
 
 import (
+	"fmt"
 	"path/filepath"
 )
 
@@ -38,6 +39,9 @@ func (a *AutogenBot) syncTarballs(opts *AutogenBotOpts) error {
 			targetFilePath := a.Fetcher.GetFilePath(file.Name)
 			// Check if the files is already present on server
 			if _, present := serverfilesMap[targetFilePath]; present {
+				a.Logger.Debug(fmt.Sprintf(
+					":brain:[%s] Tarball %s already present on server.",
+					atom.Atom, file.Name))
 				continue
 			}
 
