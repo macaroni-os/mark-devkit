@@ -6,6 +6,7 @@ package autogen
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -69,6 +70,38 @@ func (a *AutogenBot) sortVersions(atom *specs.AutogenAtom, versions []string) ([
 
 	for idx := range pkgs {
 		ans = append(ans, pkgs[idx].GetPVR())
+	}
+
+	return ans, nil
+}
+
+func (a *AutogenBot) excludesVersions(atom *specs.AutogenAtom,
+	versions []string) ([]string, error) {
+	ans := []string{}
+	excludes := []*regexp.Regexp{}
+
+	// Prepare regexes
+	for _, matcherRegex := range atom.Excludes {
+		r := regexp.MustCompile(matcherRegex)
+		if r == nil {
+			return ans, fmt.Errorf("[%s] invalid regex %s on exclude",
+				atom.Name, matcherRegex)
+		}
+		excludes = append(excludes, r)
+	}
+
+	for idx := range versions {
+		toExclude := false
+		for _, r := range excludes {
+			if r.MatchString(versions[idx]) {
+				toExclude = true
+				break
+			}
+		}
+		if toExclude {
+			continue
+		}
+		ans = append(ans, versions[idx])
 	}
 
 	return ans, nil

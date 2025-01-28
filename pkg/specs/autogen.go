@@ -81,6 +81,10 @@ func (a *AutogenAtom) HasSelector() bool {
 	return len(a.Selector) > 0
 }
 
+func (a *AutogenAtom) HasExcludes() bool {
+	return len(a.Excludes) > 0
+}
+
 func (a *AutogenAtom) GetCategory(def *AutogenAtom) string {
 	if a.Category != "" {
 		return a.Category
@@ -214,6 +218,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 	if atom.HasSelector() {
 		ans.Selector = atom.Selector
 	}
+	if atom.HasExcludes() {
+		ans.Excludes = atom.Excludes
+	}
 
 	if atom.IgnoreArtefacts != nil {
 		ans.IgnoreArtefacts = atom.IgnoreArtefacts
@@ -231,6 +238,10 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 		IgnoreArtefacts: a.IgnoreArtefacts,
 		Template:        a.Template,
 		FilesDir:        a.FilesDir,
+		Transforms:      a.Transforms,
+		Excludes:        a.Excludes,
+		Selector:        a.Selector,
+		Assets:          a.Assets,
 	}
 
 	if len(a.Vars) > 0 {

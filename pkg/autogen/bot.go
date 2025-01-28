@@ -566,6 +566,8 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	// Sanitize versions or use them directly
 	sanitizedVersions := []string{}
 	var vMap *map[string]string
+
+	// Process Tranforms
 	if atom.HasTransforms() {
 
 		if opts.ShowGeneratedValues {
@@ -593,6 +595,14 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 
 	} else {
 		sanitizedVersions, err = a.sortVersions(atom, versions)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Process Excludes if available
+	if atom.HasExcludes() {
+		sanitizedVersions, err = a.excludesVersions(atom, sanitizedVersions)
 		if err != nil {
 			return err
 		}
