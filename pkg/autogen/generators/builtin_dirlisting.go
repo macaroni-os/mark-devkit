@@ -83,6 +83,16 @@ func (g *DirlistingGenerator) SetVersion(atom *specs.AutogenAtom, version string
 			if !strings.HasSuffix(urlBase, "/") {
 				srcUri += "/"
 			}
+			if asset.Prefix != "" {
+				prefix, err := helpers.RenderContentWithTemplates(
+					asset.Prefix,
+					"", "", "asset.prefix", values, []string{},
+				)
+				if err != nil {
+					return err
+				}
+				srcUri += prefix
+			}
 			srcUri += name
 
 			artefacts = append(artefacts, &specs.AutogenArtefact{
