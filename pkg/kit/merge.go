@@ -50,6 +50,7 @@ type MergeBotOpts struct {
 	PullRequest     bool
 	Verbose         bool
 	CleanWorkingDir bool
+	Atoms           []string
 
 	GitDeepFetch int
 	Concurrency  int
@@ -71,7 +72,21 @@ func NewMergeBotOpts() *MergeBotOpts {
 		Concurrency:     10,
 		CleanWorkingDir: true,
 		GithubUser:      "macaroni-os",
+		Atoms:           []string{},
 	}
+}
+
+func (m *MergeBotOpts) HasAtoms() bool {
+	return len(m.Atoms) > 0
+}
+
+func (m *MergeBotOpts) AtomInFilter(atom string) bool {
+	for _, name := range m.Atoms {
+		if name == atom {
+			return true
+		}
+	}
+	return false
 }
 
 func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {

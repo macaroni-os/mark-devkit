@@ -418,7 +418,16 @@ func (m *MergeBot) PushRemoves(mkit *specs.MergeKit, opts *MergeBotOpts,
 func (m *MergeBot) SearchAtoms2Clean(mkit *specs.MergeKit, opts *MergeBotOpts) (*map[string]*specs.RepoScanAtom, error) {
 	mapPkgs := make(map[string]*specs.RepoScanAtom, 0)
 
+	atomFiltered := opts.HasAtoms()
+
 	for _, atom := range mkit.Target.Atoms {
+
+		if atomFiltered && !opts.AtomInFilter(atom.Package) {
+			m.Logger.Debug(fmt.Sprintf(
+				":factory:[%s] Atom filtered.", atom.Package))
+			continue
+		}
+
 		m.Logger.InfoC(fmt.Sprintf(":lollipop:[%s] Checking...",
 			atom.Package))
 
@@ -476,15 +485,19 @@ func (m *MergeBot) searchAtom2Clean(atom *specs.MergeKitAtom, mkit *specs.MergeK
 	if atom.MaxVersions != nil {
 		permittedVersions = *atom.MaxVersions
 	}
+	if permittedVersions < 1 {
+		permittedVersions = 1
+	}
+
+	for _, pkg := range availablesPkgs4Conditions {
+		fmt.Println(pkg.Atom)
+	}
 
 	availablesPkgs := len(availablesPkgs4Conditions)
-	// Decrement availables packages because the
-	// last version could not be removed
-	availablesPkgs--
 
 	if availablesPkgs > permittedVersions {
 
-		packages2Remove := len(availablesPkgs4Conditions) - permittedVersions
+		packages2Remove := availablesPkgs - permittedVersions
 
 		aidx := 0
 
@@ -521,6 +534,7 @@ func (m *MergeBot) searchAtom2Clean(atom *specs.MergeKitAtom, mkit *specs.MergeK
 				// POST: candidate valid for remove
 				ans = append(ans, candidate)
 				aidx++
+				break
 			}
 
 		}
