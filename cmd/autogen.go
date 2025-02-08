@@ -168,7 +168,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Bool("show-values", false,
 		"For debug purpose print generated values for any elaborated package in YAML format.")
 	flags.Bool("force-merge-check", false,
-		"Force merge comparision for package with the same version.")
+		"Force merge comparison for package with the same version.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")
