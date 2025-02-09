@@ -286,6 +286,7 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 			m.Logger.InfoC(fmt.Sprintf(
 				"[%s] PR branch %s already present. Nothing to do.",
 				catpkg, prBranchName))
+			m.branches2Skip[prBranchName] = true
 			return nil
 		}
 
@@ -369,6 +370,12 @@ func (m *MergeBot) PushRemoves(mkit *specs.MergeKit, opts *MergeBotOpts,
 				strings.ReplaceAll(strings.ReplaceAll(catpkg, ".", "_"),
 					"/", "_"),
 			)
+
+			if _, present := m.branches2Skip[prBranchName]; present {
+				// Skip elaboration of the branches already present
+				// on remote.
+				continue
+			}
 
 			err = PushBranch(kitDir, prBranchName, pushOpts)
 			if err != nil {

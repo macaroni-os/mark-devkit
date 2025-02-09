@@ -64,6 +64,7 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				m.Logger.InfoC(fmt.Sprintf(
 					"[%s] PR branch already present. Nothing to do.",
 					pkg))
+				m.branches2Skip[prBranchName] = true
 
 				// Restore committed files in order to avoid
 				// that the same changes will be added in new commit.

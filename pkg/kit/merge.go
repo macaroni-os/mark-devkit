@@ -41,6 +41,8 @@ type MergeBot struct {
 	metadataUpdate bool
 
 	GithubClient *github.Client
+
+	branches2Skip map[string]bool
 }
 
 type MergeBotOpts struct {
@@ -107,6 +109,7 @@ func NewMergeBot(c *specs.MarkDevkitConfig) *MergeBot {
 		eclassUpdate:   false,
 		profilesUpdate: false,
 		metadataUpdate: false,
+		branches2Skip:  make(map[string]bool, 0),
 	}
 }
 
@@ -359,6 +362,12 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				strings.ReplaceAll(strings.ReplaceAll(pkg, ".", "_"),
 					"/", "_"),
 			)
+
+			if _, present := m.branches2Skip[prBranchName]; present {
+				// Skip elaboration of the branches already present
+				// on remote.
+				continue
+			}
 
 			err = PushBranch(kitDir, prBranchName, pushOpts)
 			if err != nil {
