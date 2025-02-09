@@ -58,6 +58,19 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		return nil, err
 	}
 
+	// Special vars rendered
+	for _, field := range []string{"body", "rdepend", "bdepend", "depend", "pdepend"} {
+		if _, hasField := values[field]; hasField {
+			// Render the body with the values.
+			fieldValue, _ := values[field].(string)
+
+			values[field], err = helpers.RenderContentWithTemplates(
+				fieldValue,
+				"", "", "ebuild."+field, values, []string{},
+			)
+		}
+	}
+
 	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
 		// Download tarballs
 		for idx, art := range artefacts {
