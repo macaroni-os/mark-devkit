@@ -45,6 +45,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			push, _ := cmd.Flags().GetBool("push")
 			githubUser, _ := cmd.Flags().GetString("github-user")
 			pr, _ := cmd.Flags().GetBool("pr")
+			atoms, _ := cmd.Flags().GetStringArray("pkg")
 
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
@@ -61,6 +62,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			mergeOpts.SignatureName = signatureName
 			mergeOpts.SignatureEmail = signatureEmail
 			mergeOpts.CleanWorkingDir = !keepWorkdir
+			mergeOpts.Atoms = atoms
 
 			if githubUser != "" {
 				mergeOpts.GithubUser = githubUser
@@ -91,6 +93,7 @@ func KitMergeCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.Bool("push", false, "Push commits to origin.")
 	flags.Bool("keep-workdir", false, "Avoid to remove the working directory.")
 	flags.Bool("pr", false, "Push commit over specific branch and as Pull Request.")
+	flags.StringArray("pkg", []string{}, "Elaborate only specified packages.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")

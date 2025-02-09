@@ -560,7 +560,16 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*specs.RepoScanAtom, error) {
 	ans := []*specs.RepoScanAtom{}
+
+	atomFiltered := opts.HasAtoms()
+
 	for _, atom := range mkit.Target.Atoms {
+
+		if atomFiltered && !opts.AtomInFilter(atom.Package) {
+			m.Logger.Debug(fmt.Sprintf(
+				":factory:[%s] Atom filtered.", atom.Package))
+			continue
+		}
 
 		m.Logger.InfoC(fmt.Sprintf(":lollipop:[%s] Checking...",
 			atom.Package))
