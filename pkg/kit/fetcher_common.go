@@ -101,9 +101,7 @@ func CheckRedirect(req *http.Request, via []*http.Request) error {
 
 func NewFetcherCommon(c *specs.MarkDevkitConfig) *FetcherCommon {
 	resolver := NewRepoScanResolver(c)
-	rcfg := guard_specs.NewConfig()
-	//rcfg.DisableCompression = true
-	rg, _ := guard.NewRestGuard(rcfg)
+	rg, _ := guard.NewRestGuard(c.GetRest())
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = CheckRedirect
 	return &FetcherCommon{

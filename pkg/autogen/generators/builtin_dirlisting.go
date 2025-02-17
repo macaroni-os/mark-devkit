@@ -14,6 +14,7 @@ import (
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/kit"
+	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	"github.com/geaaru/rest-guard/pkg/guard"
@@ -26,9 +27,8 @@ type DirlistingGenerator struct {
 }
 
 func NewDirlistingGenerator() *DirlistingGenerator {
-	rcfg := guard_specs.NewConfig()
-	//rcfg.DisableCompression = true
-	rg, _ := guard.NewRestGuard(rcfg)
+	log := logger.GetDefaultLogger()
+	rg, _ := guard.NewRestGuard(log.Config.GetRest())
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = kit.CheckRedirect
 	return &DirlistingGenerator{

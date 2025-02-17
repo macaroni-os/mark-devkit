@@ -2,3 +2,19 @@ general:
   debug: false
 logging:
   level: info
+
+# Rest Guard Client config
+# rest:
+#   reqs_timeout: 120
+#   max_idle_conns: 10
+#   idle_conn_timeout: 30
+#   max_conns4host: 5
+#   max_idleconns4host: 30
+#   disable_compression: false
+#   insecure_skip: false
+
+
+# Authentication
+# authentication:
+#   github.com:
+#      token: mytoken

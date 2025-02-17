@@ -19,7 +19,6 @@ import (
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	"github.com/geaaru/rest-guard/pkg/guard"
-	guard_specs "github.com/geaaru/rest-guard/pkg/specs"
 	"github.com/google/go-github/v68/github"
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v3"
@@ -98,8 +97,7 @@ func (o *AutogenBotOpts) AtomInFilter(atom string) bool {
 }
 
 func NewAutogenBot(c *specs.MarkDevkitConfig) *AutogenBot {
-	rcfg := guard_specs.NewConfig()
-	rg, _ := guard.NewRestGuard(rcfg)
+	rg, _ := guard.NewRestGuard(c.GetRest())
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = kit.CheckRedirect
 

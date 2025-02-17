@@ -29,8 +29,8 @@ type PypiGenerator struct {
 }
 
 func NewPypiGenerator() *PypiGenerator {
-	rcfg := guard_specs.NewConfig()
-	rg, _ := guard.NewRestGuard(rcfg)
+	log := logger.GetDefaultLogger()
+	rg, _ := guard.NewRestGuard(log.Config.GetRest())
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = kit.CheckRedirect
 	return &PypiGenerator{

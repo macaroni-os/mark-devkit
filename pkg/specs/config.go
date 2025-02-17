@@ -5,8 +5,8 @@ See AUTHORS and LICENSE for the license details and contributors.
 package specs
 
 import (
+	rg "github.com/geaaru/rest-guard/pkg/specs"
 	v "github.com/spf13/viper"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,6 +22,7 @@ type MarkDevkitConfig struct {
 	General        MarkDevkitGeneral        `mapstructure:"general" json:"general,omitempty" yaml:"general,omitempty"`
 	Logging        MarkDevkitLogging        `mapstructure:"logging" json:"logging,omitempty" yaml:"logging,omitempty"`
 	Authentication MarkDevkitAuthentication `mapstructure:"authentication" json:"authentication,omitempty" yaml:"authentication,omitempty"`
+	RgConfig       *rg.RestGuardConfig      `mapstructure:"rest" json:"rest,omitempty" yaml:"rest,omitempty"`
 }
 
 type MarkDevkitGeneral struct {
@@ -83,6 +84,13 @@ func (c *MarkDevkitConfig) GetLogging() *MarkDevkitLogging {
 	return &c.Logging
 }
 
+func (c *MarkDevkitConfig) GetRest() *rg.RestGuardConfig {
+	if c.RgConfig == nil {
+		c.RgConfig = rg.NewConfig()
+	}
+	return c.RgConfig
+}
+
 func (c *MarkDevkitConfig) Unmarshal() error {
 	var err error
 
@@ -118,6 +126,9 @@ func GenDefault(viper *v.Viper) {
 	viper.SetDefault("logging.json_format", false)
 	viper.SetDefault("logging.enable_emoji", true)
 	viper.SetDefault("logging.color", true)
+
+	viper.SetDefault("rest.reqs_timeout", 3600)
+	viper.SetDefault("rest.user_agent", "MARK Devkit Bot")
 }
 
 func (g *MarkDevkitGeneral) HasDebug() bool {
