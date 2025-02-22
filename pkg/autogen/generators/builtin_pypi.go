@@ -197,7 +197,9 @@ func (g *PypiGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 	ans["pypi_meta"] = pypiMeta
 	ans["pypi_info"] = info
 	ans["pypi_name"] = info.Name
-	ans["desc"] = info.Summary
+	// We need to ignore char ` that is expanded to bash command.
+	// The code injection over description must be blocked for multiple reasons.
+	ans["desc"] = strings.ReplaceAll(info.Summary, "`", "'")
 	ans["license"] = info.License
 	if atom.Python.PythonCompat != "" {
 		ans["python_compat"] = atom.Python.PythonCompat
@@ -346,7 +348,12 @@ func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 				}
 				if toSkip {
 					continue
+				} else {
+					log.Debug(fmt.Sprintf(
+						"[%s] depend %s is valid.",
+						atom.Name, str))
 				}
+
 			}
 
 			// Ignore extra note
