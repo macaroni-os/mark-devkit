@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/logger"
@@ -81,6 +80,7 @@ func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
 
 func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	mapref *map[string]interface{}) error {
+	log := logger.GetDefaultLogger()
 
 	values := *mapref
 
@@ -109,7 +109,13 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	}
 
-	values["sha"] = tag.Commit.GetSHA()
+	if tag != nil {
+		values["sha"] = tag.Commit.GetSHA()
+	} else {
+		log.Warning(fmt.Sprintf(
+			"[%s] tag object not found for version %s (%s). Check if you need increase page elements and/or number of pages.",
+			atom.Name, originalVersion, version))
+	}
 
 	delete(values, "releases")
 	delete(values, "tags")
@@ -143,7 +149,7 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 			})
 		}
 
-	} else {
+	} else if tag != nil {
 		artefacts = append(artefacts, &specs.AutogenArtefact{
 			SrcUri: []string{tag.GetTarballURL()},
 			Name:   tarballName,
@@ -222,6 +228,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	var lopts *github.ListOptions = nil
 	validTags := make(map[string]*github.RepositoryTag, 0)
 	versions := []string{}
+	r := regexp.MustCompile("^v[0-0].*")
 
 	if atom.Github.Page != nil || atom.Github.PerPage != nil || atom.Github.NumPages != nil {
 		lopts = &github.ListOptions{}
@@ -249,7 +256,8 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 		for idx := range tt {
 			version := tt[idx].GetName()
 
-			if strings.HasPrefix(version, "v") {
+			// Exclude v from tag name if related to a version
+			if r.MatchString(version) {
 				version = version[1:len(version)]
 			}
 			validTags[version] = tt[idx]
@@ -321,7 +329,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 			}
 			version := rr[idx].GetName()
 
-			if strings.HasPrefix(version, "v") {
+			if r.MatchString(version) {
 				version = version[1:len(version)]
 			}
 
