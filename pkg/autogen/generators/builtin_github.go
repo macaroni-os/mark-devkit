@@ -228,7 +228,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	var lopts *github.ListOptions = nil
 	validTags := make(map[string]*github.RepositoryTag, 0)
 	versions := []string{}
-	r := regexp.MustCompile("^v[0-0].*")
+	r := regexp.MustCompile("^v[0-9].*")
 
 	if atom.Github.Page != nil || atom.Github.PerPage != nil || atom.Github.NumPages != nil {
 		lopts = &github.ListOptions{}
