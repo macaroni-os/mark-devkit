@@ -36,6 +36,13 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	pn, _ := values["pn"].(string)
 	version, _ := values["version"].(string)
 	artefacts, _ := values["artefacts"].([]*specs.AutogenArtefact)
+	slot, ok := values["slot"].(string)
+	if !ok {
+		islot, valid := values["slot"].(int)
+		if valid {
+			slot = fmt.Sprintf("%d", islot)
+		}
+	}
 
 	ans := &specs.RepoScanAtom{
 		Atom:     fmt.Sprintf("%s/%s-%s", category, atom.Name, version),
@@ -50,6 +57,12 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		Metadata: map[string]string{
 			"KEYWORDS": "*",
 		},
+	}
+
+	if slot != "" && slot != "0" {
+		ans.Metadata["SLOT"] = slot
+	} else {
+		ans.Metadata["SLOT"] = "0"
 	}
 
 	// Prepare package dir
