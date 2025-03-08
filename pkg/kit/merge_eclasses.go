@@ -90,7 +90,7 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 			// NOTE: pull request for a new branch it doesn't make sense
 			// Probably we need to add a check.
 			prBranchName := fmt.Sprintf(
-				"%s/%s-%s",
+				"%s%s/%s",
 				prBranchPrefix, kit.Branch, "eclasses",
 			)
 

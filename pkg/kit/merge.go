@@ -443,7 +443,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		if m.eclassUpdate {
 
 			prBranchName := fmt.Sprintf(
-				"%s/%s-%s",
+				"%s%s/%s",
 				prBranchPrefix, targetKit.Branch, "eclasses",
 			)
 
