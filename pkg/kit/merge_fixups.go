@@ -7,7 +7,6 @@ package kit
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
@@ -66,12 +65,7 @@ func (m *MergeBot) MergeFixups(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		if opts.PullRequest {
 			// NOTE: pull request for a new branch it doesn't make sense
 			// Probably we need to add a check.
-			prBranchName := fmt.Sprintf(
-				"%s%s-%s",
-				prBranchPrefix, "fixup-include-",
-				strings.ReplaceAll(strings.ReplaceAll(name, ".", "_"),
-					"/", "_"),
-			)
+			prBranchName := GetPrBranchNameForFixup(name, kit.Branch)
 
 			prBranchExists, err := BranchExists(kit.Url, prBranchName)
 			if err != nil {

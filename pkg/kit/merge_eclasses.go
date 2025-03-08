@@ -89,10 +89,7 @@ func (m *MergeBot) MergeEclasses(mkit *specs.MergeKit, opts *MergeBotOpts) error
 		if opts.PullRequest {
 			// NOTE: pull request for a new branch it doesn't make sense
 			// Probably we need to add a check.
-			prBranchName := fmt.Sprintf(
-				"%s%s/%s",
-				prBranchPrefix, kit.Branch, "eclasses",
-			)
+			prBranchName := GetPrBranchNameForEclasses(kit.Branch)
 
 			// Restore committed files in order to avoid
 			// that the same changes will be added in new commit.

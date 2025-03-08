@@ -7,7 +7,6 @@ package kit
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
@@ -47,13 +46,7 @@ func (m *MergeBot) BumpAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 		if opts.PullRequest {
 
-			prBranchName := fmt.Sprintf(
-				"%s%s-%s",
-				prBranchPrefix, "bump",
-				strings.ReplaceAll(strings.ReplaceAll(pkg, ".", "_"),
-					"/", "_"),
-			)
-
+			prBranchName := GetPrBranchNameForPkgBump(pkg, kit.Branch)
 			prBranchExists, err := BranchExists(kit.Url, prBranchName)
 			if err != nil {
 				return err

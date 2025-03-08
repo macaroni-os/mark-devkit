@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	log "github.com/macaroni-os/mark-devkit/pkg/logger"
@@ -356,13 +355,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 		// Push bump branches
 		for pkg := range m.files4Commit {
-			prBranchName := fmt.Sprintf(
-				"%s%s-%s",
-				prBranchPrefix, "bump",
-				strings.ReplaceAll(strings.ReplaceAll(pkg, ".", "_"),
-					"/", "_"),
-			)
-
+			prBranchName := GetPrBranchNameForPkgBump(pkg, targetKit.Branch)
 			if _, present := m.branches2Skip[prBranchName]; present {
 				// Skip elaboration of the branches already present
 				// on remote.
@@ -402,13 +395,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		// Create PR for fixups if available
 		if len(m.fixupBranches) > 0 {
 			for name, include := range m.fixupBranches {
-				prBranchName := fmt.Sprintf(
-					"%s%s-%s",
-					prBranchPrefix, "fixup-include-",
-					strings.ReplaceAll(strings.ReplaceAll(name, ".", "_"),
-						"/", "_"),
-				)
-
+				prBranchName := GetPrBranchNameForFixup(name, targetKit.Branch)
 				err = PushBranch(kitDir, prBranchName, pushOpts)
 				if err != nil {
 					return err
@@ -442,10 +429,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 		if m.eclassUpdate {
 
-			prBranchName := fmt.Sprintf(
-				"%s%s/%s",
-				prBranchPrefix, targetKit.Branch, "eclasses",
-			)
+			prBranchName := GetPrBranchNameForEclasses(targetKit.Branch)
 
 			err = PushBranch(kitDir, prBranchName, pushOpts)
 			if err != nil {
@@ -479,10 +463,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 		if m.profilesUpdate {
 
-			prBranchName := fmt.Sprintf(
-				"%s%s",
-				prBranchPrefix, "profiles-update",
-			)
+			prBranchName := GetPrBranchNameForProfile(targetKit.Branch)
 
 			err = PushBranch(kitDir, prBranchName, pushOpts)
 			if err != nil {
@@ -516,11 +497,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 		if m.metadataUpdate {
 
-			prBranchName := fmt.Sprintf(
-				"%s%s",
-				prBranchPrefix, "metadata-update",
-			)
-
+			prBranchName := GetPrBranchNameForMetadata(targetKit.Branch)
 			err = PushBranch(kitDir, prBranchName, pushOpts)
 			if err != nil {
 				return err

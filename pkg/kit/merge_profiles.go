@@ -143,10 +143,7 @@ func (m *MergeBot) PrepareProfilesDir(mkit *specs.MergeKit,
 			return err
 		}
 
-		prBranchName := fmt.Sprintf(
-			"%s%s",
-			prBranchPrefix, "profiles-update",
-		)
+		prBranchName := GetPrBranchNameForProfile(kit.Branch)
 
 		// Restore committed files in order to avoid
 		// that the same changes will be added in new commit.

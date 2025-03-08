@@ -100,10 +100,7 @@ func (m *MergeBot) PrepareMetadataDir(mkit *specs.MergeKit,
 			return err
 		}
 
-		prBranchName := fmt.Sprintf(
-			"%s%s",
-			prBranchPrefix, "metadata-update",
-		)
+		prBranchName := GetPrBranchNameForMetadata(kit.Branch)
 
 		// Restore committed files in order to avoid
 		// that the same changes will be added in new commit.
