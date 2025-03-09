@@ -54,10 +54,11 @@ type MergeKitFixups struct {
 }
 
 type MergeKitFixupInclude struct {
-	Dir  string `yaml:"dir,omitempty" json:"dir,omitempty"`
-	To   string `yaml:"to,omitempty" json:"to,omitempty"`
-	File string `yaml:"file,omitempty" json:"file,omitempty"`
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
+	Dir       string   `yaml:"dir,omitempty" json:"dir,omitempty"`
+	To        string   `yaml:"to,omitempty" json:"to,omitempty"`
+	File      string   `yaml:"file,omitempty" json:"file,omitempty"`
+	Name      string   `yaml:"name,omitempty" json:"name,omitempty"`
+	KeepFiles []string `yaml:"keep_files,omitempty" json:"keep_files,omitempty"`
 }
 
 type DistfilesSpec struct {

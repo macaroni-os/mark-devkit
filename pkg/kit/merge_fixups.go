@@ -6,7 +6,9 @@ package kit
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
@@ -213,6 +215,80 @@ func (m *MergeBot) mergeFixupInclude(targetKitDir string,
 		}
 
 		ans = append(ans, files...)
+
+		// Compare target dir with source dir.
+		files, err = m.checkFiles2Remove(targetDir, sourceDir, include)
+		if err != nil {
+			return ans, err
+		}
+
+		if len(files) > 0 {
+			ans = append(ans, files...)
+		}
+	}
+
+	return ans, nil
+}
+
+func (m *MergeBot) checkFiles2Remove(targetDir, sourceDir string,
+	include *specs.MergeKitFixupInclude) ([]string, error) {
+	ans := []string{}
+
+	entries, err := os.ReadDir(targetDir)
+	if err != nil {
+		return ans, fmt.Errorf("error on reading dir %s: %s", targetDir, err.Error())
+	}
+
+	filters := []*regexp.Regexp{}
+	if len(include.KeepFiles) > 0 {
+		for _, str := range include.KeepFiles {
+			r := regexp.MustCompile(str)
+			if r != nil {
+				filters = append(filters, r)
+			}
+		}
+	}
+
+	if len(entries) > 0 {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				tdir := filepath.Join(targetDir, entry.Name())
+				sdir := filepath.Join(sourceDir, entry.Name())
+				files, err := m.checkFiles2Remove(tdir, sdir, include)
+				if err != nil {
+					return ans, fmt.Errorf(
+						"error on check subdir %s: %s",
+						entry.Name(), err.Error())
+				}
+				ans = append(ans, files...)
+			} else {
+
+				sourceFile := filepath.Join(sourceDir, entry.Name())
+				targetFile := filepath.Join(targetDir, entry.Name())
+
+				if len(filters) > 0 {
+					toSkip := false
+					for _, r := range filters {
+						if r.MatchString(targetFile) {
+							toSkip = true
+							break
+						}
+					}
+					if toSkip {
+						continue
+					}
+				}
+
+				if !utils.Exists(sourceFile) {
+					// Remove file from target
+					err = os.Remove(targetFile)
+					if err != nil {
+						return ans, err
+					}
+					ans = append(ans, targetFile)
+				}
+			}
+		}
 	}
 
 	return ans, nil
