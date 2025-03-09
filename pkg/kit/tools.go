@@ -35,7 +35,7 @@ func GetPrBranchNameForPkgBump(pkg, branch string) string {
 func GetPrBranchNameForFixup(name, branch string) string {
 	return fmt.Sprintf(
 		"%s%s/%s-%s",
-		prBranchPrefix, branch, "fixup-include-",
+		prBranchPrefix, branch, "fixup-include",
 		strings.ReplaceAll(strings.ReplaceAll(name, ".", "_"),
 			"/", "_"),
 	)
