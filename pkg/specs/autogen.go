@@ -167,9 +167,6 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			if atom.Python.PypiName != "" {
 				ans.Python.PypiName = atom.Python.PypiName
 			}
-			if atom.Python.DistutilsPEP517 != "" {
-				ans.Python.DistutilsPEP517 = atom.Python.DistutilsPEP517
-			}
 			if atom.Python.PythonRequiresIgnore != "" {
 				ans.Python.PythonRequiresIgnore = atom.Python.PythonRequiresIgnore
 			}
@@ -275,7 +272,6 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			PythonRequiresIgnore: a.Python.PythonRequiresIgnore,
 			DepsIgnore:           []string{},
 			PypiName:             a.Python.PypiName,
-			DistutilsPEP517:      a.Python.DistutilsPEP517,
 			Pydeps:               make(map[string][]string, 0),
 		}
 

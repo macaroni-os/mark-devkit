@@ -196,7 +196,11 @@ func (g *PypiGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 
 	ans["pypi_meta"] = pypiMeta
 	ans["pypi_info"] = info
-	ans["pypi_name"] = info.Name
+	if atom.Python.PypiName != "" {
+		ans["pypi_name"] = atom.Python.PypiName
+	} else {
+		ans["pypi_name"] = info.Name
+	}
 	// We need to ignore char ` that is expanded to bash command.
 	// The code injection over description must be blocked for multiple reasons.
 	ans["desc"] = strings.ReplaceAll(info.Summary, "`", "'")
