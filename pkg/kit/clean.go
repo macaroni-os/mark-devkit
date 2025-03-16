@@ -212,7 +212,7 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 	// Remove candidates
 	for _, candidate := range candidates {
 
-		if manifest != nil || len(manifest.Files) > 0 {
+		if manifest != nil && len(manifest.Files) > 0 {
 			// Checking files to remove from Manifest
 
 			// Check if the files of the candidates are used by existing packages
