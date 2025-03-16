@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	layoutConfTemplate = `repo_name = %s
+	layoutConfTemplate = `repo-name = %s
 thin-manifests = true
 sign-manifests = false
 profile-formats = portage-2
