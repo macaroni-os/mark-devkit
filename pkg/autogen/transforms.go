@@ -18,8 +18,16 @@ import (
 func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []string) (*map[string]string, error) {
 	ans := make(map[string]string, 0)
 	var v string
+	var r *regexp.Regexp
 
 	for _, transform := range atom.Transforms {
+		if transform.Kind == "regex" {
+			r = regexp.MustCompile(transform.Match)
+			if r == nil {
+				return nil, fmt.Errorf("invalid regex string %s", transform.Match)
+			}
+		}
+
 		for idx := range versions {
 			if elabVer, ok := ans[versions[idx]]; ok {
 				v = elabVer
@@ -29,6 +37,8 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 			switch transform.Kind {
 			case "string":
 				v = strings.ReplaceAll(v, transform.Match, transform.Replace)
+			case "regex":
+				v = r.ReplaceAllString(v, transform.Replace)
 			default:
 				return nil, fmt.Errorf("unsupported kind of transform %s for atom %s",
 					transform.Kind, atom.Name)
