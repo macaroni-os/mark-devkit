@@ -50,7 +50,15 @@ func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
 			return ans, err
 		}
 
-		r := regexp.MustCompile(asset.Matcher)
+		matcher, err := helpers.RenderContentWithTemplates(
+			asset.Matcher,
+			"", "", "asset.matcher", values, []string{},
+		)
+		if err != nil {
+			return ans, err
+		}
+
+		r := regexp.MustCompile(matcher)
 		if r == nil {
 			return ans, fmt.Errorf("[%s] invalid regex on asset %s", atom.Name, asset.Name)
 		}
@@ -70,7 +78,7 @@ func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
 		}
 
 		if !assetFound {
-			return ans, fmt.Errorf("[%s] no asset found for matcher %s", atom.Name, asset.Matcher)
+			return ans, fmt.Errorf("[%s] no asset found for matcher %s", atom.Name, matcher)
 		}
 
 	}
