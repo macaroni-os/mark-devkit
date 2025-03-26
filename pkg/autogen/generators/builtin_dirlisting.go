@@ -79,21 +79,36 @@ func (g *DirlistingGenerator) SetVersion(atom *specs.AutogenAtom, version string
 				return err
 			}
 
-			srcUri := urlBase
-			if !strings.HasSuffix(urlBase, "/") {
-				srcUri += "/"
-			}
-			if asset.Prefix != "" {
-				prefix, err := helpers.RenderContentWithTemplates(
-					asset.Prefix,
-					"", "", "asset.prefix", values, []string{},
+			srcUri := ""
+			if asset.Url != "" {
+				// POST: We use the url value as urlBase
+				srcUri, err = helpers.RenderContentWithTemplates(
+					asset.Url,
+					"", "", "asset.url", values, []string{},
 				)
 				if err != nil {
 					return err
 				}
-				srcUri += prefix
+
+			} else {
+				// POST: we use urlbase as dir.url field.
+				srcUri = urlBase
+				if !strings.HasSuffix(urlBase, "/") {
+					srcUri += "/"
+				}
+
+				if asset.Prefix != "" {
+					prefix, err := helpers.RenderContentWithTemplates(
+						asset.Prefix,
+						"", "", "asset.prefix", values, []string{},
+					)
+					if err != nil {
+						return err
+					}
+					srcUri += prefix
+				}
+				srcUri += name
 			}
-			srcUri += name
 
 			artefacts = append(artefacts, &specs.AutogenArtefact{
 				SrcUri: []string{srcUri},
