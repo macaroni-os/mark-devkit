@@ -16,7 +16,7 @@ type Generator interface {
 	SetVersion(atom *specs.AutogenAtom, v string, mapref *map[string]interface{}) error
 }
 
-func NewGenerator(t string) (Generator, error) {
+func NewGenerator(t string, opts map[string]string) (Generator, error) {
 	switch t {
 	case specs.GeneratorBuiltinGitub:
 		return NewGithubGenerator(), nil
@@ -26,6 +26,8 @@ func NewGenerator(t string) (Generator, error) {
 		return NewNoopGenerator(), nil
 	case specs.GeneratorBuiltinPypi:
 		return NewPypiGenerator(), nil
+	case specs.GeneratorCustom:
+		return NewCustomGenerator(opts), nil
 	default:
 		return nil, fmt.Errorf("Invalid generator type %s", t)
 	}

@@ -407,7 +407,7 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 	opts *AutogenBotOpts, nameDef string) error {
 
 	// Prepare generator
-	generator, err := a.GetGenerator(def.Generator)
+	generator, err := a.GetGenerator(def.Generator, def.GeneratorOpts, aspec)
 	if err != nil {
 		return err
 	}
@@ -443,8 +443,18 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 	return nil
 }
 
-func (a *AutogenBot) GetGenerator(generatorType string) (generators.Generator, error) {
-	ans, err := generators.NewGenerator(generatorType)
+func (a *AutogenBot) GetGenerator(generatorType string,
+	opts map[string]string, aspec *specs.AutogenSpec) (generators.Generator, error) {
+
+	if opts == nil {
+		opts = make(map[string]string, 0)
+	}
+
+	// Add workdir to generator options
+	opts["workdir"] = a.WorkDir
+	opts["specfile"] = aspec.File
+
+	ans, err := generators.NewGenerator(generatorType, opts)
 	if err != nil {
 		return ans, err
 	}
@@ -509,47 +519,15 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	}
 	values := *valuesRef
 
-	mergeF := func(vars *map[string]interface{}) error {
-		for k, v := range *vars {
-			if k == "versions" {
-
-				ilist, ok := v.([]interface{})
-				if !ok {
-					return fmt.Errorf(
-						"Invalid type on versions var for package %s",
-						atom.Name)
-				}
-
-				// Special case.
-				// I need to convert []interface{} to []string
-				vlist := []string{}
-				for _, vv := range ilist {
-					str, ok := vv.(string)
-					if !ok {
-						return fmt.Errorf(
-							"Invalid value %v on versions var for package %s",
-							vv, atom.Name)
-					}
-					vlist = append(vlist, str)
-				}
-				values[k] = vlist
-			} else {
-				values[k] = v
-			}
-		}
-
-		return nil
-	}
-
 	if len(def.Vars) > 0 {
-		err = mergeF(&def.Vars)
+		err = helpers.SanitizeMapVersionsField(atom.Name, &def.Vars)
 		if err != nil {
 			return err
 		}
 	}
 
 	if len(atom.Vars) > 0 {
-		err = mergeF(&atom.Vars)
+		err = helpers.SanitizeMapVersionsField(atom.Name, &atom.Vars)
 		if err != nil {
 			return err
 		}

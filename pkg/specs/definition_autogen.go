@@ -10,6 +10,8 @@ const (
 	GeneratorBuiltinNoop       = "builtin-noop"
 	GeneratorBuiltinPypi       = "builtin-pypi"
 
+	GeneratorCustom = "custom"
+
 	TmplEngineHelm   = "helm"
 	TmplEnginePongo2 = "pongo2"
 	TmplEngineJ2cli  = "j2cli"
@@ -25,6 +27,7 @@ type AutogenSpec struct {
 type AutogenDefinition struct {
 	TemplateEngine *AutogenTemplateEngine    `json:"template,omitempty" yaml:"template,omitempty"`
 	Generator      string                    `json:"generator,omitempty" yaml:"generator,omitempty"`
+	GeneratorOpts  map[string]string         `json:"generator_opts,omitempty" yaml:"generator_opts,omitempty"`
 	Defaults       *AutogenAtom              `json:"defaults,omitempty" yaml:"defaults,omitempty"`
 	Packages       []map[string]*AutogenAtom `json:"packages,omitempty" yaml:"packages,omitempty"`
 }

@@ -1,0 +1,32 @@
+custom_example:
+  generator: custom
+  generator_opts:
+    script: ./custom_example.sh
+    enable_set_version: "false"
+
+
+  defaults:
+    category: x11-libs
+
+  packages:
+    - libX11:
+        vars:
+          desc: "X.Org X11 library"
+
+
+custom_example2:
+  generator: custom
+  generator_opts:
+    script: ./custom_example2.sh
+    #enable_set_version: "true"
+
+
+  defaults:
+    category: x11-libs
+
+  packages:
+    - libX11b:
+        template: templates/libX11.tmpl
+        vars:
+          desc: "X.Org X11 library"
+

@@ -91,6 +91,11 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 			if art.Name == "" {
 				filename = fmt.Sprintf("%s-%s.tar.gz", pn, version)
 			}
+			a.Logger.DebugC(
+				fmt.Sprintf("[%s] Downloading %s from url %s",
+					atom.Name, art.Name, art.SrcUri[0],
+				))
+
 			repoFile, err := a.downloadArtefact(art.SrcUri[0], art.Name)
 			if err != nil {
 				return nil, err

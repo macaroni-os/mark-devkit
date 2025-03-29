@@ -367,6 +367,9 @@ The generator availables at the moment are:
 
 * `builtin-pypi`: this generator permits to use Pypi JSON API to retrieve releases
 
+* `custom`: this generator permits to call external script (Bash, Python, etc.) and
+            generate ebuild and Manifest.
+
 ## Definitions
 
 In the *autogen* language every block of YAML is called *definition* and is managed
