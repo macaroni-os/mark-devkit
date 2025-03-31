@@ -188,7 +188,7 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			ans.Vars[k] = v
 		}
 
-	} else {
+	} else if len(atom.Vars) > 0 {
 		ans.Vars = atom.Vars
 	}
 
