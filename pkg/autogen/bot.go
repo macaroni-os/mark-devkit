@@ -519,17 +519,15 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	}
 	values := *valuesRef
 
-	if len(def.Vars) > 0 {
-		err = helpers.SanitizeMapVersionsField(atom.Name, &def.Vars)
-		if err != nil {
-			return err
-		}
-	}
-
 	if len(atom.Vars) > 0 {
 		err = helpers.SanitizeMapVersionsField(atom.Name, &atom.Vars)
 		if err != nil {
 			return err
+		}
+
+		// Merge atom vars to elaborated values
+		for k, v := range atom.Vars {
+			values[k] = v
 		}
 	}
 
