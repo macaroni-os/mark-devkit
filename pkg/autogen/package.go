@@ -316,6 +316,24 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	}
 
 	pOpts := kit.NewPortageResolverOpts()
+
+	// When selector are defined we need to retrieve packages matching
+	// with the selector
+	if atom.HasSelector() {
+		pOpts.Conditions = []string{}
+
+		for _, condition := range atom.Selector {
+			gpkgCond, err := helpers.DecodeCondition(condition,
+				atom.GetCategory(def), atom.Name,
+			)
+			if err != nil {
+				return false, err
+			}
+			pOpts.Conditions = append(pOpts.Conditions, fmt.Sprintf("%s-%s",
+				gpkgCond.GetPackageNameWithCond(), gpkgCond.GetPV()))
+		}
+	}
+
 	// Retrieve all availables version in order to return true
 	// and check for differences.
 	atomsAvailables, err := a.MergeBot.TargetResolver.GetValidPackages(catpkg, pOpts)
@@ -342,6 +360,7 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 		if toskip, _ := agpg.GreaterThan(gpkg); toskip {
 			toAdd = false
 		}
+
 	}
 
 	return toAdd, nil
