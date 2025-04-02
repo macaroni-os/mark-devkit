@@ -130,6 +130,7 @@ func (g *DirlistingGenerator) SetVersion(atom *specs.AutogenAtom, version string
 }
 
 func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {
+	log := logger.GetDefaultLogger()
 	ans := make(map[string]interface{}, 0)
 
 	if atom.Dir.Matcher == "" {
@@ -152,7 +153,20 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 		}
 	}
 
-	uri, err := url.Parse(atom.Dir.Url)
+	// Permit to using variables on url field
+	dirUrl, err := helpers.RenderContentWithTemplates(
+		atom.Dir.Url,
+		"", "", "url", atom.Vars, []string{},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("[%s] error on render url: %s", atom.Name, err.Error())
+	}
+
+	log.DebugC(fmt.Sprintf(
+		":brain:[%s] Using url %s...", atom.Name, dirUrl))
+
+	// POST: We use the url value as urlBase
+	uri, err := url.Parse(dirUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +181,7 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 		uri.Host+path.Dir(uri.Path), ssl)
 
 	resource := ""
-	if !strings.HasSuffix(atom.Dir.Url, "/") {
+	if !strings.HasSuffix(dirUrl, "/") {
 		resource = path.Base(uri.Path)
 	}
 
@@ -218,10 +232,10 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 					if strings.HasPrefix(attr.Val, "https") || strings.HasPrefix(attr.Val, "http") {
 						links[path.Base(attr.Val)] = attr.Val
 					} else {
-						if strings.HasSuffix(atom.Dir.Url, "/") {
-							links[path.Base(attr.Val)] = atom.Dir.Url + attr.Val
+						if strings.HasSuffix(dirUrl, "/") {
+							links[path.Base(attr.Val)] = dirUrl + attr.Val
 						} else {
-							links[path.Base(attr.Val)] = atom.Dir.Url + "/" + attr.Val
+							links[path.Base(attr.Val)] = dirUrl + "/" + attr.Val
 						}
 					}
 				}
@@ -233,7 +247,7 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 	}
 	findLinks(doc)
 
-	ans["url"] = atom.Dir.Url
+	ans["url"] = dirUrl
 	ans["versions"] = versions
 	ans["links"] = links
 
