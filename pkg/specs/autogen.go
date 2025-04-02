@@ -85,6 +85,11 @@ func (a *AutogenAtom) HasExcludes() bool {
 	return len(a.Excludes) > 0
 }
 
+func (a *AutogenAtom) String() string {
+	data, _ := yaml.Marshal(a)
+	return string(data)
+}
+
 func (a *AutogenAtom) GetCategory(def *AutogenAtom) string {
 	if a.Category != "" {
 		return a.Category

@@ -512,6 +512,10 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	def = def.Clone()
 	atom = def.Merge(atom)
 
+	a.Logger.DebugC(
+		fmt.Sprintf(":brain:[%s] Using atom values...\n%s",
+			atom.Name, atom))
+
 	// Retrieve package metadata and last versions
 	valuesRef, err := generator.Process(atom)
 	if err != nil {
