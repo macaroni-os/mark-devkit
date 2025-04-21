@@ -72,7 +72,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	}
 
 	// Special vars rendered
-	for _, field := range []string{"body", "rdepend", "bdepend", "depend", "pdepend"} {
+	for _, field := range []string{"body", "rdepend", "bdepend", "depend", "pdepend", "cdepend", "s"} {
 		if _, hasField := values[field]; hasField {
 			// Render the body with the values.
 			fieldValue, _ := values[field].(string)
@@ -81,6 +81,10 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 				fieldValue,
 				"", "", "ebuild."+field, values, []string{},
 			)
+			if err != nil {
+				a.Logger.Warning("[%s] Error on render variable %s: %s",
+					atom.Name, field, err.Error())
+			}
 		}
 	}
 
