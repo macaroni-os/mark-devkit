@@ -1,6 +1,6 @@
 
 # go tool nm ./luet | grep Commit
-override LDFLAGS += -X "github.com/macaroni-os/mark-devkit/cmd.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S %Z')"
+override LDFLAGS += -X "github.com/macaroni-os/mark-devkit/cmd.BuildTime=$(shell date -u '+%Y-%m-%d %H:%M:%S %Z')"
 override LDFLAGS += -X "github.com/macaroni-os/mark-devkit/cmd.BuildCommit=$(shell git rev-parse HEAD)"
 
 NAME ?= mark-devkit
