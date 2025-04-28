@@ -316,6 +316,8 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	catpkg := fmt.Sprintf("%s/%s", atom.GetCategory(def), atom.Name)
 
 	if !a.MergeBot.TargetResolver.IsPresentPackage(catpkg) {
+		a.Logger.Debug(fmt.Sprintf(
+			":eyes:[%s] Package is not present on target resolver.", atom.Name))
 		return true, nil
 	}
 
@@ -325,6 +327,10 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	// with the selector
 	if atom.HasSelector() {
 		pOpts.Conditions = []string{}
+		// Normally the versions downloaded from public
+		// website are without SLOT and it doesn't make sense
+		// try to compare versions with conditions having SLOT.
+		pOpts.IgnoreSlot = true
 
 		for _, condition := range atom.Selector {
 			gpkgCond, err := helpers.DecodeCondition(condition,

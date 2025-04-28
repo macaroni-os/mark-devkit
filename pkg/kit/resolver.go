@@ -40,6 +40,7 @@ type PortageResolverOpts struct {
 	EnableUseFlags   []string
 	DisabledUseFlags []string
 	Conditions       []string
+	IgnoreSlot       bool
 }
 
 func NewPortageResolverOpts() *PortageResolverOpts {
@@ -47,6 +48,7 @@ func NewPortageResolverOpts() *PortageResolverOpts {
 		EnableUseFlags:   []string{},
 		DisabledUseFlags: []string{},
 		Conditions:       []string{},
+		IgnoreSlot:       false,
 	}
 }
 
@@ -415,6 +417,10 @@ func (r *RepoScanResolver) PackageIsAdmit(target, atom *gentoo.GentooPackage,
 					atom.GetPackageName(), cond, err.Error())
 			}
 
+			if opts.IgnoreSlot {
+				// Ensure that the slot are always equals.
+				p.Slot = atom.Slot
+			}
 			ok, err := p.Admit(atom)
 			if err != nil {
 				return valid, fmt.Errorf("Package %s fail on check condition %s: %s",
