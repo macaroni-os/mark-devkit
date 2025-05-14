@@ -153,10 +153,13 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 		}
 	}
 
+	vars := atom.Vars
+	vars["pn"] = atom.Name
+
 	// Permit to using variables on url field
 	dirUrl, err := helpers.RenderContentWithTemplates(
 		atom.Dir.Url,
-		"", "", "url", atom.Vars, []string{},
+		"", "", "url", vars, []string{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s] error on render url: %s", atom.Name, err.Error())
