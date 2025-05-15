@@ -574,6 +574,9 @@ func (m *MergeBot) SearchAtoms(mkit *specs.MergeKit, opts *MergeBotOpts) ([]*spe
 
 		if candidate != nil {
 			ans = append(ans, candidate)
+		} else {
+			m.Logger.DebugC(fmt.Sprintf(":eyes:[%s] No candidates found.",
+				atom.Package))
 		}
 	}
 
@@ -618,8 +621,16 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 				return ans, err
 			}
 
+			m.Logger.Debug(fmt.Sprintf(
+				"[%s] Compare %s with %s...",
+				gpkg.GetPackageName(), gatom.GetPackageNameWithSlot(), epkg.GetPackageNameWithSlot()))
+
 			// Ignore packages with different SLOTs
-			if gatom.Slot != "" && gatom.Slot != "0" && gatom.Slot != epkg.Slot {
+			if gatom.Slot != "" && ((gatom.Slot != "0" && gatom.Slot != epkg.Slot) ||
+				(gatom.Slot != epkg.Slot)) {
+				m.Logger.Debug(fmt.Sprintf(
+					":factory:[%s] Ignoring package %s with different SLOT.",
+					gpkg.GetPackageName(), epkg.GetPVR()))
 				continue
 			}
 
