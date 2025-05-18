@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	log "github.com/macaroni-os/mark-devkit/pkg/logger"
@@ -606,6 +607,10 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 	if err != nil {
 		return ans, err
 	}
+	if !strings.Contains(atom.Package, ":") {
+		// POST: force empty string when SLOT is not defined.
+		gatom.Slot = ""
+	}
 
 	gpkg, err := ans.ToGentooPackage()
 	if err != nil {
@@ -622,15 +627,17 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 			}
 
 			m.Logger.Debug(fmt.Sprintf(
-				"[%s] Compare %s with %s...",
-				gpkg.GetPackageName(), gatom.GetPackageNameWithSlot(), epkg.GetPackageNameWithSlot()))
+				"[%s] Compare %s-%s with %s-%s...",
+				gpkg.GetPackageName(),
+				gatom.GetPackageNameWithSlot(), gatom.GetPVR(),
+				epkg.GetPackageNameWithSlot(), epkg.GetPVR()))
 
 			// Ignore packages with different SLOTs
 			if gatom.Slot != "" && ((gatom.Slot != "0" && gatom.Slot != epkg.Slot) ||
 				(gatom.Slot != epkg.Slot)) {
 				m.Logger.Debug(fmt.Sprintf(
-					":factory:[%s] Ignoring package %s with different SLOT.",
-					gpkg.GetPackageName(), epkg.GetPVR()))
+					":factory:[%s] Ignoring package %s with different SLOT (%s - %s).",
+					gpkg.GetPackageName(), epkg.GetPVR(), gatom.Slot, epkg.Slot))
 				continue
 			}
 
@@ -680,7 +687,6 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 				}
 
 				if lessThen {
-
 					// TODO: Compare major revision with source.
 					//       We can have a major revision of the
 					//       same package as autobump logic.
