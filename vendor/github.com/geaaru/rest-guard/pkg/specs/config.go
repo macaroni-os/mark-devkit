@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RGuardVersion = "0.6.1"
+	RGuardVersion = "0.7.0"
 )
 
 func NewConfig() *RestGuardConfig {
