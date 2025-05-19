@@ -6,8 +6,12 @@ package specs
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/time/rate"
 )
 
 func defaultRespCheck(t *RestTicket) (bool, error) {
@@ -26,6 +30,7 @@ func NewRestService(n string) *RestService {
 		Retries:         0,
 		RespValidatorCb: defaultRespCheck,
 		RetryIntervalMs: 10,
+		RateLimiter:     nil,
 		Options:         make(map[string]string, 0),
 	}
 }
@@ -51,6 +56,29 @@ func (s *RestService) GetOption(k string) (string, error) {
 		return "", errors.New("Key not found")
 	}
 	return v, nil
+}
+
+func (s *RestService) HasRateLimiter() bool {
+	return s.RateLimiter != nil
+}
+
+func (s *RestService) GetRateLimiter() *rate.Limiter { return s.RateLimiter }
+
+func (s *RestService) SetRateLimiter() error {
+	v, err := s.GetOption(ServiceRateLimiter)
+	if err != nil {
+		return fmt.Errorf("No rate limits option available")
+	}
+
+	// Setup a new Rate Limiter
+	reqs, err := strconv.Atoi(v)
+	if err != nil {
+		return fmt.Errorf("Invalid rate limits option: %s", err.Error())
+	}
+
+	// N reqs every second
+	s.RateLimiter = rate.NewLimiter(rate.Every(1*time.Second), reqs)
+	return nil
 }
 
 func (s *RestService) SetOption(k, v string) {
@@ -82,6 +110,11 @@ func (s *RestService) Clone() *RestService {
 
 	for k, v := range s.Options {
 		ans.Options[k] = v
+
+		if k == ServiceRateLimiter {
+			// Ignoring error. I assume that the value is correct.
+			ans.SetRateLimiter()
+		}
 	}
 
 	return ans

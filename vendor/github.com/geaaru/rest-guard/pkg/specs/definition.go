@@ -7,6 +7,12 @@ package specs
 import (
 	"io"
 	"net/http"
+
+	"golang.org/x/time/rate"
+)
+
+const (
+	ServiceRateLimiter string = "rate_limiter"
 )
 
 type RestTicket struct {
@@ -43,6 +49,8 @@ type RestService struct {
 	Options map[string]string `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options,omitempty"`
 
 	RespValidatorCb func(t *RestTicket) (bool, error) `json:"-" yaml:"-" mapstructure:"-"`
+
+	RateLimiter *rate.Limiter `"json:"-" yaml:"-" mapstructure:"-"`
 }
 
 type RestGuardConfig struct {

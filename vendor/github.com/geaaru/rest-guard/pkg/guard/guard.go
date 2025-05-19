@@ -5,6 +5,7 @@ See AUTHORS and LICENSE for the license details and contributors.
 package guard
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -161,6 +162,8 @@ func (g *RestGuard) CreateRequest(t *specs.RestTicket, method, path string) (*ht
 func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 	var ans error = nil
 
+	ctx := context.Background()
+
 	handleRetry := func() error {
 		t.Retries++
 		currReq := t.Request
@@ -195,6 +198,16 @@ func (g *RestGuard) doClient(c *http.Client, t *specs.RestTicket) error {
 	var lastResp *http.Response = nil
 
 	for t.Retries <= t.Service.Retries {
+
+		// If rate limiter is present on service
+		// ensure limits
+		if t.Service.HasRateLimiter() {
+			// NOTE: Check if the wait lock requests for all services.
+			err := t.Service.GetRateLimiter().Wait(ctx)
+			if err != nil {
+				return fmt.Errorf("error on rate limiting: %s", err.Error())
+			}
+		}
 		resp, err := c.Do(t.Request)
 		t.Response = resp
 		lastResp = resp
