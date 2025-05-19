@@ -23,17 +23,55 @@ import (
 )
 
 type DirlistingGenerator struct {
-	RestGuard *guard.RestGuard
+	RestGuard   *guard.RestGuard
+	MapServices map[string]*guard_specs.RestService
+	RateLimit   string
 }
 
-func NewDirlistingGenerator() *DirlistingGenerator {
+func NewDirlistingGenerator(opts map[string]string) *DirlistingGenerator {
 	log := logger.GetDefaultLogger()
 	rg, _ := guard.NewRestGuard(log.Config.GetRest())
+
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = kit.CheckRedirect
-	return &DirlistingGenerator{
+	ans := &DirlistingGenerator{
 		RestGuard: rg,
 	}
+
+	// Set storage
+	storage := *log.Config.GetStorage()
+	mServicesI, ok := storage[specs.GeneratorBuiltinDirListing]
+	if ok {
+		ans.MapServices, _ = mServicesI.(map[string]*guard_specs.RestService)
+	} else {
+		// POST: storage is not initialized.
+		ans.MapServices = make(map[string]*guard_specs.RestService, 0)
+		storage[specs.GeneratorBuiltinDirListing] = ans.MapServices
+	}
+
+	if limit, present := opts[guard_specs.ServiceRateLimiter]; present {
+		log.DebugC(fmt.Sprintf(
+			":brain: Using rate limit %s...", limit))
+		ans.RateLimit = limit
+	}
+
+	return ans
+}
+
+func (g *DirlistingGenerator) GetRestGuardService(service string) *guard_specs.RestService {
+	var ans *guard_specs.RestService = nil
+	if s, present := g.MapServices[service]; present {
+		ans = s.Clone()
+		// Ensure same rate limiter
+		ans.RateLimiter = s.RateLimiter
+	} else {
+		ans = guard_specs.NewRestService(service)
+		ans.Retries = 3
+		ans.SetOption(guard_specs.ServiceRateLimiter, g.RateLimit)
+		ans.SetRateLimiter()
+	}
+
+	return ans
 }
 
 func (g *DirlistingGenerator) GetType() string {
@@ -188,8 +226,7 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 		resource = path.Base(uri.Path)
 	}
 
-	service := guard_specs.NewRestService(uri.Host)
-	service.Retries = 3
+	service := g.GetRestGuardService(uri.Host)
 	service.AddNode(node)
 
 	t := service.GetTicket()

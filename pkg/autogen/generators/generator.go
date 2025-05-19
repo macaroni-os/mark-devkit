@@ -21,7 +21,7 @@ func NewGenerator(t string, opts map[string]string) (Generator, error) {
 	case specs.GeneratorBuiltinGitub:
 		return NewGithubGenerator(), nil
 	case specs.GeneratorBuiltinDirListing:
-		return NewDirlistingGenerator(), nil
+		return NewDirlistingGenerator(opts), nil
 	case specs.GeneratorBuiltinNoop:
 		return NewNoopGenerator(), nil
 	case specs.GeneratorBuiltinPypi:

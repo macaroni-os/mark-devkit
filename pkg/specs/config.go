@@ -23,6 +23,8 @@ type MarkDevkitConfig struct {
 	Logging        MarkDevkitLogging        `mapstructure:"logging" json:"logging,omitempty" yaml:"logging,omitempty"`
 	Authentication MarkDevkitAuthentication `mapstructure:"authentication" json:"authentication,omitempty" yaml:"authentication,omitempty"`
 	RgConfig       *rg.RestGuardConfig      `mapstructure:"rest" json:"rest,omitempty" yaml:"rest,omitempty"`
+
+	Storage map[string]interface{} `mapstructure:"-" json:"-" yaml:"-"`
 }
 
 type MarkDevkitGeneral struct {
@@ -89,6 +91,10 @@ func (c *MarkDevkitConfig) GetRest() *rg.RestGuardConfig {
 		c.RgConfig = rg.NewConfig()
 	}
 	return c.RgConfig
+}
+
+func (c *MarkDevkitConfig) GetStorage() *map[string]interface{} {
+	return &c.Storage
 }
 
 func (c *MarkDevkitConfig) Unmarshal() error {

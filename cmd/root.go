@@ -49,6 +49,9 @@ func initConfig(config *specs.MarkDevkitConfig) {
 	config.Viper.SetConfigName(specs.MARKDEVKIT_CONFIGNAME)
 
 	config.Viper.SetTypeByDefaultValue(true)
+
+	// Initialize storage
+	config.Storage = make(map[string]interface{}, 0)
 }
 
 func initCommand(rootCmd *cobra.Command, config *specs.MarkDevkitConfig) {
