@@ -20,6 +20,7 @@ type FileHashesReader struct {
 	sha512  hash.Hash
 	blake2b hash.Hash
 	md5     hash.Hash
+	size    int64
 }
 
 func NewFileHashesReader(file string) (*FileHashesReader, error) {
@@ -34,6 +35,7 @@ func NewFileHashesReader(file string) (*FileHashesReader, error) {
 		md5:     md5.New(),
 		sha512:  sha512.New(),
 		blake2b: bhash,
+		size:    int64(0),
 	}, nil
 }
 
@@ -44,6 +46,10 @@ func (f *FileHashesReader) Read(b []byte) (int, error) {
 	}
 
 	if n > 0 {
+
+		// Increment byte counter
+		f.size += int64(n)
+
 		// Update md5
 		_, err = f.md5.Write(b[:n])
 		if err != nil {
@@ -65,6 +71,10 @@ func (f *FileHashesReader) Read(b []byte) (int, error) {
 
 func (f *FileHashesReader) Close() error {
 	return f.fd.Close()
+}
+
+func (f *FileHashesReader) Size() int64 {
+	return f.size
 }
 
 func (f *FileHashesReader) MD5() string {

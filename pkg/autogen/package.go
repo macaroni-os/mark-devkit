@@ -100,7 +100,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 					atom.Name, art.Name, art.SrcUri[0],
 				))
 
-			repoFile, err := a.downloadArtefact(art.SrcUri[0], art.Name)
+			repoFile, err := a.downloadArtefact(atom, art.SrcUri[0], art.Name)
 			if err != nil {
 				return nil, err
 			}
@@ -108,7 +108,11 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 			ans.Files = append(ans.Files, *repoFile)
 
 			if idx == 0 {
-				// Set the first artefact as src_uri
+				// Set the first artefact as src_uri. This variable
+				// could be used to avoid iteration of the artefacts
+				// in the template when we are sure that there is
+				// only one artefacts or the url of the first artefact
+				// is used somewhere.
 				values["src_uri"] = fmt.Sprintf("%s -> %s", art.SrcUri[0], filename)
 			}
 		}
@@ -244,7 +248,8 @@ func (a *AutogenBot) copyFilesDir(sourcedir, targetdir string) error {
 	return nil
 }
 
-func (a *AutogenBot) downloadArtefact(atomUrl, tarballName string) (*specs.RepoScanFile, error) {
+func (a *AutogenBot) downloadArtefact(atom *specs.AutogenAtom,
+	atomUrl, tarballName string) (*specs.RepoScanFile, error) {
 
 	ans := &specs.RepoScanFile{
 		SrcUri: []string{atomUrl},
@@ -268,40 +273,79 @@ func (a *AutogenBot) downloadArtefact(atomUrl, tarballName string) (*specs.RepoS
 
 	if uri.Scheme == "ftp" {
 		return nil, fmt.Errorf("Not yet implemented!")
-	} else {
+	}
 
-		node := guard_specs.NewRestNode(uri.Host,
-			uri.Host+path.Dir(uri.Path), ssl)
+	downloadedFilePath := filepath.Join(a.GetDownloadDir(), tarballName)
 
-		resource := path.Base(uri.Path)
+	node := guard_specs.NewRestNode(uri.Host,
+		uri.Host+path.Dir(uri.Path), ssl)
 
-		service := guard_specs.NewRestService(uri.Host)
-		service.Retries = 3
-		service.AddNode(node)
+	resource := path.Base(uri.Path)
 
-		t := service.GetTicket()
-		defer t.Rip()
+	service := guard_specs.NewRestService(uri.Host)
+	service.Retries = 3
+	service.AddNode(node)
 
-		_, err := a.RestGuard.CreateRequest(t, "GET", "/"+resource)
+	// Try to use local tarball if available
+	if utils.Exists(downloadedFilePath) {
+		// Try to retrieve the size of the tarball with HEAD command.
+		size, err := a.retrieveArtefactSize(service, resource)
 		if err != nil {
 			return nil, err
-		}
+			a.Logger.DebugC(
+				fmt.Sprintf(
+					"[%s] Error on retrieve artifact size for tarball %s: %s. Ignore tarball.",
+					atom.Name, downloadedFilePath, err.Error(), size,
+				))
+		} else {
+			fileReader, err := helpers.GetFileHashes(downloadedFilePath)
+			if err != nil {
+				return nil, err
+			}
 
-		downloadedFilePath := filepath.Join(a.GetDownloadDir(), tarballName)
+			if fileReader.Size() == size {
 
-		artefact, err := a.RestGuard.DoDownload(t, downloadedFilePath)
-		if err != nil {
-			if t.Response != nil {
-				return nil, fmt.Errorf("%s - %s", err.Error(), t.Response.Status)
+				a.Logger.DebugC(
+					fmt.Sprintf("[%s] Using local tarball %s of size %d.",
+						atom.Name, downloadedFilePath, size,
+					))
+
+				ans.Hashes["sha512"] = fileReader.Sha512()
+				ans.Hashes["blake2b"] = fileReader.Blake2b()
+				ans.Size = fmt.Sprintf("%d", fileReader.Size())
+
+				return ans, nil
 			} else {
-				return nil, fmt.Errorf("%s", err.Error())
+
+				a.Logger.DebugC(
+					fmt.Sprintf(
+						"[%s] Local tarball %s is with different size (%d != %d). Ignore tarball.",
+						atom.Name, downloadedFilePath, fileReader.Size(), size,
+					))
 			}
 		}
-
-		ans.Hashes["sha512"] = artefact.Sha512
-		ans.Hashes["blake2b"] = artefact.Blake2b
-		ans.Size = fmt.Sprintf("%d", artefact.Size)
 	}
+
+	t := service.GetTicket()
+	defer t.Rip()
+
+	_, err = a.RestGuard.CreateRequest(t, "GET", "/"+resource)
+	if err != nil {
+		return nil, err
+	}
+
+	artefact, err := a.RestGuard.DoDownload(t, downloadedFilePath)
+	if err != nil {
+		if t.Response != nil {
+			return nil, fmt.Errorf("%s - %s", err.Error(), t.Response.Status)
+		} else {
+			return nil, fmt.Errorf("%s", err.Error())
+		}
+	}
+
+	ans.Hashes["sha512"] = artefact.Sha512
+	ans.Hashes["blake2b"] = artefact.Blake2b
+	ans.Size = fmt.Sprintf("%d", artefact.Size)
 
 	return ans, nil
 }
@@ -374,4 +418,30 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 	}
 
 	return toAdd, nil
+}
+
+func (a *AutogenBot) retrieveArtefactSize(service *guard_specs.RestService, path string) (int64, error) {
+
+	t := service.GetTicket()
+	defer t.Rip()
+
+	_, err := a.RestGuard.CreateRequest(t, "HEAD", "/"+path)
+	if err != nil {
+		return 0, err
+	}
+
+	err = a.RestGuard.Do(t)
+	if err != nil {
+		return 0, err
+	}
+
+	if t.Response.StatusCode == 200 {
+		return t.Response.ContentLength, nil
+	}
+
+	if t.Response == nil {
+		return 0, fmt.Errorf("Invalid response received.")
+	}
+
+	return 0, fmt.Errorf("Received response %s", t.Response.Status)
 }
