@@ -216,7 +216,10 @@ func (g *PypiGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 	} else {
 		ans["versions"] = pypiMeta.GetVersions(atom.Python.PythonCompat)
 	}
+
 	if homepage, present := info.ProjectUrls["Homepage"]; present {
+		ans["homepage"] = homepage
+	} else if homepage, present := info.ProjectUrls["Source"]; present {
 		ans["homepage"] = homepage
 	}
 
