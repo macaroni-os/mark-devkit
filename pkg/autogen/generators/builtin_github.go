@@ -336,6 +336,10 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 				continue
 			}
 			version := rr[idx].GetName()
+			if version == "" {
+				// POST: The release is without a valid name. Using tag name as fallback.
+				version = rr[idx].GetTagName()
+			}
 
 			if r.MatchString(version) {
 				version = version[1:len(version)]
