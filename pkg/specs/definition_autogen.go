@@ -92,6 +92,7 @@ type AutogenGithubProps struct {
 	User  string `json:"user,omitempty" yaml:"user,omitempty"`
 	Repo  string `json:"repo,omitempty" yaml:"repo,omitempty"`
 	Query string `json:"query,omitempty" yaml:"query,omitempty"`
+	Match string `json:"match,omitempty" yaml:"match,omitempty"`
 
 	PerPage  *int `json:"per_page,omitempty" yaml:"per_page,omitempty"`
 	Page     *int `json:"page,omitempty" yaml:"page,omitempty"`

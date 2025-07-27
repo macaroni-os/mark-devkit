@@ -221,6 +221,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	ans := make(map[string]interface{}, 0)
 	ctx := context.Background()
 	log := logger.GetDefaultLogger()
+	var matchRegex *regexp.Regexp
 
 	if atom.Github.Repo == "" {
 		atom.Github.Repo = atom.Name
@@ -285,6 +286,14 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 
 	} else {
 		// POST: query == releases
+
+		if atom.Github.Match != "" {
+			matchRegex = regexp.MustCompile(atom.Github.Match)
+			if matchRegex == nil {
+				return nil, fmt.Errorf("invalid regex match string for atom %s",
+					atom.Name)
+			}
+		}
 
 		rr := []*github.RepositoryRelease{}
 		tagsMap := make(map[string]*github.RepositoryTag, 0)
@@ -362,6 +371,13 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 
 			if r.MatchString(version) {
 				version = version[1:len(version)]
+			}
+
+			if matchRegex != nil && (!matchRegex.MatchString(version)) {
+				log.Debug(fmt.Sprintf(
+					"[%s] Release %s doesn't match with regex. Ignore it.",
+					atom.Name, version))
+				continue
 			}
 
 			versions = append(versions, version)
