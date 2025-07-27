@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/logger"
@@ -173,6 +174,7 @@ func (g *GithubGenerator) getTags(atom *specs.AutogenAtom,
 	lopts *github.ListOptions) ([]*github.RepositoryTag, error) {
 	tt := []*github.RepositoryTag{}
 	ctx := context.Background()
+	log := logger.GetDefaultLogger()
 
 	if atom.Github.NumPages != nil {
 		for page := 1; page < *atom.Github.NumPages; page++ {
@@ -185,6 +187,14 @@ func (g *GithubGenerator) getTags(atom *specs.AutogenAtom,
 			}
 
 			tt = append(tt, tags...)
+
+			if log.Config.GetGeneral().Debug {
+				for _, t := range tags {
+					log.Debug(fmt.Sprintf(
+						"[%s] Found tag %s at page %d.",
+						atom.Name, strings.ReplaceAll(t.GetName(), "\n", ""), page))
+				}
+			}
 
 			lopts.Page = resp.NextPage
 			if lopts.Page > resp.LastPage {
@@ -289,6 +299,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 		}
 
 		if atom.Github.NumPages != nil {
+			lopts.Page = 1
 			for page := 1; page < *atom.Github.NumPages; page++ {
 				releases, resp, err := g.Client.Repositories.ListReleases(
 					ctx, atom.Github.User, atom.Github.Repo, lopts,
@@ -297,9 +308,17 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 					return nil, err
 				}
 
+				if log.Config.GetGeneral().Debug {
+					for _, r := range releases {
+						log.Debug(fmt.Sprintf(
+							"[%s] Found release %s at page %d (%d).",
+							atom.Name, strings.ReplaceAll(r.GetName(), "\n", ""), page, resp.LastPage))
+					}
+				}
 				rr = append(rr, releases...)
 
-				lopts.Page = resp.NextPage
+				// NextPage contains the number of page not the next!
+				lopts.Page++
 				if lopts.Page > resp.LastPage {
 					break
 				}
