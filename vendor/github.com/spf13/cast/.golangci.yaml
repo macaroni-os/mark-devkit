@@ -5,16 +5,16 @@ run:
 
 linters:
   enable:
+    - errcheck
     - govet
     - ineffassign
-    # - misspell
+    - misspell
     - nolintlint
     # - revive
+    - unused
 
   disable:
-    - errcheck
     - staticcheck
-    - unused
 
   settings:
     misspell:
@@ -27,7 +27,7 @@ formatters:
   enable:
     - gci
     - gofmt
-    - gofumpt
+    # - gofumpt
     - goimports
     # - golines
 
@@ -37,12 +37,3 @@ formatters:
         - standard
         - default
         - localmodule
-    gofmt:
-      simplify: true
-      rewrite-rules:
-        - pattern: interface{}
-          replacement: any
-
-  exclusions:
-    paths:
-      - internal/
