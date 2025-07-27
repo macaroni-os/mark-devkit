@@ -69,7 +69,7 @@ func (a *AutogenBot) sortVersions(atom *specs.AutogenAtom, versions []string) ([
 		}
 		if gp.Version == "" {
 			a.Logger.Debug(fmt.Sprintf(
-				":warning: [%s] Ignoring version %s", atom.Name, versions[idx]))
+				":warning: [%s] Ignoring version '%s'", atom.Name, versions[idx]))
 			continue
 		}
 
