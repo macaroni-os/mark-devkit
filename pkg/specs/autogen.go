@@ -143,6 +143,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			if atom.Github.NumPages != nil {
 				ans.Github.NumPages = atom.Github.NumPages
 			}
+			if atom.Github.Match != "" {
+				ans.Github.Match = atom.Github.Match
+			}
 		}
 	}
 
@@ -260,6 +263,7 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			PerPage:  a.Github.PerPage,
 			Page:     a.Github.Page,
 			NumPages: a.Github.NumPages,
+			Match:    a.Github.Match,
 		}
 	}
 
