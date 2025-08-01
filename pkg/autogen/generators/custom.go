@@ -132,12 +132,15 @@ func (g *CustomGenerator) runScript(cmds []string,
 	}
 
 	if output.Values != nil {
-		values = *output.Values
-
-		err = helpers.SanitizeMapVersionsField(atom.Name, &values)
+		err = helpers.SanitizeMapVersionsField(atom.Name, output.Values)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Merge output values in existing values and on atomMap
+	for k, v := range *output.Values {
+		values[k] = v
 	}
 
 	if len(output.Artefacts) > 0 {
@@ -168,31 +171,98 @@ func (g *CustomGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	delete(values, "versions")
 
-	if enableSetVersion != "true" {
-		// Nothing to do
-		return nil
+	if enableSetVersion == "true" {
+		_, pkgVarfile, pkgVersionsfile, script := g.GetElabPaths(atom.Name)
+
+		// Execute defined script that have three arguments
+		// ./custom-script.sh <mode> <var-files> <output-vars-files>
+		// <mode> := process | set-version
+		cmds := []string{
+			script,
+			"set-version",
+			pkgVarfile,
+			pkgVersionsfile,
+		}
+
+		ans, err := g.runScript(cmds, atom, pkgVarfile, pkgVersionsfile, mapref)
+		if err != nil {
+			return err
+		}
+
+		for k, v := range *ans {
+			values[k] = v
+		}
 	}
 
-	_, pkgVarfile, pkgVersionsfile, script := g.GetElabPaths(atom.Name)
+	// If there artefacts apply render to asset name and url using the values.
+	// Always execute these operations also when enable_set_version is set to false.
 
-	// Execute defined script that have three arguments
-	// ./custom-script.sh <mode> <var-files> <output-vars-files>
-	// <mode> := process | set-version
-	cmds := []string{
-		script,
-		"set-version",
-		pkgVarfile,
-		pkgVersionsfile,
+	artefacts, _ := values["artefacts"].([]*specs.AutogenArtefact)
+	renderedArtefacts := []*specs.AutogenArtefact{}
+	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
+
+		for _, art := range artefacts {
+			name, err := helpers.RenderContentWithTemplates(
+				art.Name,
+				"", "", "asset.name", values, []string{},
+			)
+			if err != nil {
+				return err
+			}
+
+			url := ""
+			if len(art.SrcUri) > 0 {
+				url, err = helpers.RenderContentWithTemplates(
+					art.SrcUri[0],
+					"", "", "asset.url", values, []string{},
+				)
+				if err != nil {
+					return err
+				}
+			}
+
+			renderedArtefacts = append(renderedArtefacts, &specs.AutogenArtefact{
+				SrcUri: []string{url},
+				Use:    art.Use,
+				Name:   name,
+			})
+		}
+
 	}
 
-	ans, err := g.runScript(cmds, atom, pkgVarfile, pkgVersionsfile, mapref)
-	if err != nil {
-		return err
+	// Add atom assets as artefacts
+	if atom.HasAssets() {
+		for _, asset := range atom.Assets {
+			name, err := helpers.RenderContentWithTemplates(
+				asset.Name,
+				"", "", "asset.name", values, []string{},
+			)
+			if err != nil {
+				return err
+			}
+
+			url := ""
+			if asset.Url != "" {
+				// POST: We use the url value as urlBase
+				url, err = helpers.RenderContentWithTemplates(
+					asset.Url,
+					"", "", "asset.url", values, []string{},
+				)
+				if err != nil {
+					return err
+				}
+
+			}
+
+			renderedArtefacts = append(renderedArtefacts, &specs.AutogenArtefact{
+				SrcUri: []string{url},
+				Use:    asset.Use,
+				Name:   name,
+			})
+		}
 	}
 
-	for k, v := range *ans {
-		values[k] = v
-	}
+	values["artefacts"] = renderedArtefacts
 
 	return nil
 }
