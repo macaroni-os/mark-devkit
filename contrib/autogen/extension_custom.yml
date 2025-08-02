@@ -1,0 +1,23 @@
+extension_custom_example:
+  generator: builtin-noop
+  defaults:
+    category: dev-util
+    template: templates/simple.tmpl
+    vars:
+      versions:
+        - '0.1.0'
+
+  extensions_defs:
+    custom:
+      opts:
+        script: custom-ext.sh
+        # We use portage mirror feature to create address
+        mirror: mirror://macaroni
+
+  packages:
+    - myfoo:
+        extensions:
+          - custom
+        vars:
+          homepage: myapp
+          desc: My app using Custom Extension and local file

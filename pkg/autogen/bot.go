@@ -433,7 +433,8 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 			a.Logger.Info(fmt.Sprintf(
 				":factory:[%s] Processing atom %s...", nameDef, atom.Name))
 
-			err = a.ProcessPackage(mkit, aspec, atom, def.Defaults, generator, templateEngine, opts)
+			err = a.ProcessPackage(mkit, aspec, atom, def,
+				generator, templateEngine, opts)
 			if err != nil {
 				return err
 			}
@@ -484,9 +485,11 @@ func (a *AutogenBot) GetTemplateEngine(t *specs.AutogenTemplateEngine) (tmpleng.
 }
 
 func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
-	aspec *specs.AutogenSpec, atom, def *specs.AutogenAtom,
-	generator generators.Generator, tmplEngine tmpleng.TemplateEngine,
-	opts *AutogenBotOpts) error {
+	aspec *specs.AutogenSpec, atom *specs.AutogenAtom,
+	aDef *specs.AutogenDefinition, generator generators.Generator,
+	tmplEngine tmpleng.TemplateEngine, opts *AutogenBotOpts) error {
+
+	def := aDef.Defaults
 
 	if def == nil {
 		// Create an empty default object if not present.
@@ -658,9 +661,18 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		return nil
 	}
 
+	// Consumes extensions if defined
+	if atom.HasExtensions() {
+		err = a.ConsumeExtensions(mkit, aspec, atom, def, aDef, &values)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Download artefacts and prepare stagings dir.
 	reposcanAtom, err := a.GeneratePackageOnStaging(
-		mkit, aspec, atom, def, &values, tmplEngine)
+		mkit, aspec, atom, def, &values, tmplEngine,
+	)
 	if err != nil {
 		return err
 	}

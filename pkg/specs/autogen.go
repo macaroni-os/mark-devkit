@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 Macaroni OS Linux
+Copyright © 2024-2025 Macaroni OS Linux
 See AUTHORS and LICENSE for the license details and contributors.
 */
 package specs
@@ -37,8 +37,25 @@ func (a *AutogenSpec) LoadYaml(data []byte, file string) error {
 }
 
 func (a *AutogenSpec) HasGithubGenerators() bool {
-	// TODO
-	return true
+	ans := false
+	for _, def := range a.Definitions {
+		if def.Generator == GeneratorBuiltinGitub {
+			ans = true
+			break
+		}
+	}
+	return ans
+}
+
+func (a *AutogenSpec) HasExtensionsDefs() bool {
+	ans := false
+	for _, def := range a.Definitions {
+		if len(def.Extensions) > 0 {
+			ans = true
+			break
+		}
+	}
+	return ans
 }
 
 func (a *AutogenSpec) Prepare() {
@@ -58,6 +75,19 @@ func (a *AutogenSpec) Prepare() {
 			}
 		}
 	}
+}
+
+func (e *AutogenExtension) GetName() string               { return e.Name }
+func (e *AutogenExtension) GetOptions() map[string]string { return e.Options }
+func (e *AutogenExtension) Clone() *AutogenExtension {
+	ans := &AutogenExtension{
+		Name:    e.Name,
+		Options: make(map[string]string, 0),
+	}
+	for k, v := range e.Options {
+		ans.Options[k] = v
+	}
+	return ans
 }
 
 func NewAutogenAtom(name string) *AutogenAtom {
@@ -83,6 +113,10 @@ func (a *AutogenAtom) HasSelector() bool {
 
 func (a *AutogenAtom) HasExcludes() bool {
 	return len(a.Excludes) > 0
+}
+
+func (a *AutogenAtom) HasExtensions() bool {
+	return len(a.Extensions) > 0
 }
 
 func (a *AutogenAtom) String() string {
@@ -210,10 +244,6 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 		ans.FilesDir = atom.FilesDir
 	}
 
-	if len(atom.Extensions) > 0 {
-		ans.Extensions = atom.Extensions
-	}
-
 	if atom.HasAssets() {
 		ans.Assets = atom.Assets
 	}
@@ -229,6 +259,21 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 
 	if atom.IgnoreArtefacts != nil {
 		ans.IgnoreArtefacts = atom.IgnoreArtefacts
+	}
+
+	if len(atom.Extensions) > 0 {
+		for _, e := range atom.Extensions {
+			present := false
+			for idx := range ans.Extensions {
+				if ans.Extensions[idx] == e {
+					present = true
+					break
+				}
+			}
+			if !present {
+				ans.Extensions = append(ans.Extensions, e)
+			}
+		}
 	}
 
 	return ans
@@ -247,6 +292,7 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 		Excludes:        a.Excludes,
 		Selector:        a.Selector,
 		Assets:          a.Assets,
+		Extensions:      []string{},
 	}
 
 	if len(a.Vars) > 0 {
@@ -298,5 +344,27 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 
 	}
 
+	if len(a.Extensions) > 0 {
+		for _, e := range a.Extensions {
+			ans.Extensions = append(ans.Extensions, e)
+		}
+	}
+
 	return ans
+}
+
+func (a *AutogenArtefact) IsLocal() bool {
+	return a.Local != nil && *a.Local
+}
+
+func (a *AutogenDefinition) GetExtensionOptions(e string) (*AutogenExtension, error) {
+	ext, ok := a.Extensions[e]
+	if ok {
+		ans := ext.Clone()
+		if ans.Name == "" {
+			ans.Name = e
+		}
+		return ans, nil
+	}
+	return nil, fmt.Errorf("Extension %s without options", e)
 }

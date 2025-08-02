@@ -15,6 +15,9 @@ const (
 	TmplEngineHelm   = "helm"
 	TmplEnginePongo2 = "pongo2"
 	TmplEngineJ2cli  = "j2cli"
+
+	ExtensionCustom = "custom"
+	ExtensionGolang = "golang"
 )
 
 type AutogenSpec struct {
@@ -30,6 +33,13 @@ type AutogenDefinition struct {
 	GeneratorOpts  map[string]string         `json:"generator_opts,omitempty" yaml:"generator_opts,omitempty"`
 	Defaults       *AutogenAtom              `json:"defaults,omitempty" yaml:"defaults,omitempty"`
 	Packages       []map[string]*AutogenAtom `json:"packages,omitempty" yaml:"packages,omitempty"`
+
+	Extensions map[string]*AutogenExtension `json:"extensions_defs,omitempty" yaml:"extensions_defs,omitempty"`
+}
+
+type AutogenExtension struct {
+	Name    string            `json:"name" yaml:"name"`
+	Options map[string]string `json:"opts,omitempty" yaml:"opts,omitempty"`
 }
 
 type AutogenArtefact struct {
@@ -37,6 +47,7 @@ type AutogenArtefact struct {
 	SrcUri []string          `json:"src_uri" yaml:"src_uri"`
 	Name   string            `json:"name" yaml:"name"`
 	Hashes map[string]string `json:"hashes,omitempty" yaml:"hashes,omitempty"`
+	Local  *bool             `json:"local,omitempty" yaml:"local,omitempty"`
 }
 
 type AutogenAtom struct {
@@ -75,6 +86,7 @@ type AutogenAsset struct {
 	Matcher string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
 	Prefix  string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
 	Url     string `json:"url,omitempty" yaml:"url,omitempty"`
+	Local   *bool  `json:"local,omitempty" yaml:"local,omitempty"`
 }
 
 type AutogenTransform struct {

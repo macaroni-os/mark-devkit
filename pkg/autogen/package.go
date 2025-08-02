@@ -91,16 +91,33 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
 		// Download tarballs
 		for idx, art := range artefacts {
+
+			var repoFile *specs.RepoScanFile
+			var err error
+
 			filename := art.Name
 			if art.Name == "" {
 				filename = fmt.Sprintf("%s-%s.tar.gz", pn, version)
 			}
-			a.Logger.DebugC(
-				fmt.Sprintf("[%s] Downloading %s from url %s",
-					atom.Name, art.Name, art.SrcUri[0],
-				))
 
-			repoFile, err := a.downloadArtefact(atom, art.SrcUri[0], art.Name)
+			if art.Local != nil && *art.Local {
+
+				a.Logger.DebugC(
+					fmt.Sprintf(":factory: [%s] Elaborating local file %s with url %s",
+						atom.Name, art.Name, art.SrcUri[0],
+					))
+
+				repoFile, err = a.processLocalArtefact(atom, art.SrcUri[0], art.Name)
+			} else {
+
+				a.Logger.DebugC(
+					fmt.Sprintf("[%s] Downloading %s from url %s",
+						atom.Name, art.Name, art.SrcUri[0],
+					))
+
+				repoFile, err = a.downloadArtefact(atom, art.SrcUri[0], art.Name)
+			}
+
 			if err != nil {
 				return nil, err
 			}
@@ -115,6 +132,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 				// is used somewhere.
 				values["src_uri"] = fmt.Sprintf("%s -> %s", art.SrcUri[0], filename)
 			}
+
 		}
 
 		manifestPath := filepath.Join(pkgDirStaging, "Manifest")
@@ -166,6 +184,29 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	}
 
 	return ans, err
+}
+
+func (a *AutogenBot) processLocalArtefact(atom *specs.AutogenAtom,
+	atomUrl, tarballName string) (*specs.RepoScanFile, error) {
+
+	ans := &specs.RepoScanFile{
+		SrcUri: []string{atomUrl},
+		Name:   tarballName,
+		Hashes: make(map[string]string, 0),
+	}
+
+	artefactPath := filepath.Join(a.GetDownloadDir(), tarballName)
+
+	hashes, err := helpers.GetFileHashes(artefactPath)
+	if err != nil {
+		return nil, err
+	}
+
+	ans.Hashes["sha512"] = hashes.Sha512()
+	ans.Hashes["blake2b"] = hashes.Blake2b()
+	ans.Size = fmt.Sprintf("%d", hashes.Size())
+
+	return ans, nil
 }
 
 func (a *AutogenBot) copyFilesDir(sourcedir, targetdir string) error {
