@@ -13,7 +13,7 @@ import (
 const (
 	MARKDEVKIT_CONFIGNAME = "mark-devkit"
 	MARKDEVKIT_ENV_PREFIX = "MARKDEVKIT"
-	MARKDEVKIT_VERSION    = `0.19.0`
+	MARKDEVKIT_VERSION    = `0.20.0`
 )
 
 type MarkDevkitConfig struct {
