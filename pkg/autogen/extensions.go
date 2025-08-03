@@ -55,7 +55,7 @@ func (a *AutogenBot) ConsumeExtension(mkit *specs.MergeKit,
 	}
 
 	// Execute extension code
-	err = ext.Elaborate(atom, def, mapref)
+	err = ext.Elaborate(a.RestGuard, atom, def, mapref)
 
 	return err
 }

@@ -13,6 +13,8 @@ import (
 	"github.com/macaroni-os/mark-devkit/pkg/autogen/generators"
 	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
+
+	"github.com/geaaru/rest-guard/pkg/guard"
 )
 
 type ExtensionCustom struct {
@@ -57,7 +59,8 @@ func (e *ExtensionCustom) GetElabPaths(pkgname string) (string, string, string, 
 	return pkgWorkDir, pkgVarfile, pkgOutputfile, script
 }
 
-func (e *ExtensionCustom) Elaborate(atom, def *specs.AutogenAtom,
+func (e *ExtensionCustom) Elaborate(restGuard *guard.RestGuard,
+	atom, def *specs.AutogenAtom,
 	mapref *map[string]interface{}) error {
 
 	log := logger.GetDefaultLogger()

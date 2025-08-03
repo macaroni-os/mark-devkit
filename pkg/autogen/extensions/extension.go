@@ -8,10 +8,13 @@ import (
 	"fmt"
 
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
+
+	"github.com/geaaru/rest-guard/pkg/guard"
 )
 
 type Extension interface {
-	Elaborate(atom, def *specs.AutogenAtom,
+	Elaborate(restGuard *guard.RestGuard,
+		atom, def *specs.AutogenAtom,
 		mapref *map[string]interface{}) error
 	GetName() string
 }
@@ -20,6 +23,8 @@ func NewExtension(t string, opts map[string]string) (Extension, error) {
 	switch t {
 	case specs.ExtensionCustom:
 		return NewExtensionCustom(opts)
+	case specs.ExtensionGolang:
+		return NewExtensionGolang(opts)
 	default:
 		return nil, fmt.Errorf("Invalid extension %s", t)
 	}

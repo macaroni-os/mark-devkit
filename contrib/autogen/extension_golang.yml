@@ -1,0 +1,47 @@
+extension_golang_example:
+  generator: builtin-github
+  defaults:
+    category: net-fs
+    template: templates/simple.tmpl
+    github:
+      user: minio
+      query: releases
+      match: RELEASE
+
+  extensions_defs:
+    golang:
+      opts:
+        bundle_identifier: mark-go-bundle
+        # We use portage mirror feature to create address
+        mirror: mirror://macaroni
+        # If the tarball contains different
+        # directories it's possible supply a
+        # prefix string to use in order to match
+        # the main directory where retrieve go.sum.
+        # If not present the first valid directory that
+        # contains go.sum is used.
+        # unpack_srcdir_prefix: minio-minio-
+
+        # See tar-formers supported compression algorithms
+        # to possible values.
+        # bundle_extension: "xz"
+
+  packages:
+
+    - minio:
+        extensions:
+          - golang
+        vars:
+          desc: An Amazon S3 compatible object storage server
+          homepage: https://min.io/ https://github.com/minio/minio
+        transform:
+          - kind: string
+            match: 'RELEASE.'
+            replace: ''
+          - kind: regex
+            match: 'T.*'
+            replace: ''
+          - kind: string
+            match: '-'
+            replace: '.'
+

@@ -12,3 +12,5 @@ target:
   atoms:
     - pkg: dev-util/myfoo
 
+    - pkg: net-fs/minio
+
