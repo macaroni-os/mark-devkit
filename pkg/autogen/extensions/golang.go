@@ -42,10 +42,23 @@ func NewGoSum(content string) *GoSum {
 		Lines: []GoSumRow{},
 	}
 
+	escapeModStr := func(str string) string {
+		var builder strings.Builder
+		for _, ch := range str {
+			if ch >= 'A' && ch <= 'Z' {
+				builder.WriteByte('!')
+				builder.WriteByte(byte(ch + 'a' - 'A'))
+			} else {
+				builder.WriteRune(ch)
+			}
+		}
+		return builder.String()
+	}
+
 	for idx := range lines {
 		// As described on https://golang.org/ref/mod#module-cache
-		// we need to lower chars of the modules.
-		line := strings.ToLower(lines[idx])
+		// we need to convert the upper case with !lower case
+		line := escapeModStr(lines[idx])
 		words := strings.Split(line, " ")
 		if len(words) < 3 {
 			continue
