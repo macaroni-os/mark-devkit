@@ -204,6 +204,7 @@ func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 func (e *ExtensionGolang) createBundleTarball(
 	bundlesDir, bundleTarball, workDir, atomName, mirror string) (*specs.AutogenArtefact, error) {
 	var err error
+	log := logger.GetDefaultLogger()
 
 	// Check instance
 	config := tarf_specs.NewConfig(nil)
