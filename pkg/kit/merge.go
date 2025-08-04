@@ -131,6 +131,11 @@ func (m *MergeBot) GetReposcanDir() string {
 	return filepath.Join(m.WorkDir, "kit-cache")
 }
 
+func (m *MergeBot) HasUpdates(opts *MergeBotOpts) bool {
+	return m.hasCommit ||
+		(opts.PullRequest && (m.profilesUpdate || m.eclassUpdate || m.metadataUpdate))
+}
+
 func (m *MergeBot) GetResolver() *RepoScanResolver { return m.Resolver }
 func (m *MergeBot) SetWorkDir(d string)            { m.WorkDir = d }
 
@@ -289,7 +294,7 @@ func (m *MergeBot) ElaborateMerge(mkit *specs.MergeKit,
 		return err
 	}
 
-	if opts.Push && m.hasCommit {
+	if opts.Push && m.HasUpdates(opts) {
 		err = m.Push(mkit, opts)
 	}
 
