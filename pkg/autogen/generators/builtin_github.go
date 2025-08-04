@@ -132,7 +132,14 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	tarballName := atom.Tarball
 	if tarballName == "" {
-		tarballName = fmt.Sprintf("%s-%s.tar.gz", atom.Name, version)
+		// Using sha at the end to correctly catch issues
+		// with retag done on upstream repo
+		if tag != nil {
+			tarballName = fmt.Sprintf("%s-%s-%s.tar.gz", atom.Name, version,
+				tag.Commit.GetSHA()[0:7])
+		} else {
+			tarballName = fmt.Sprintf("%s-%s.tar.gz", atom.Name, version)
+		}
 	} else {
 		tarballName, err = helpers.RenderContentWithTemplates(
 			tarballName,
