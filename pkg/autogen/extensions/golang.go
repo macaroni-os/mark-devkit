@@ -223,6 +223,9 @@ func (e *ExtensionGolang) createBundleTarball(
 	config := tarf_specs.NewConfig(nil)
 	if logger.GetDefaultLogger().Config.GetGeneral().Debug {
 		config.GetLogging().Level = "info"
+	} else {
+		config.GetGeneral().Debug = false
+		config.GetLogging().Level = "info"
 	}
 
 	tarformers := executor.NewTarFormers(config)
