@@ -375,7 +375,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 			pr, err := CreatePullRequest(m.GithubClient, ctx,
 				// title
-				fmt.Sprintf("mark-devkit: Bump %s", pkg),
+				fmt.Sprintf("mark-devkit: [%s] Bump %s", targetKit.Branch, pkg),
 				// source branch
 				prBranchName,
 				// target branch
@@ -409,7 +409,8 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 				pr, err := CreatePullRequest(m.GithubClient, ctx,
 					// title
-					fmt.Sprintf("mark-devkit: Update %s %s", include.GetType(), name),
+					fmt.Sprintf("mark-devkit: [%s] Update %s %s", targetKit.Branch,
+						include.GetType(), name),
 					// source branch
 					prBranchName,
 					// target branch
@@ -444,7 +445,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 			pr, err := CreatePullRequest(m.GithubClient, ctx,
 				// title
-				"mark-devkit: Update/Add eclasses",
+				fmt.Sprintf("mark-devkit: [%s] Update/Add eclasses", targetKit.Branch),
 				// source branch
 				prBranchName,
 				// target branch
@@ -478,7 +479,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 			pr, err := CreatePullRequest(m.GithubClient, ctx,
 				// title
-				"mark-devkit: Update/Add Profiles",
+				fmt.Sprintf("mark-devkit: [%s] Update/Add Profiles", targetKit.Branch),
 				// source branch
 				prBranchName,
 				// target branch
@@ -511,7 +512,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 			pr, err := CreatePullRequest(m.GithubClient, ctx,
 				// title
-				"mark-devkit: Update/Add Metadata",
+				fmt.Sprintf("mark-devkit: [%s] Update/Add Metadata", targetKit.Branch),
 				// source branch
 				prBranchName,
 				// target branch
