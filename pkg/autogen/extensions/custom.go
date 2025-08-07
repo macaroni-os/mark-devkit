@@ -18,7 +18,7 @@ import (
 )
 
 type ExtensionCustom struct {
-	Opts map[string]string
+	*ExtensionBase
 }
 
 func NewExtensionCustom(opts map[string]string) (*ExtensionCustom, error) {
@@ -28,14 +28,12 @@ func NewExtensionCustom(opts map[string]string) (*ExtensionCustom, error) {
 	}
 
 	return &ExtensionCustom{
-		Opts: opts,
-	}, nil
+		ExtensionBase: &ExtensionBase{
+			Opts: opts,
+		}}, nil
 }
 
 func (e *ExtensionCustom) GetName() string { return specs.ExtensionCustom }
-func (e *ExtensionCustom) GetOpts() map[string]string {
-	return e.Opts
-}
 
 func (e *ExtensionCustom) GetElabPaths(pkgname string) (string, string, string, string) {
 
@@ -166,10 +164,7 @@ func (e *ExtensionCustom) Elaborate(restGuard *guard.RestGuard,
 		values["artefacts"] = artefacts
 	}
 
-	delete(values, "workdir")
-	delete(values, "download_dir")
-	delete(values, "specfile")
-	delete(values, "mirror")
+	e.cleanup(mapref)
 
 	if !logger.GetDefaultLogger().Config.GetGeneral().Debug {
 		defer os.RemoveAll(filepath.Join(workdir, "custom-extension"))

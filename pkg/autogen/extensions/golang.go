@@ -22,7 +22,7 @@ import (
 )
 
 type ExtensionGolang struct {
-	Opts map[string]string
+	*ExtensionBase
 }
 
 type GoSum struct {
@@ -75,14 +75,12 @@ func NewGoSum(content string) *GoSum {
 
 func NewExtensionGolang(opts map[string]string) (*ExtensionGolang, error) {
 	return &ExtensionGolang{
-		Opts: opts,
-	}, nil
+		ExtensionBase: &ExtensionBase{
+			Opts: opts,
+		}}, nil
 }
 
 func (e *ExtensionGolang) GetName() string { return specs.ExtensionGolang }
-func (e *ExtensionGolang) GetOpts() map[string]string {
-	return e.Opts
-}
 
 func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 	atom, def *specs.AutogenAtom,
@@ -161,7 +159,8 @@ func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 		fmt.Sprintf(":factory:[%s] Extracting file %s",
 			atom.Name, repoFile.Name,
 		))
-	err = e.unpackArtefact(downloadDir, unpackDir, repoFile)
+	err = e.unpackArtefact(downloadDir, unpackDir, repoFile,
+		atom, def, mapref)
 	if err != nil {
 		return err
 	}
@@ -202,10 +201,7 @@ func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 	artefacts = append(artefacts, bundleArt)
 	values["artefacts"] = artefacts
 
-	delete(values, "workdir")
-	delete(values, "download_dir")
-	delete(values, "specfile")
-	delete(values, "mirror")
+	e.cleanup(mapref)
 
 	if !logger.GetDefaultLogger().Config.GetGeneral().Debug {
 		defer os.RemoveAll(filepath.Join(workdir, "go-extension"))
@@ -362,44 +358,4 @@ func (e *ExtensionGolang) retrieveGoSum(atom *specs.AutogenAtom,
 	}
 
 	return NewGoSum(string(data)), nil
-}
-
-func (e *ExtensionGolang) unpackArtefact(downloadDir, targetDir string,
-	art *specs.RepoScanFile) error {
-
-	tarball := filepath.Join(downloadDir, art.Name)
-
-	// Check instance
-	config := tarf_specs.NewConfig(nil)
-	if logger.GetDefaultLogger().Config.GetGeneral().Debug {
-		config.GetLogging().Level = "info"
-	}
-
-	tarformers := executor.NewTarFormers(config)
-	s := tarf_specs.NewSpecFile()
-	// We don't need to keep the original permission of the files
-	// and owner.
-	s.SameOwner = false
-	s.SameChtimes = false
-
-	tarfOpts := tools.NewTarReaderCompressionOpts(true)
-	defer tarfOpts.Close()
-
-	err := tools.PrepareTarReader(tarball, tarfOpts)
-	if err != nil {
-		return fmt.Errorf("Error on prepare reader:", err.Error())
-	}
-
-	if tarfOpts.CompressReader != nil {
-		tarformers.SetReader(tarfOpts.CompressReader)
-	} else {
-		tarformers.SetReader(tarfOpts.FileReader)
-	}
-
-	err = tarformers.RunTask(s, targetDir)
-	if err != nil {
-		return fmt.Errorf("Error on process tarball :" + err.Error())
-	}
-
-	return nil
 }
