@@ -25,6 +25,8 @@ func NewExtension(t string, opts map[string]string) (Extension, error) {
 		return NewExtensionCustom(opts)
 	case specs.ExtensionGolang:
 		return NewExtensionGolang(opts)
+	case specs.ExtensionRust:
+		return NewExtensionRust(opts)
 	default:
 		return nil, fmt.Errorf("Invalid extension %s", t)
 	}

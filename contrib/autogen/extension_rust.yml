@@ -1,0 +1,59 @@
+extension_golang_example:
+  generator: builtin-github
+  defaults:
+    category: x11-terms
+    template: templates/simple.tmpl
+    github:
+      user: wez
+      query: releases
+      num_pages: 4
+
+  extensions_defs:
+    rust:
+      opts:
+        bundle_identifier: mark-rust-bundle
+        # We use portage mirror feature to create address
+        mirror: mirror://macaroni
+        # If the tarball contains different
+        # directories it's possible supply a
+        # prefix string to use in order to match
+        # the main directory where retrieve go.sum.
+        # If not present the first valid directory that
+        # contains go.sum is used.
+        # unpack_srcdir_prefix: minio-minio-
+
+        # See tar-formers supported compression algorithms
+        # to possible values.
+        # bundle_extension: "xz"
+
+        # Define a list of crates to ignore
+        crates_skipped: ""
+
+        # git crates options. Possible values: "true" | "false". Default true.
+        # crates_git_single_branch: "true"
+        # Define a limit of number of commit to fetch on repo to reduce
+        # the size of the bundle related to git repository.
+        crates_git_depth: 100
+
+  packages:
+
+    - wezterm:
+        extensions:
+          - rust
+        vars:
+          desc: A GPU-accelerated cross-platform terminal emulator and multiplexer written by @wez and implemented in Rust
+          homepage: https://github.com/wez/wezterm
+          inherit:
+            - bash-completion-r1
+            - cargo
+            - desktop
+          license: Apache-2.0 Boost-1.0 BSD BSD-2 CC0-1.0 ISC LGPL-3+ MIT Apache-2.0 Unlicense ZLIB
+          iuse: wayland +X
+        transform:
+          - kind: string
+            match: 'Release '
+            replace: ''
+          - kind: regex
+            match: '-.*'
+            replace: ''
+

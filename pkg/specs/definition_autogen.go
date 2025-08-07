@@ -18,6 +18,7 @@ const (
 
 	ExtensionCustom = "custom"
 	ExtensionGolang = "golang"
+	ExtensionRust   = "rust"
 )
 
 type AutogenSpec struct {

@@ -14,3 +14,4 @@ target:
 
     - pkg: net-fs/minio
 
+    - pkg: x11-terms/wezterm
