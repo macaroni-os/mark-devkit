@@ -28,6 +28,8 @@ type CloneOptions struct {
 	Summary         bool
 	Results         []*specs.ReposcanKit
 
+	Submodules git.Submodules
+
 	// Commit data
 	BoostrapCommitComment string
 	SignatureName         string
@@ -103,6 +105,16 @@ func Clone(k *specs.ReposcanKit, targetdir string, o *CloneOptions) error {
 		opts.ReferenceName = plumbing.ReferenceName(branchRefName)
 	}
 
+	withSubmodules := false
+	// Initialize of submodules works only after
+	// that the repository is been moved to the specific
+	// commit/sha else go-git die.
+	if opts.RecurseSubmodules == git.DefaultSubmoduleRecursionDepth &&
+		k.CommitSha1 != "" {
+		withSubmodules = true
+		opts.RecurseSubmodules = git.NoRecurseSubmodules
+	}
+
 	if utils.Exists(targetdir) {
 		// POST: The directory exists. I try to pull updates.
 
@@ -140,6 +152,11 @@ func Clone(k *specs.ReposcanKit, targetdir string, o *CloneOptions) error {
 			return err
 		}
 
+		r, err = git.PlainOpen(targetdir)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	if k.CommitSha1 != "" {
@@ -155,9 +172,15 @@ func Clone(k *specs.ReposcanKit, targetdir string, o *CloneOptions) error {
 
 		err = w.Checkout(chOpts)
 		if err != nil {
-			return fmt.Errorf("error on checkout repo %s for branch %s and hash %s: %s",
-				k.Name, k.Branch, k.CommitSha1, err.Error())
+			if k.Branch != "" {
+				return fmt.Errorf("error on checkout repo %s for branch %s and hash %s: %s",
+					k.Name, k.Branch, k.CommitSha1, err.Error())
+			}
+
+			return fmt.Errorf("error on checkout repo %s for hash %s: %s",
+				k.Name, k.CommitSha1, err.Error())
 		}
+
 	}
 
 	// Print the latest commit that was just pulled
@@ -180,6 +203,33 @@ func Clone(k *specs.ReposcanKit, targetdir string, o *CloneOptions) error {
 		res := *k
 		res.CommitSha1 = fmt.Sprintf("%s", ref.Hash())
 		o.Results = append(o.Results, &res)
+	}
+
+	if withSubmodules {
+		w, err := r.Worktree()
+		if err != nil {
+			return err
+		}
+		// Try to init submodules
+
+		submodules, err := w.Submodules()
+		if err != nil {
+			return fmt.Errorf("error on read submodules: %s", err.Error())
+		}
+
+		for _, sub := range submodules {
+			log.DebugC(fmt.Sprintf(
+				"→ Initialize submodule %s : %s", sub.Config().Name, sub.Config().Path))
+			err := sub.Update(&git.SubmoduleUpdateOptions{
+				Init: true,
+			})
+			if err != nil {
+				return fmt.Errorf(
+					"error on init submodule %s: %s", sub.Config().Name, err.Error())
+			}
+		}
+
+		o.Submodules = submodules
 	}
 
 	return nil
