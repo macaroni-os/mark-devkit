@@ -4,11 +4,16 @@ extension_golang_example:
     category: x11-terms
     template: templates/simple.tmpl
     github:
-      user: wez
+      user: wezterm
       query: releases
       num_pages: 4
 
   extensions_defs:
+    git-submodules:
+      opts:
+        # git_depth: 1000
+        # git_single_branch: "true"
+
     rust:
       opts:
         bundle_identifier: mark-rust-bundle
@@ -39,7 +44,8 @@ extension_golang_example:
 
     - wezterm:
         extensions:
-          - rust
+#          - rust
+          - git-submodules
         vars:
           desc: A GPU-accelerated cross-platform terminal emulator and multiplexer written by @wez and implemented in Rust
           homepage: https://github.com/wez/wezterm

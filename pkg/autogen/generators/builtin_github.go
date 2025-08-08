@@ -174,6 +174,10 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	values["artefacts"] = artefacts
 
+	values["pkg_basedir"] = fmt.Sprintf("%s-%s-%s",
+		atom.Github.User, atom.Github.Repo, tag.Commit.GetSHA()[0:7],
+	)
+
 	return nil
 }
 
@@ -400,6 +404,8 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	ans["tags"] = validTags
 	ans["github_user"] = atom.Github.User
 	ans["github_repo"] = atom.Github.Repo
+	ans["git_repo"] = fmt.Sprintf("https://github.com/%s/%s.git",
+		atom.Github.User, atom.Github.Repo)
 
 	return &ans, nil
 }

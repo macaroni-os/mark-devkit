@@ -16,9 +16,10 @@ const (
 	TmplEnginePongo2 = "pongo2"
 	TmplEngineJ2cli  = "j2cli"
 
-	ExtensionCustom = "custom"
-	ExtensionGolang = "golang"
-	ExtensionRust   = "rust"
+	ExtensionCustom        = "custom"
+	ExtensionGolang        = "golang"
+	ExtensionRust          = "rust"
+	ExtensionGitSubmodules = "git-submodules"
 )
 
 type AutogenSpec struct {

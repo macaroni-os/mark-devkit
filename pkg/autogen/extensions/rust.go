@@ -160,6 +160,7 @@ func (e *ExtensionRust) Elaborate(restGuard *guard.RestGuard,
 	if err != nil {
 		return err
 	}
+	values["pkg_basedir"] = filepath.Base(pkgUnpackDir)
 
 	// Read all Cargo.toml in order to identify all local crates
 	localCrates, err := e.parseCargoToml(atom, pkgUnpackDir)
@@ -464,19 +465,6 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 	}
 
 	return nil
-}
-
-func (e *ExtensionRust) getTarformersConfig() *tarf_specs.Config {
-	// Check instance
-	config := tarf_specs.NewConfig(nil)
-	if logger.GetDefaultLogger().Config.GetGeneral().Debug {
-		config.GetLogging().Level = "info"
-	} else {
-		config.GetGeneral().Debug = false
-		config.GetLogging().Level = "info"
-	}
-
-	return config
 }
 
 func (e *ExtensionRust) retrieveCargoLock(atom *specs.AutogenAtom,

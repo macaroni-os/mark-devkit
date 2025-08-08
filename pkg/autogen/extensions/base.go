@@ -36,6 +36,19 @@ func (e *ExtensionBase) cleanup(mapref *map[string]interface{}) {
 	delete(values, "mirror")
 }
 
+func (e *ExtensionBase) getTarformersConfig() *tarf_specs.Config {
+	// Check instance
+	config := tarf_specs.NewConfig(nil)
+	if logger.GetDefaultLogger().Config.GetGeneral().Debug {
+		config.GetLogging().Level = "info"
+	} else {
+		config.GetGeneral().Debug = false
+		config.GetLogging().Level = "info"
+	}
+
+	return config
+}
+
 func (e *ExtensionBase) unpackArtefact(downloadDir, targetDir string,
 	art *specs.RepoScanFile,
 	atom, def *specs.AutogenAtom,
