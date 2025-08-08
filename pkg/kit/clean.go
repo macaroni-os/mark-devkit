@@ -270,8 +270,9 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 
 	if opts.PullRequest {
 		prBranchName := fmt.Sprintf(
-			"%s%s",
+			"%s%s/%s",
 			prBranchPurgePrefix,
+			kit.Branch,
 			strings.ReplaceAll(strings.ReplaceAll(catpkg, ".", "_"),
 				"/", "_"),
 		)
@@ -287,6 +288,13 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 				"[%s] PR branch %s already present. Nothing to do.",
 				catpkg, prBranchName))
 			m.branches2Skip[prBranchName] = true
+
+			// Restore committed files in order to avoid
+			// that the same changes will be added in the new commit
+			err = m.restoreFiles(kitDir, files, opts, worktree)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 
@@ -340,6 +348,13 @@ func (m *MergeBot) cleanAtom(mkit *specs.MergeKit, opts *MergeBotOpts,
 		if err != nil {
 			return err
 		}
+
+		// Restore committed files in order to avoid
+		// that the same changes will be added in new commit.
+		err = m.restoreFiles(kitDir, files, opts, worktree)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -365,8 +380,9 @@ func (m *MergeBot) PushRemoves(mkit *specs.MergeKit, opts *MergeBotOpts,
 		for catpkg, candidates := range *candidates4PN {
 
 			prBranchName := fmt.Sprintf(
-				"%s%s",
+				"%s%s/%s",
 				prBranchPurgePrefix,
+				targetKit.Branch,
 				strings.ReplaceAll(strings.ReplaceAll(catpkg, ".", "_"),
 					"/", "_"),
 			)
@@ -394,7 +410,7 @@ func (m *MergeBot) PushRemoves(mkit *specs.MergeKit, opts *MergeBotOpts,
 
 			pr, err := CreatePullRequest(m.GithubClient, ctx,
 				// title
-				fmt.Sprintf("mark-devkit: Purge %s", catpkg),
+				fmt.Sprintf("mark-devkit: [%s] Purge %s", targetKit.Branch, catpkg),
 				// source branch
 				prBranchName,
 				// target branch
