@@ -272,10 +272,27 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 					if strings.HasPrefix(attr.Val, "https") || strings.HasPrefix(attr.Val, "http") {
 						links[path.Base(attr.Val)] = attr.Val
 					} else {
-						if strings.HasSuffix(dirUrl, "/") {
-							links[path.Base(attr.Val)] = dirUrl + attr.Val
+
+						if attr.Val[0:1] == "/" {
+							// POST: The link is related to the domain and not to the prefix.
+
+							if uri.Port() == "" {
+								links[path.Base(attr.Val)] = fmt.Sprintf(
+									"%s://%s%s",
+									uri.Scheme, uri.Hostname(), attr.Val)
+							} else {
+								links[path.Base(attr.Val)] = fmt.Sprintf(
+									"%s://%s:%s%s",
+									uri.Scheme, uri.Port(), uri.Hostname(),
+									attr.Val)
+							}
+
 						} else {
-							links[path.Base(attr.Val)] = dirUrl + "/" + attr.Val
+							if strings.HasSuffix(dirUrl, "/") {
+								links[path.Base(attr.Val)] = dirUrl + attr.Val
+							} else {
+								links[path.Base(attr.Val)] = dirUrl + "/" + attr.Val
+							}
 						}
 					}
 				}
