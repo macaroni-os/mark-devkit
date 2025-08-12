@@ -367,8 +367,28 @@ The generator availables at the moment are:
 
 * `builtin-pypi`: this generator permits to use Pypi JSON API to retrieve releases
 
+* `builtin-json`: this generator permits to parse JSON remote content and retrieve
+                  the list of versions availables using JSONPath syntax.
+
 * `custom`: this generator permits to call external script (Bash, Python, etc.) and
             generate ebuild and Manifest.
+
+## Extensions
+
+In order to manage special packages where it's needed to add additional tarballs,
+for example with Golang vendor dependencies it's possible to use the *extensions*.
+The availables *extensions* at the moment are:
+
+* `custom`: this extension permits to run external script (Bash, Python, etc.)
+  and generate additional tarballs for the generated package.
+
+* `golang`: this extention like before in metatools generates the Golang vendor
+  bundle tarballs to use with packages without *vendor* directory.
+
+* `rust`: this extension generates the Rust crates bundle tarballs.
+
+* `git-submodules`: this extension generates the bundle tarballs with the
+  files of the git submodules used in the upstream project.
 
 ## Definitions
 
