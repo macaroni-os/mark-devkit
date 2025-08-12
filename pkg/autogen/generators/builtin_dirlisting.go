@@ -23,6 +23,7 @@ import (
 )
 
 type DirlistingGenerator struct {
+	*BaseGenerator
 	RestGuard   *guard.RestGuard
 	MapServices map[string]*guard_specs.RestService
 	RateLimit   string
@@ -35,7 +36,8 @@ func NewDirlistingGenerator(opts map[string]string) *DirlistingGenerator {
 	// Overide the default check redirect
 	rg.Client.CheckRedirect = kit.CheckRedirect
 	ans := &DirlistingGenerator{
-		RestGuard: rg,
+		BaseGenerator: NewBaseGenerator(opts),
+		RestGuard:     rg,
 	}
 
 	// Set storage
@@ -216,6 +218,10 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 
 	if uri.Scheme == "ftp" {
 		return nil, fmt.Errorf("Not yet implemented")
+	}
+
+	if uri.Scheme == "https" {
+		ssl = true
 	}
 
 	node := guard_specs.NewRestNode(uri.Host,

@@ -28,6 +28,8 @@ func NewGenerator(t string, opts map[string]string) (Generator, error) {
 		return NewPypiGenerator(), nil
 	case specs.GeneratorCustom:
 		return NewCustomGenerator(opts), nil
+	case specs.GeneratorBuiltinJson:
+		return NewJsonGenerator(opts), nil
 	default:
 		return nil, fmt.Errorf("Invalid generator type %s", t)
 	}

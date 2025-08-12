@@ -199,6 +199,33 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 		}
 	}
 
+	if atom.Json != nil {
+		if ans.Json == nil {
+			ans.Json = atom.Json
+		} else {
+			if atom.Json.Url != "" {
+				ans.Json.Url = atom.Json.Url
+			}
+			if atom.Json.Method != "" {
+				ans.Json.Method = atom.Json.Method
+			}
+			if atom.Json.FilterVersion != "" {
+				ans.Json.FilterVersion = atom.Json.FilterVersion
+			}
+			if atom.Json.FilterSrcUri != "" {
+				ans.Json.FilterSrcUri = atom.Json.FilterSrcUri
+			}
+			if atom.Json.Exclude != "" {
+				ans.Json.Exclude = atom.Json.Exclude
+			}
+			if len(atom.Json.Params) > 0 {
+				for k, v := range atom.Json.Params {
+					ans.Json.Params[k] = v
+				}
+			}
+		}
+	}
+
 	if atom.Python != nil {
 		if ans.Python == nil {
 			ans.Python = atom.Python
@@ -318,6 +345,23 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			Url:             a.Dir.Url,
 			Matcher:         a.Dir.Matcher,
 			ExcludesMatcher: a.Dir.ExcludesMatcher,
+		}
+	}
+
+	if a.Json != nil {
+		ans.Json = &AutogenJsonProps{
+			Url:           a.Json.Url,
+			Method:        a.Json.Method,
+			FilterVersion: a.Json.FilterVersion,
+			FilterSrcUri:  a.Json.FilterSrcUri,
+			Exclude:       a.Json.Exclude,
+			Params:        make(map[string]string, 0),
+		}
+
+		if len(a.Json.Params) > 0 {
+			for k, v := range a.Json.Params {
+				ans.Json.Params[k] = v
+			}
 		}
 	}
 

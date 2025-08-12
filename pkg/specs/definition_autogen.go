@@ -9,6 +9,7 @@ const (
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
 	GeneratorBuiltinNoop       = "builtin-noop"
 	GeneratorBuiltinPypi       = "builtin-pypi"
+	GeneratorBuiltinJson       = "builtin-json"
 
 	GeneratorCustom = "custom"
 
@@ -58,6 +59,7 @@ type AutogenAtom struct {
 	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
 	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
 	Python   *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
+	Json     *AutogenJsonProps       `json:"json,omitempty" yaml:"json,omitempty"`
 	Vars     map[string]interface{}  `json:"vars,omitempty" yaml:"vars,omitempty"`
 	Category string                  `json:"category,omitempty" yaml:"category,omitempty"`
 
@@ -117,4 +119,14 @@ type AutogenDirlistingProps struct {
 	Url             string `json:"url,omitempty" yaml:"url,omitempty"`
 	Matcher         string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
 	ExcludesMatcher string `json:"exclude,omitempty" yaml:"exclude,omitempty"`
+}
+
+type AutogenJsonProps struct {
+	Url     string            `json:"url,omitempty" yaml:"url,omitempty"`
+	Method  string            `json:"method,omitempty" yaml:"method,omitempty"`
+	Params  map[string]string `json:"params,omitempty" yaml:"params,omitempty"`
+	Exclude string            `json:"exclude,omitempty" yaml:"exclude,omitempty"`
+
+	FilterVersion string `json:"version_filter,omitempty" yaml:"version_filter,omitempty"`
+	FilterSrcUri  string `json:"src_uri_filter,omitempty" yaml:"src_uri_filter,omitempty"`
 }

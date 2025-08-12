@@ -19,7 +19,7 @@ import (
 )
 
 type CustomGenerator struct {
-	Opts map[string]string
+	*BaseGenerator
 }
 
 type CustomGeneratorValues struct {
@@ -52,16 +52,12 @@ func ReadVars(file string) (*CustomGeneratorValues, error) {
 
 func NewCustomGenerator(opts map[string]string) *CustomGenerator {
 	return &CustomGenerator{
-		Opts: opts,
+		BaseGenerator: NewBaseGenerator(opts),
 	}
 }
 
 func (g *CustomGenerator) GetType() string {
 	return specs.GeneratorCustom
-}
-
-func (g *CustomGenerator) GetOpts() map[string]string {
-	return g.Opts
 }
 
 func (g *CustomGenerator) GetElabPaths(pkgname string) (string, string, string, string) {
@@ -169,8 +165,6 @@ func (g *CustomGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 		enableSetVersion = "true"
 	}
 
-	delete(values, "versions")
-
 	if enableSetVersion == "true" {
 		_, pkgVarfile, pkgVersionsfile, script := g.GetElabPaths(atom.Name)
 
@@ -197,74 +191,7 @@ func (g *CustomGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	// If there artefacts apply render to asset name and url using the values.
 	// Always execute these operations also when enable_set_version is set to false.
 
-	artefacts, _ := values["artefacts"].([]*specs.AutogenArtefact)
-	renderedArtefacts := []*specs.AutogenArtefact{}
-	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
-
-		for _, art := range artefacts {
-			name, err := helpers.RenderContentWithTemplates(
-				art.Name,
-				"", "", "asset.name", values, []string{},
-			)
-			if err != nil {
-				return err
-			}
-
-			url := ""
-			if len(art.SrcUri) > 0 {
-				url, err = helpers.RenderContentWithTemplates(
-					art.SrcUri[0],
-					"", "", "asset.url", values, []string{},
-				)
-				if err != nil {
-					return err
-				}
-			}
-
-			renderedArtefacts = append(renderedArtefacts, &specs.AutogenArtefact{
-				SrcUri: []string{url},
-				Use:    art.Use,
-				Name:   name,
-			})
-		}
-
-	}
-
-	// Add atom assets as artefacts
-	if atom.HasAssets() {
-		for _, asset := range atom.Assets {
-			name, err := helpers.RenderContentWithTemplates(
-				asset.Name,
-				"", "", "asset.name", values, []string{},
-			)
-			if err != nil {
-				return err
-			}
-
-			url := ""
-			if asset.Url != "" {
-				// POST: We use the url value as urlBase
-				url, err = helpers.RenderContentWithTemplates(
-					asset.Url,
-					"", "", "asset.url", values, []string{},
-				)
-				if err != nil {
-					return err
-				}
-
-			}
-
-			renderedArtefacts = append(renderedArtefacts, &specs.AutogenArtefact{
-				SrcUri: []string{url},
-				Use:    asset.Use,
-				Name:   name,
-			})
-		}
-	}
-
-	values["artefacts"] = renderedArtefacts
-
-	return nil
+	return g.BaseGenerator.setVersion(atom, version, mapref)
 }
 
 // Retrieve metadata and all availables tags/releases

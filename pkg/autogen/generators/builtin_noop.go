@@ -6,18 +6,18 @@
 package generators
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/macaroni-os/mark-devkit/pkg/helpers"
-	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 )
 
-type NoopGenerator struct{}
+type NoopGenerator struct {
+	*BaseGenerator
+}
 
 func NewNoopGenerator() *NoopGenerator {
-	return &NoopGenerator{}
+	opts := make(map[string]string, 0)
+	return &NoopGenerator{
+		BaseGenerator: NewBaseGenerator(opts),
+	}
 }
 
 func (g *NoopGenerator) GetType() string {
@@ -27,73 +27,7 @@ func (g *NoopGenerator) GetType() string {
 func (g *NoopGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	mapref *map[string]interface{}) error {
 
-	log := logger.GetDefaultLogger()
-	values := *mapref
-
-	delete(values, "versions")
-
-	artefacts := []*specs.AutogenArtefact{}
-
-	if atom.HasAssets() {
-		for _, asset := range atom.Assets {
-			name, err := helpers.RenderContentWithTemplates(
-				asset.Name,
-				"", "", "asset.name", values, []string{},
-			)
-			if err != nil {
-				return err
-			}
-
-			if asset.Prefix == "" && asset.Url == "" {
-				return fmt.Errorf(
-					"Asset %s for atom %s without prefix and url not admitted with noop",
-					asset.Name, atom.Name)
-			}
-
-			var srcUri string
-
-			if asset.Prefix != "" {
-				srcUri, err = helpers.RenderContentWithTemplates(
-					asset.Prefix,
-					"", "", "asset.name", values, []string{},
-				)
-				if err != nil {
-					return err
-				}
-
-				if !strings.HasSuffix(srcUri, "/") {
-					srcUri += "/"
-				}
-				srcUri += name
-
-			} else {
-				srcUri, err = helpers.RenderContentWithTemplates(
-					asset.Url,
-					"", "", "asset.name", values, []string{},
-				)
-				if err != nil {
-					return err
-				}
-
-			}
-
-			if log.Config.GetGeneral().Debug {
-				log.Debug(fmt.Sprintf("[%s] For asset %s using url %s",
-					atom.Name, name, srcUri))
-			}
-
-			artefacts = append(artefacts, &specs.AutogenArtefact{
-				SrcUri: []string{srcUri},
-				Use:    asset.Use,
-				Name:   name,
-			})
-		}
-
-	}
-
-	values["artefacts"] = artefacts
-
-	return nil
+	return g.BaseGenerator.setVersion(atom, version, mapref)
 }
 
 func (g *NoopGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{}, error) {

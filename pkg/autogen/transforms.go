@@ -108,6 +108,10 @@ func (a *AutogenBot) excludesVersions(atom *specs.AutogenAtom,
 				break
 			}
 		}
+
+		a.Logger.Debug(fmt.Sprintf(
+			":eyes: [%s] Version %s to exclude: %v", atom.Name,
+			versions[idx], toExclude))
 		if toExclude {
 			continue
 		}

@@ -1,0 +1,29 @@
+json_example:
+  generator: builtin-json
+  defaults:
+    category: net-misc
+    template: templates/simple.tmpl
+    json:
+      # Define the URL with params directly
+      url: 'https://dl.pstmn.io/api/version/notes?channel={{ .Values.channel }}'
+      # Or url and separated params
+      # url: 'https://dl.pstmn.io/api/version/notes'
+      # params:
+      #   channel: {{ .Values.channel }}
+      #
+      # Optionally define the method to use. GET|POST|PUT
+      # method: GET (default)
+
+      # Define the jsonpath syntax filter to create versions array.
+      version_filter: '$.notes[*].version'
+
+      # If the JSON contains also the src uri we can define
+      # src_uri_filter: '$.notes...'
+
+  packages:
+    - postman-bin:
+        vars:
+          channel: stable
+        json:
+          # Exclude garbage versions like 11.35.0-r250304-1730
+          exclude: '.*-r[0-9-]+$'
