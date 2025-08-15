@@ -25,7 +25,7 @@ require (
 	golang.org/x/net v0.42.0
 	golang.org/x/oauth2 v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.18.4
+	helm.sh/helm/v3 v3.18.5
 )
 
 require (
@@ -88,6 +88,7 @@ require (
 	github.com/pjbgf/sha1cd v0.3.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sagikazarmark/locafero v0.9.0 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/skeema/knownhosts v1.3.0 // indirect
@@ -105,6 +106,8 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
+	go.yaml.in/yaml/v3 v3.0.3 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
@@ -116,15 +119,15 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	k8s.io/api v0.33.2 // indirect
-	k8s.io/apiextensions-apiserver v0.33.2 // indirect
-	k8s.io/apimachinery v0.33.2 // indirect
-	k8s.io/client-go v0.33.2 // indirect
+	k8s.io/api v0.33.3 // indirect
+	k8s.io/apiextensions-apiserver v0.33.3 // indirect
+	k8s.io/apimachinery v0.33.3 // indirect
+	k8s.io/client-go v0.33.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.6.0 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
+	sigs.k8s.io/yaml v1.5.0 // indirect
 )
