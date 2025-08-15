@@ -588,7 +588,7 @@ target:
 The command:
 
 ```bash
-$> mark-devkit doit --specfile myspec.yml --kitfile merge.kit.d/macaroni.yml --show-values
+$> mark-devkit doit --specfile myspec.yml --kitfile merge.kit.d/test.yml --show-values
 😷 Loading specfile contrib/autogen/noop_example.yml
 🏰 Work directory:	workdir
 🚀 Target Kit:		mark-kit
