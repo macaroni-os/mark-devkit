@@ -234,22 +234,20 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	log := logger.GetDefaultLogger()
 	var matchRegex *regexp.Regexp
 
+	// Use atom.Name as default value for github repo and user if not defined.
 	if atom.Github.Repo == "" {
 		atom.Github.Repo = atom.Name
 	}
 
-	if atom.Github.Repo == "" {
-		return nil, fmt.Errorf("no github repo defined for atom %s",
-			atom.Name)
-	}
 	if atom.Github.User == "" {
-		return nil, fmt.Errorf("no github user defined for atom %s",
-			atom.Name)
+		atom.Github.User = atom.Name
 	}
+
+	// Using release as default values for github if not defined.
 	if atom.Github.Query == "" {
-		return nil, fmt.Errorf("no github query defined for atom %s",
-			atom.Name)
+		atom.Github.Query = "releases"
 	}
+
 	if atom.Github.Query != "releases" && atom.Github.Query != "tags" {
 		return nil, fmt.Errorf("github query with invalid query for atom %s",
 			atom.Name)
