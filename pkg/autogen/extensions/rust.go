@@ -36,6 +36,7 @@ type CargoLock struct {
 
 type CargoToml struct {
 	Package *CargoPackage `toml:"package"`
+	Path    string
 }
 
 type CargoPackage struct {
@@ -163,7 +164,7 @@ func (e *ExtensionRust) Elaborate(restGuard *guard.RestGuard,
 	values["pkg_basedir"] = filepath.Base(pkgUnpackDir)
 
 	// Read all Cargo.toml in order to identify all local crates
-	localCrates, err := e.parseCargoToml(atom, pkgUnpackDir)
+	localCrates, err := e.parseCargoToml(atom, pkgUnpackDir, true)
 	if err != nil {
 		return err
 	}
@@ -209,7 +210,7 @@ func (e *ExtensionRust) Elaborate(restGuard *guard.RestGuard,
 }
 
 func (e *ExtensionRust) parseCargoToml(atom *specs.AutogenAtom,
-	pkgUnpackDir string) (*CargoLocalDeps, error) {
+	pkgUnpackDir string, excludeMainCargo bool) (*CargoLocalDeps, error) {
 
 	var err error
 	ans := &CargoLocalDeps{
@@ -217,7 +218,10 @@ func (e *ExtensionRust) parseCargoToml(atom *specs.AutogenAtom,
 	}
 
 	// file to skip
-	toSkip := filepath.Join(pkgUnpackDir, "Cargo.toml")
+	toSkip := ""
+	if excludeMainCargo {
+		toSkip = filepath.Join(pkgUnpackDir, "Cargo.toml")
+	}
 
 	err = e.checkDir4CargoTomp(pkgUnpackDir, toSkip, ans)
 
@@ -296,6 +300,12 @@ func (e *ExtensionRust) downloadBundles(restGuard *guard.RestGuard,
 
 	skipMap := e.GetCratesSkipped()
 
+	// NOTE: Git crates could reference multiple
+	// packages with the same url. So,
+	// we need generate the tarball only
+	// after the processing of all packages.
+	gitDeps := make(map[string][]*CargoPackage, 0)
+
 	for _, pkg := range cargoLock.Packages {
 
 		if strings.HasPrefix(pkg.Source, "git+") {
@@ -339,25 +349,36 @@ func (e *ExtensionRust) downloadBundles(restGuard *guard.RestGuard,
 			}
 
 		} else {
+			// Keep old logic for now. Maybe we can avoid this.
+			// Drop initial git+ string
+			url := pkg.Source[4:]
+			gitDepPkgs, present := gitDeps[url]
+			if present {
+				gitDepPkgs = append(gitDepPkgs, &pkg)
+			} else {
+				gitDepPkgs = []*CargoPackage{&pkg}
+			}
+			gitDeps[url] = gitDepPkgs
+		}
+
+	}
+
+	if len(gitDeps) > 0 {
+		for url, gitPkgs := range gitDeps {
 			// POST: git bundle
-			err = e.processGitCrate(atom, &pkg, bundlesDir, unpackDir)
+			err = e.processGitCrate(atom, gitPkgs, url, bundlesDir, unpackDir)
 			if err != nil {
 				return err
 			}
 		}
-
 	}
 
 	return nil
 }
 
 func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
-	pkg *CargoPackage, bundlesDir, unpackDir string) error {
+	pkgs []*CargoPackage, url, bundlesDir, unpackDir string) error {
 	log := logger.GetDefaultLogger()
-
-	// Keep old logic for now. Maybe we can avoid this.
-	// Drop initial git+ string
-	url := pkg.Source[4:]
 
 	ref := strings.Split(url, "#")[1]
 	gitRepo := strings.Split(url, "?")[0]
@@ -396,7 +417,7 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 
 	// Create ReposcanKit with the git repo data
 	repoData := &specs.ReposcanKit{
-		Name:       pkg.Name,
+		Name:       pkgs[0].Name,
 		Url:        gitRepo,
 		Branch:     "",
 		CommitSha1: ref,
@@ -408,14 +429,36 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 		return err
 	}
 
+	// Retrieve the local creates of the unpack dir
+	gitRepoCrates, err := e.parseCargoToml(atom, cloneDir, false)
+	if err != nil {
+		return err
+	}
+
 	// Generate the mark_config.toml file under the unpack directory.
+	markConfigContent := "[patch.'" + gitRepo + "']\n"
+	for _, pkg := range pkgs {
+
+		// Retrieve crate path
+		localCrate, available := gitRepoCrates.Map[pkg.Name]
+		if !available {
+			return fmt.Errorf("crate %s not found on git repo %s",
+				pkg.Name, gitRepo)
+		}
+
+		if cloneDir == localCrate.Path {
+			markConfigContent += pkg.Name +
+				" = { path = \"%CRATES_DIR%/" + cloneBasenameDir + "\" }\n"
+		} else {
+			rel := localCrate.Path[len(cloneDir)+1:]
+			markConfigContent += pkg.Name +
+				" = { path = \"%CRATES_DIR%/" + cloneBasenameDir + "/" + rel + "\" }\n"
+		}
+	}
+
 	err = os.WriteFile(
 		filepath.Join(cloneDir, "mark_config.toml"),
-		[]byte(
-			"[patch.'"+gitRepo+"']\n"+
-				pkg.Name+" = { path = \"%CRATES_DIR%/"+
-				cloneBasenameDir+"\" }\n",
-		), 0644)
+		[]byte(markConfigContent), 0644)
 	if err != nil {
 		return err
 	}
@@ -530,7 +573,7 @@ func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
 					cfile, err.Error())
 			}
 
-			pkg := CargoToml{}
+			pkg := CargoToml{Path: dir}
 			err = toml.Unmarshal([]byte(data), &pkg)
 			if err != nil {
 				return err
