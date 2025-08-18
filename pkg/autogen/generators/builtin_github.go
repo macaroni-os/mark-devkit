@@ -398,6 +398,25 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 
 	}
 
+	// Retrive metadata of github repository
+	repository, _, err := g.Client.Repositories.Get(
+		ctx, atom.Github.User, atom.Github.Repo,
+	)
+	if err == nil {
+		ans["repository"] = repository
+		ans["desc"] = strings.ReplaceAll(repository.GetDescription(), "`", "")
+		if repository.GetHomepage() != "" {
+			ans["homepage"] = strings.ReplaceAll(repository.GetHomepage(), "`", "")
+		} else {
+			ans["homepage"] = repository.GetHTMLURL()
+		}
+		ans["github_fullname"] = repository.GetFullName()
+		license := repository.GetLicense()
+		if license != nil && license.SPDXID != nil {
+			ans["license"] = *license.SPDXID
+		}
+	}
+
 	ans["versions"] = versions
 	ans["tags"] = validTags
 	ans["github_user"] = atom.Github.User
