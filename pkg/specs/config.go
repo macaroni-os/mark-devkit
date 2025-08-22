@@ -17,11 +17,11 @@ const (
 )
 
 type MarkDevkitConfig struct {
-	Viper *v.Viper `yaml:"-" json:"-"`
-
+	Viper          *v.Viper                 `yaml:"-" json:"-"`
 	General        MarkDevkitGeneral        `mapstructure:"general" json:"general,omitempty" yaml:"general,omitempty"`
 	Logging        MarkDevkitLogging        `mapstructure:"logging" json:"logging,omitempty" yaml:"logging,omitempty"`
 	Authentication MarkDevkitAuthentication `mapstructure:"authentication" json:"authentication,omitempty" yaml:"authentication,omitempty"`
+	TarFlows       MarkDevkitTarflowsConfig `mapstructure:"tar_flows,omitempty" json:"tar_flows,omitempty" yaml:"tar_flows,omitempty"`
 	RgConfig       *rg.RestGuardConfig      `mapstructure:"rest" json:"rest,omitempty" yaml:"rest,omitempty"`
 
 	Storage map[string]interface{} `mapstructure:"-" json:"-" yaml:"-"`
@@ -29,6 +29,13 @@ type MarkDevkitConfig struct {
 
 type MarkDevkitGeneral struct {
 	Debug bool `mapstructure:"debug,omitempty" json:"debug,omitempty" yaml:"debug,omitempty"`
+}
+
+type MarkDevkitTarflowsConfig struct {
+	CopyBufferSize int   `mapstructure:"copy_buffer_size,omitempty" json:"copy_buffer_size,omitempty" yaml:"copy_buffer_size,omitempty"`
+	MaxOpenFiles   int64 `mapstructure:"max_openfiles,omitempty" json:"max_openfiles,omitempty" yaml:"max_openfiles,omitempty"`
+	Mutex4Dirs     bool  `mapstructure:"mutex4dir,omitempty" json:"mutex4dir,omitempty yaml:"mutex4dir,omitempty"`
+	Validate       bool  `mapstructure:"validate,omitempty" json:"validate,omitempty" yaml:"validate,omitempty"`
 }
 
 type MarkDevkitLogging struct {
@@ -93,6 +100,10 @@ func (c *MarkDevkitConfig) GetRest() *rg.RestGuardConfig {
 	return c.RgConfig
 }
 
+func (c *MarkDevkitConfig) GetTarFlows() *MarkDevkitTarflowsConfig {
+	return &c.TarFlows
+}
+
 func (c *MarkDevkitConfig) GetStorage() *map[string]interface{} {
 	return &c.Storage
 }
@@ -135,6 +146,11 @@ func GenDefault(viper *v.Viper) {
 
 	viper.SetDefault("rest.reqs_timeout", 3600)
 	viper.SetDefault("rest.user_agent", "MARK Devkit Bot")
+
+	viper.SetDefault("tar_flows.copy_buffer_size", 32)
+	viper.SetDefault("tar_flows.max_openfiles", 100)
+	viper.SetDefault("tar_flows.mutex4dir", true)
+	viper.SetDefault("tar_flows.validate", true)
 }
 
 func (g *MarkDevkitGeneral) HasDebug() bool {

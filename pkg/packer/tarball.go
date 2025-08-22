@@ -44,7 +44,13 @@ func (p *Packer) createTarball(rootfsdir string, out *specs.JobOutput) error {
 		// Enable this over a container could generate warnings
 		// Ignoring xattr mtime not supported by the underlying filesystem: operation not supported
 		tarfspec.SameChtimes = false
-	}
+
+		// Set the options from config.
+		tarfspec.EnableMutex = p.Config.GetTarFlows().Mutex4Dirs
+		tarfspec.MaxOpenFiles = p.Config.GetTarFlows().MaxOpenFiles
+		tarfspec.BufferSize = p.Config.GetTarFlows().CopyBufferSize
+		tarfspec.Validate = p.Config.GetTarFlows().Validate
+	} // else using options from JobOutput
 
 	if tarfspec.Writer == nil {
 		tarfspec.Writer = tarf_specs.NewWriter()

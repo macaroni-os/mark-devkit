@@ -56,6 +56,8 @@ type JobSource struct {
 	AniseConfigPath   string   `yaml:"anise_config,omitempty" json:"anise_config,omitempty"`
 	AniseRepositories []string `yaml:"anise_repos,omitempty" json:"anise_repos,omitempty"`
 	AnisePackages     []string `yaml:"anise_packages,omitempty" json:"anise_packages,omitempty"`
+
+	TarformersSpec *tarf_specs.SpecFile `yaml:"tarformers_specs,omitempty" json:"tarformers_specs,omitempty"`
 }
 
 type JobOutput struct {

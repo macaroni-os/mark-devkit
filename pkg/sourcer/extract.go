@@ -22,11 +22,21 @@ func (s *SourceHandler) extract(source *specs.JobSource, rootfsdir string) error
 	cfg.GetLogging().Level = "warning"
 
 	tarformers := executor.NewTarFormers(cfg)
-	// TODO: Add filters support on metro specs
-	tarfspec := tarf_specs.NewSpecFile()
-	// Enable this over a container could generate warnings
-	// Ignoring xattr mtime not supported by the underlying filesystem: operation not supported
-	tarfspec.SameChtimes = false
+	// If the specfile is defined i use the
+	// value from YAML.
+	tarfspec := source.TarformersSpec
+	if tarfspec == nil {
+		tarfspec = tarf_specs.NewSpecFile()
+		// Enable this over a container could generate warnings
+		// Ignoring xattr mtime not supported by the underlying filesystem: operation not supported
+		tarfspec.SameChtimes = false
+
+		// Set the options from config.
+		tarfspec.EnableMutex = s.Config.GetTarFlows().Mutex4Dirs
+		tarfspec.MaxOpenFiles = s.Config.GetTarFlows().MaxOpenFiles
+		tarfspec.BufferSize = s.Config.GetTarFlows().CopyBufferSize
+		tarfspec.Validate = s.Config.GetTarFlows().Validate
+	} // else using options from JobSource
 
 	useExt4compression := true
 	opts := tarf_tools.NewTarReaderCompressionOpts(useExt4compression)

@@ -18,3 +18,28 @@ logging:
 # authentication:
 #   github.com:
 #      token: mytoken
+
+# ---------------------------------------------
+# Tarball flows configuration section
+# if not defined in JobSource or JobOutput.
+# ---------------------------------------------
+# tar_flows:
+#
+#   Enable mutex for parallel creation of directories
+#   in the untar specs. Normally this field must be
+#   set to true, the default value.
+#   mutex4dir: true
+#
+#   Define the max number of open files related
+#   to a single untar operation. Be carefour on
+#   set this option with a big value to avoid
+#   'too open files' errors.
+#   In a normal system this could be also 512.
+#  max_openfiles: 100
+#
+#   Define the buffer size in KB to use
+#   on create files from tar content.
+#  copy_buffer_size: 32
+#
+#   Additional validate step on unpack phase.
+#  validate: false
