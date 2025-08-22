@@ -8,10 +8,17 @@ jobs:
     type: http
     uri: "https://build.funtoo.org/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/stage3-latest.tar.xz"
     target: /workspace/sourcer/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/stage3-latest-{{ now | date "2006-01-02" }}.tar.xz
+
+    # tarformers_specs:
+    # See https://github.com/geaaru/tar-formers/ for available options
+
   output:
     type: file
     name: stage3-{{ .Values.arch }}-{{ .Values.subarch }}-{{ .Values.release }}-{{ now | date "2006-01-02" }}.tar.xz
     dir: './output/{{ .Values.release }}/{{ .Values.arch }}/{{ .Values.subarch }}/{{ now | date "2006-01-02" }}/'
+
+    # tarformers_specs:
+    # See https://github.com/geaaru/tar-formers/ for available options
 
   options:
     branch: "next"
