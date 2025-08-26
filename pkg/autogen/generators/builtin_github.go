@@ -108,6 +108,10 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 		tags, _ := values["tags"].(map[string]*github.RepositoryTag)
 		tag = tags[release.GetTagName()]
+		if tag == nil {
+			// Try to search tag name with v. Really i hate this.
+			tag = tags["v"+release.GetTagName()]
+		}
 		values["tag"] = tag
 
 	} else {
@@ -363,19 +367,31 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 				continue
 			}
 
-			validTags[rr[idx].GetTagName()], present = tagsMap[rr[idx].GetTagName()]
+			tagName := rr[idx].GetTagName()
+			relName := rr[idx].GetName()
+
+			validTags[tagName], present = tagsMap[tagName]
 			if !present {
-				if log.Config.GetGeneral().Debug {
-					log.Debug(fmt.Sprintf(
-						"[%s] Release %s without tag. Skipped. Try to increase pages.",
-						atom.Name, rr[idx].GetName()))
+				// OMG! There are releases where the tag name is not equal to the real tag name.
+				// For example: cbindgen has tag v0.29.0 and release 0.29.0 but rr[idx].GetTagName() returns 0.29.0
+				if relName != "" && !strings.HasPrefix(relName, "v") {
+					// Try to check if exists tag with prefix v
+					tagName = "v" + relName
+					validTags[tagName], present = tagsMap[tagName]
 				}
-				continue
+				if !present {
+					if log.Config.GetGeneral().Debug {
+						log.Debug(fmt.Sprintf(
+							"[%s] Release %s without tag. Skipped. Try to increase pages.",
+							atom.Name, rr[idx].GetName()))
+					}
+					continue
+				}
 			}
-			version := rr[idx].GetName()
+			version := relName
 			if version == "" {
 				// POST: The release is without a valid name. Using tag name as fallback.
-				version = rr[idx].GetTagName()
+				version = tagName
 			}
 
 			if r.MatchString(version) {
