@@ -546,12 +546,24 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 				return err
 			}
 
-			_, err = repo.CreateRemote(&config.RemoteConfig{
-				Name: "origin",
-				URLs: []string{targetKit.Url},
-			})
-			if err != nil {
-				return err
+			// Create the remote only if doesn't exist.
+			remotes, _ := repo.Remotes()
+			createRemote := true
+			for _, r := range remotes {
+				if r.Config().Name == "origin" {
+					createRemote = false
+					break
+				}
+			}
+
+			if createRemote {
+				_, err = repo.CreateRemote(&config.RemoteConfig{
+					Name: "origin",
+					URLs: []string{targetKit.Url},
+				})
+				if err != nil {
+					return err
+				}
 			}
 
 			err = PushBranch(kitDir, targetKit.Branch, pushOpts)
