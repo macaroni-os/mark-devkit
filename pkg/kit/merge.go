@@ -17,6 +17,7 @@ import (
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/google/go-github/v68/github"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 	"golang.org/x/oauth2"
@@ -536,7 +537,27 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 		}
 
 	} else {
-		err = Push(kitDir, pushOpts)
+		if m.IsANewBranch {
+
+			// We need to initialize the remote to push a new branch
+			// to an empty repository.
+			repo, err := git.PlainOpen(kitDir)
+			if err != nil {
+				return err
+			}
+
+			_, err = repo.CreateRemote(&config.RemoteConfig{
+				Name: "origin",
+				URLs: []string{targetKit.Url},
+			})
+			if err != nil {
+				return err
+			}
+
+			err = PushBranch(kitDir, targetKit.Branch, pushOpts)
+		} else {
+			err = Push(kitDir, pushOpts)
+		}
 	}
 
 	return err

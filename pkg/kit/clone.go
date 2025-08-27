@@ -18,6 +18,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/storer"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 )
@@ -244,6 +245,9 @@ func BranchExists(remoteUrl, branchName string) (bool, error) {
 		RemoteName:   "origin",
 	})
 	if err != nil {
+		if err == transport.ErrEmptyRemoteRepository {
+			return false, nil
+		}
 		return false, err
 	}
 
@@ -291,7 +295,7 @@ func CloneAndCreateBranch(k *specs.ReposcanKit,
 		fmt.Sprintf(":factory:[%s] Syncing ...", k.Name)),
 	)
 	r, err = git.PlainClone(targetdir, false, &opts)
-	if err != nil {
+	if err != nil && err != transport.ErrEmptyRemoteRepository {
 		return err
 	}
 
