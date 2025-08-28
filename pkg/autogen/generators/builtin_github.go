@@ -96,6 +96,7 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	var tag *github.RepositoryTag
 	var release *github.RepositoryRelease
 	var err error
+	var sha string
 
 	originalVersion, _ := values["original_version"].(string)
 
@@ -123,13 +124,16 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	}
 
 	if tag != nil {
-		values["sha"] = tag.Commit.GetSHA()
+		sha = tag.Commit.GetSHA()
+	} else if atom.GithubIgnoreTags() && release != nil {
+		sha = release.GetTargetCommitish()
 	} else {
 		log.Warning(fmt.Sprintf(
 			"[%s] tag object not found for version %s (%s). Check if you need increase page elements and/or number of pages.",
 			atom.Name, originalVersion, version))
 	}
 
+	values["sha"] = sha
 	delete(values, "releases")
 	delete(values, "tags")
 	delete(values, "versions")
@@ -138,9 +142,9 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	if tarballName == "" {
 		// Using sha at the end to correctly catch issues
 		// with retag done on upstream repo
-		if tag != nil {
+		if sha != "" {
 			tarballName = fmt.Sprintf("%s-%s-%s.tar.gz", atom.Name, version,
-				tag.Commit.GetSHA()[0:7])
+				sha[0:7])
 		} else {
 			tarballName = fmt.Sprintf("%s-%s.tar.gz", atom.Name, version)
 		}
@@ -178,9 +182,15 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	values["artefacts"] = artefacts
 
-	values["pkg_basedir"] = fmt.Sprintf("%s-%s-%s",
-		atom.Github.User, atom.Github.Repo, tag.Commit.GetSHA()[0:7],
-	)
+	if sha != "" {
+		values["pkg_basedir"] = fmt.Sprintf("%s-%s-%s",
+			atom.Github.User, atom.Github.Repo, sha[0:7],
+		)
+	} else {
+		values["pkg_basedir"] = fmt.Sprintf("%s-%s-%s",
+			atom.Github.User, atom.Github.Repo, originalVersion,
+		)
+	}
 
 	return nil
 }
@@ -311,13 +321,15 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 		rr := []*github.RepositoryRelease{}
 		tagsMap := make(map[string]*github.RepositoryTag, 0)
 
-		tags, err := g.getTags(atom, lopts)
-		if err != nil {
-			return nil, err
-		}
+		if !atom.GithubIgnoreTags() {
+			tags, err := g.getTags(atom, lopts)
+			if err != nil {
+				return nil, err
+			}
 
-		for i := range tags {
-			tagsMap[tags[i].GetName()] = tags[i]
+			for i := range tags {
+				tagsMap[tags[i].GetName()] = tags[i]
+			}
 		}
 
 		if atom.Github.NumPages != nil {
@@ -369,30 +381,36 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 
 			tagName := rr[idx].GetTagName()
 			relName := rr[idx].GetName()
-
-			validTags[tagName], present = tagsMap[tagName]
-			if !present {
-				// OMG! There are releases where the tag name is not equal to the real tag name.
-				// For example: cbindgen has tag v0.29.0 and release 0.29.0 but rr[idx].GetTagName() returns 0.29.0
-				if relName != "" && !strings.HasPrefix(relName, "v") {
-					// Try to check if exists tag with prefix v
-					tagName = "v" + relName
-					validTags[tagName], present = tagsMap[tagName]
-				}
-				if !present {
-					if log.Config.GetGeneral().Debug {
-						log.Debug(fmt.Sprintf(
-							"[%s] Release %s without tag. Skipped. Try to increase pages.",
-							atom.Name, rr[idx].GetName()))
-					}
-					continue
-				}
-			}
 			version := relName
-			if version == "" {
-				// POST: The release is without a valid name. Using tag name as fallback.
-				version = tagName
-			}
+
+			log.Debug(fmt.Sprintf(
+				"[%s] Analyzing release %s - %s...",
+				atom.Name, relName, tagName))
+
+			if !atom.GithubIgnoreTags() {
+				validTags[tagName], present = tagsMap[tagName]
+				if !present {
+					// OMG! There are releases where the tag name is not equal to the real tag name.
+					// For example: cbindgen has tag v0.29.0 and release 0.29.0 but rr[idx].GetTagName() returns 0.29.0
+					if relName != "" && !strings.HasPrefix(relName, "v") {
+						// Try to check if exists tag with prefix v
+						tagName = "v" + relName
+						validTags[tagName], present = tagsMap[tagName]
+					}
+					if !present {
+						if log.Config.GetGeneral().Debug {
+							log.Debug(fmt.Sprintf(
+								"[%s] Release %s without tag. Skipped. Try to increase pages.",
+								atom.Name, relName))
+						}
+						continue
+					}
+				}
+				if version == "" {
+					// POST: The release is without a valid name. Using tag name as fallback.
+					version = tagName
+				}
+			} // POST Using release name as valid version
 
 			if r.MatchString(version) {
 				version = version[1:len(version)]

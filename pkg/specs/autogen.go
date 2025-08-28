@@ -124,6 +124,13 @@ func (a *AutogenAtom) String() string {
 	return string(data)
 }
 
+func (a *AutogenAtom) GithubIgnoreTags() bool {
+	if a.Github != nil && a.Github.IgnoreTags != nil {
+		return *a.Github.IgnoreTags
+	}
+	return false
+}
+
 func (a *AutogenAtom) GetCategory(def *AutogenAtom) string {
 	if a.Category != "" {
 		return a.Category
@@ -176,6 +183,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			}
 			if atom.Github.NumPages != nil {
 				ans.Github.NumPages = atom.Github.NumPages
+			}
+			if atom.Github.IgnoreTags != nil {
+				ans.Github.IgnoreTags = atom.Github.IgnoreTags
 			}
 			if atom.Github.Match != "" {
 				ans.Github.Match = atom.Github.Match
@@ -330,13 +340,14 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 
 	if a.Github != nil {
 		ans.Github = &AutogenGithubProps{
-			User:     a.Github.User,
-			Repo:     a.Github.Repo,
-			Query:    a.Github.Query,
-			PerPage:  a.Github.PerPage,
-			Page:     a.Github.Page,
-			NumPages: a.Github.NumPages,
-			Match:    a.Github.Match,
+			User:       a.Github.User,
+			Repo:       a.Github.Repo,
+			Query:      a.Github.Query,
+			PerPage:    a.Github.PerPage,
+			Page:       a.Github.Page,
+			NumPages:   a.Github.NumPages,
+			Match:      a.Github.Match,
+			IgnoreTags: a.Github.IgnoreTags,
 		}
 	}
 
