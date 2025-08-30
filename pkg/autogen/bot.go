@@ -680,5 +680,12 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	// Add reposcan to elab list
 	a.AddReposcanAtom(reposcanAtom)
 
+	if a.Config.GetGeneral().Debug {
+		repoAtomRaw, _ := reposcanAtom.Yaml()
+		a.Logger.Debug(fmt.Sprintf(
+			":factory:[%s] Reposcan Atom used in merge phase:\n%s\n",
+			atom.Name, repoAtomRaw))
+	}
+
 	return nil
 }
