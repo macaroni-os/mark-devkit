@@ -494,6 +494,9 @@ func (m *MergeBot) searchAtom2Clean(atom *specs.MergeKitAtom, mkit *specs.MergeK
 
 	pOpts := NewPortageResolverOpts()
 	pOpts.Conditions = atom.Conditions
+	if atom.CondIgnoreSlot != nil {
+		pOpts.IgnoreSlot = *atom.CondIgnoreSlot
+	}
 
 	availablesPkgs4Conditions, err := m.TargetResolver.GetValidPackages(atom.Package, pOpts)
 	if err != nil {

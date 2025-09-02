@@ -628,6 +628,9 @@ func (m *MergeBot) searchAtom(atom *specs.MergeKitAtom, mkit *specs.MergeKit,
 
 	pOpts := NewPortageResolverOpts()
 	pOpts.Conditions = atom.Conditions
+	if atom.CondIgnoreSlot != nil {
+		pOpts.IgnoreSlot = *atom.CondIgnoreSlot
+	}
 
 	// Retrieve the last version package that matches the
 	// conditions.

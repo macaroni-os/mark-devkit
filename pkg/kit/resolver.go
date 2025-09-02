@@ -388,6 +388,7 @@ func (r *RepoScanResolver) PackageIsAdmit(target, atom *gentoo.GentooPackage,
 			admitted := false
 
 			for _, c := range constraints {
+
 				admitted, err = c.Admit(atom)
 				if err != nil {
 					return false, err
