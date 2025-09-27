@@ -265,6 +265,8 @@ func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 					target = "depend"
 				case "runtime":
 					target = "rdepend"
+				case "both":
+					target = "both"
 				default:
 					// TODO: add warning for invalid label
 					continue
@@ -311,6 +313,9 @@ func (g *PypiGenerator) processDependencies(atom *specs.AutogenAtom,
 					pydepsBdepend = append(pydepsBdepend, pydep)
 				case "pdepend":
 					pydepsPdepend = append(pydepsPdepend, pydep)
+				case "both":
+					pydepsRdepend = append(pydepsRdepend, pydep)
+					pydepsDepend = append(pydepsDepend, pydep)
 				default:
 					pydepsDepend = append(pydepsDepend, pydep)
 				}
