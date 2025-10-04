@@ -34,21 +34,48 @@ type CargoLock struct {
 	Packages []CargoPackage `toml:"package"`
 }
 
+type CargoWorkspace struct {
+	Package      *CargoPackage `toml:"package,omitempty"`
+	Members      []string      `toml:"members,omitempty"`
+	Exclude      []string      `toml:"exclude,omitempty"`
+	Dependencies []string      `toml:"dependencies,omitempty"`
+}
+
 type CargoToml struct {
-	Package *CargoPackage `toml:"package"`
-	Path    string
+	Package   *CargoPackage   `toml:"package,omitempty"`
+	Workspace *CargoWorkspace `toml:"workspace,omitempty"`
+	Path      string
 }
 
 type CargoPackage struct {
-	Name         string   `toml:"name"`
-	Version      string   `toml:"version"`
-	Source       string   `toml:"source,omitempty"`
+	Name         string   `toml:"name,omitempty"`
+	Version      any      `toml:"version,omitempty"`
+	Source       any      `toml:"source,omitempty"`
 	Checksum     string   `toml:"checksum,omitempty"`
 	Dependencies []string `toml:"dependencies,omitempty"`
 }
 
 type CargoLocalDeps struct {
 	Map map[string]*CargoToml
+}
+
+func (cp *CargoPackage) GetVersion() string {
+	// We need to use any in order to avoid
+	// exception if a specific Cargo.toml set version
+	// or other attributes as string.
+	// For example this break string conversion:
+	// version.workspace = true
+	if version, ok := cp.Version.(string); ok {
+		return version
+	}
+	return ""
+}
+
+func (cp *CargoPackage) GetSource() string {
+	if source, ok := cp.Version.(string); ok {
+		return source
+	}
+	return ""
 }
 
 func NewExtensionRust(opts map[string]string) (*ExtensionRust, error) {
@@ -166,7 +193,8 @@ func (e *ExtensionRust) Elaborate(restGuard *guard.RestGuard,
 	// Read all Cargo.toml in order to identify all local crates
 	localCrates, err := e.parseCargoToml(atom, pkgUnpackDir, true)
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"Error on parse cargo toml: %s", err.Error())
 	}
 
 	// Download cargo bundles files
@@ -308,7 +336,7 @@ func (e *ExtensionRust) downloadBundles(restGuard *guard.RestGuard,
 
 	for _, pkg := range cargoLock.Packages {
 
-		if strings.HasPrefix(pkg.Source, "git+") {
+		if strings.HasPrefix(pkg.GetSource(), "git+") {
 			sourceOrigin = "git"
 		} else {
 			sourceOrigin = "crates"
@@ -351,14 +379,16 @@ func (e *ExtensionRust) downloadBundles(restGuard *guard.RestGuard,
 		} else {
 			// Keep old logic for now. Maybe we can avoid this.
 			// Drop initial git+ string
-			url := pkg.Source[4:]
-			gitDepPkgs, present := gitDeps[url]
-			if present {
-				gitDepPkgs = append(gitDepPkgs, &pkg)
-			} else {
-				gitDepPkgs = []*CargoPackage{&pkg}
+			if pkg.GetSource() != "" {
+				url := pkg.GetSource()[4:]
+				gitDepPkgs, present := gitDeps[url]
+				if present {
+					gitDepPkgs = append(gitDepPkgs, &pkg)
+				} else {
+					gitDepPkgs = []*CargoPackage{&pkg}
+				}
+				gitDeps[url] = gitDepPkgs
 			}
-			gitDeps[url] = gitDepPkgs
 		}
 
 	}
@@ -576,7 +606,22 @@ func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
 			pkg := CargoToml{Path: dir}
 			err = toml.Unmarshal([]byte(data), &pkg)
 			if err != nil {
-				return err
+				if derr, ok := err.(*toml.DecodeError); ok {
+					row, col := derr.Position()
+					return fmt.Errorf("error on parse cargo toml %s (row %d, column %d): %s",
+						cfile, row, col, derr.Error())
+				}
+				return fmt.Errorf("error on unmarshal file %s: %s",
+					cfile, err)
+			}
+
+			if pkg.Package != nil && pkg.Workspace != nil {
+				return fmt.Errorf("unexpected file content on %s",
+					cfile)
+			}
+
+			if pkg.Package == nil {
+				pkg.Package = pkg.Workspace.Package
 			}
 
 			if pkg.Package.Name != "" {
