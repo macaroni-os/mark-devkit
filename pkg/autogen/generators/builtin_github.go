@@ -15,7 +15,7 @@ import (
 	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
-	"github.com/google/go-github/v68/github"
+	"github.com/google/go-github/v74/github"
 )
 
 type GithubGenerator struct {

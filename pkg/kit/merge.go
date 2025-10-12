@@ -18,7 +18,7 @@ import (
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
-	"github.com/google/go-github/v68/github"
+	"github.com/google/go-github/v74/github"
 	"github.com/macaroni-os/macaronictl/pkg/utils"
 	"golang.org/x/oauth2"
 )

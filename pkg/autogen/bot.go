@@ -19,7 +19,7 @@ import (
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	"github.com/geaaru/rest-guard/pkg/guard"
-	"github.com/google/go-github/v68/github"
+	"github.com/google/go-github/v74/github"
 	"golang.org/x/oauth2"
 	"gopkg.in/yaml.v3"
 )
