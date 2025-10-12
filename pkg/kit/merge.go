@@ -348,6 +348,8 @@ func (m *MergeBot) SetupResolver(mkit *specs.MergeKit, opts *MergeBotOpts) error
 
 func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 	var err error
+	// Needs to permit propagation of the error correctly
+	var repo *git.Repository
 	targetKit, _ := mkit.GetTargetKit()
 	kitDir := filepath.Join(m.GetTargetDir(), targetKit.Name)
 	pushOpts := NewPushOptions()
@@ -541,7 +543,7 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 			// We need to initialize the remote to push a new branch
 			// to an empty repository.
-			repo, err := git.PlainOpen(kitDir)
+			repo, err = git.PlainOpen(kitDir)
 			if err != nil {
 				return err
 			}
@@ -565,6 +567,9 @@ func (m *MergeBot) Push(mkit *specs.MergeKit, opts *MergeBotOpts) error {
 					return err
 				}
 			}
+
+			m.Logger.Info(fmt.Sprintf("[%s] Pushing new branch %s",
+				targetKit.Name, targetKit.Branch))
 
 			err = PushBranch(kitDir, targetKit.Branch, pushOpts)
 		} else {
