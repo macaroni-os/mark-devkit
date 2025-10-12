@@ -295,8 +295,23 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 			return nil, err
 		}
 
+		if atom.Github.Match != "" {
+			matchRegex = regexp.MustCompile(atom.Github.Match)
+			if matchRegex == nil {
+				return nil, fmt.Errorf("invalid regex match string for atom %s",
+					atom.Name)
+			}
+		}
+
 		for idx := range tt {
 			version := tt[idx].GetName()
+
+			if matchRegex != nil && (!matchRegex.MatchString(version)) {
+				log.Debug(fmt.Sprintf(
+					"[%s] Tag %s doesn't match with regex. Ignore it.",
+					atom.Name, version))
+				continue
+			}
 
 			// Exclude v from tag name if related to a version
 			if r.MatchString(version) {
