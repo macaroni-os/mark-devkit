@@ -182,17 +182,6 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 
 	var rexclude *regexp.Regexp = nil
 
-	r := regexp.MustCompile(atom.Dir.Matcher)
-	if r == nil {
-		return nil, fmt.Errorf("[%s] invalid regex on matcher", atom.Name)
-	}
-	if atom.Dir.ExcludesMatcher != "" {
-		rexclude = regexp.MustCompile(atom.Dir.ExcludesMatcher)
-		if rexclude == nil {
-			return nil, fmt.Errorf("[%s] invalid regex on exclude", atom.Name)
-		}
-	}
-
 	vars := atom.Vars
 	vars["pn"] = atom.Name
 
@@ -203,6 +192,24 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 	)
 	if err != nil {
 		return nil, fmt.Errorf("[%s] error on render url: %s", atom.Name, err.Error())
+	}
+	dirMatcher, err := helpers.RenderContentWithTemplates(
+		atom.Dir.Matcher,
+		"", "", "dir.matcher", vars, []string{},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("[%s] error on render dir.matcher: %s", atom.Name, err.Error())
+	}
+
+	r := regexp.MustCompile(dirMatcher)
+	if r == nil {
+		return nil, fmt.Errorf("[%s] invalid regex on matcher", atom.Name)
+	}
+	if atom.Dir.ExcludesMatcher != "" {
+		rexclude = regexp.MustCompile(atom.Dir.ExcludesMatcher)
+		if rexclude == nil {
+			return nil, fmt.Errorf("[%s] invalid regex on exclude", atom.Name)
+		}
 	}
 
 	log.DebugC(fmt.Sprintf(
