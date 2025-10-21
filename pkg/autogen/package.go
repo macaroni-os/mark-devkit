@@ -70,7 +70,11 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	}
 
 	// Special vars rendered
-	for _, field := range []string{"body", "iuse", "rdepend", "bdepend", "depend", "pdepend", "cdepend", "s"} {
+	renderedVars := []string{
+		"body", "iuse", "rdepend", "bdepend", "depend", "pdepend",
+		"cdepend", "s", "homepage", "desc",
+	}
+	for _, field := range renderedVars {
 		if _, hasField := values[field]; hasField {
 			// Render the body with the values.
 			fieldValue, _ := values[field].(string)
