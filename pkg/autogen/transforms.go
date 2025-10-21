@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
@@ -20,11 +21,33 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 	var v string
 	var r *regexp.Regexp
 
+	vars := atom.Clone().Vars
+	vars["pn"] = atom.Name
+
 	for _, transform := range atom.Transforms {
+		match, err := helpers.RenderContentWithTemplates(
+			transform.Match,
+			"", "", "transform.match", vars, []string{},
+		)
+		if err != nil {
+			return nil, fmt.Errorf("[%s] error on render trasform.match %s: %s",
+				atom.Name, transform.Match, err.Error())
+		}
+
+		replace, err := helpers.RenderContentWithTemplates(
+			transform.Replace,
+			"", "", "transform.replace", vars, []string{},
+		)
+		if err != nil {
+			return nil, fmt.Errorf("[%s] error on render trasform.replace %s: %s",
+				atom.Name, transform.Replace, err.Error())
+		}
+
 		if transform.Kind == "regex" {
-			r = regexp.MustCompile(transform.Match)
+
+			r = regexp.MustCompile(match)
 			if r == nil {
-				return nil, fmt.Errorf("invalid regex string %s", transform.Match)
+				return nil, fmt.Errorf("invalid regex string %s", match)
 			}
 		}
 
@@ -36,9 +59,9 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 			}
 			switch transform.Kind {
 			case "string":
-				v = strings.ReplaceAll(v, transform.Match, transform.Replace)
+				v = strings.ReplaceAll(v, match, replace)
 			case "regex":
-				v = r.ReplaceAllString(v, transform.Replace)
+				v = r.ReplaceAllString(v, replace)
 			default:
 				return nil, fmt.Errorf("unsupported kind of transform %s for atom %s",
 					transform.Kind, atom.Name)
