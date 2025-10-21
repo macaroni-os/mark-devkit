@@ -26,8 +26,16 @@ jobs:
         uses: goreleaser/goreleaser-action@v4
         with:
           install-only: true
+
+      - name: Get Golang Version
+        id: goversion
+        run: |
+          echo "GOVERSION=$(go env GOVERSION)" >> $GITHUB_ENV
+
       - name: Build test
         run: sudo -E env "PATH=$PATH" make goreleaser-snapshot
+        env:
+          GOVERSION: ${{ env.GOVERSION }}
 
       - name: Tests
         run: |
