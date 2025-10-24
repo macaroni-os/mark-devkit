@@ -139,7 +139,7 @@ func (m *MergeBot) restoreFiles(kitDir string, files []string,
 
 	for _, file := range files {
 		// Drop kitDir prefix
-		filesBase = append(filesBase, file[len(kitDir)+1:len(file)])
+		filesBase = append(filesBase, file[len(kitDir)+1:])
 	}
 
 	return worktree.Reset(&git.ResetOptions{
@@ -154,7 +154,7 @@ func (m *MergeBot) commitFiles(kitDir string, files []string,
 
 	for _, file := range files {
 		// Drop kitDir prefix
-		f := file[len(kitDir)+1 : len(file)]
+		f := file[len(kitDir)+1:]
 		_, err := worktree.Add(f)
 		if err != nil {
 			return plumbing.ZeroHash, fmt.Errorf(

@@ -200,7 +200,7 @@ func (e *ExtensionGitSubmodules) createBundleTarball(
 	s.Writer.ArchiveDirs = archiveDirs
 
 	s.RenamePath = []tarf_specs.RenameRule{
-		tarf_specs.RenameRule{
+		{
 			Source: cloneDir,
 			Dest:   ".",
 		},

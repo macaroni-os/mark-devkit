@@ -278,7 +278,7 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *spec
 
 			for _, mirrorUri := range uris {
 
-				if mirrorUri[len(mirrorUri)-1:len(mirrorUri)] == "/" {
+				if mirrorUri[len(mirrorUri)-1:] == "/" {
 					atomUrl = mirrorUri[:len(mirrorUri)-1] + uri.Path
 				} else {
 					atomUrl = mirrorUri + uri.Path
@@ -330,7 +330,7 @@ func (f *FetcherCommon) DownloadAtomsFiles(mkit *specs.DistfilesSpec, atom *spec
 
 					for _, mirrorUri := range mirrorEntry.Uri {
 
-						if mirrorUri[len(mirrorUri)-1:len(mirrorUri)] == "/" {
+						if mirrorUri[len(mirrorUri)-1:] == "/" {
 							mirrorUri = mirrorUri[:len(mirrorUri)-1]
 						}
 
@@ -389,7 +389,7 @@ func (f *FetcherCommon) getMirrorLayout(mirrorUri string) (*specs.MirrorLayout, 
 	}
 	layoutUrl := ""
 
-	if mirrorUri[len(mirrorUri)-1:len(mirrorUri)] == "/" {
+	if mirrorUri[len(mirrorUri)-1:] == "/" {
 		layoutUrl = mirrorUri[:len(mirrorUri)-1] + "/layout.conf"
 	} else {
 		layoutUrl = mirrorUri + "/layout.conf"

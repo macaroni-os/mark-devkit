@@ -187,7 +187,7 @@ func (r *ReleaseBot) commitFiles(kitDir string, files []string,
 
 	for _, file := range files {
 		// Drop kitDir prefix
-		f := file[len(kitDir)+1 : len(file)]
+		f := file[len(kitDir)+1:]
 		_, err := worktree.Add(f)
 		if err != nil {
 			return plumbing.ZeroHash, err

@@ -261,7 +261,7 @@ func (g *JsonGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 			if !valid {
 				return nil, fmt.Errorf("error on convert filter version element in string")
 			}
-			for k, _ := range vmap {
+			for k := range vmap {
 				if rexclude != nil && rexclude.MatchString(k) {
 					log.DebugC(fmt.Sprintf(
 						":brain:[%s] Version %s excluded.", atom.Name, k))

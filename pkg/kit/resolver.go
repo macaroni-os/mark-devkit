@@ -173,7 +173,7 @@ func (r *RepoScanResolver) LoadJsonFiles(verbose bool) error {
 
 func (r *RepoScanResolver) BuildMap() error {
 	//fmt.Println("Build MAP ")
-	for idx, _ := range r.Sources {
+	for idx := range r.Sources {
 
 		for pkg, atom := range r.Sources[idx].Atoms {
 

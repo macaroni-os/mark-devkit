@@ -315,7 +315,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 
 			// Exclude v from tag name if related to a version
 			if r.MatchString(version) {
-				version = version[1:len(version)]
+				version = version[1:]
 			}
 			validTags[version] = tt[idx]
 
@@ -428,7 +428,7 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 			} // POST Using release name as valid version
 
 			if r.MatchString(version) {
-				version = version[1:len(version)]
+				version = version[1:]
 			}
 
 			if matchRegex != nil && (!matchRegex.MatchString(version)) {

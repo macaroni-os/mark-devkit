@@ -271,7 +271,7 @@ func (e *ExtensionRust) createBundleTarball(
 	s.Writer.ArchiveDirs = []string{bundlesDir}
 
 	s.RenamePath = []tarf_specs.RenameRule{
-		tarf_specs.RenameRule{
+		{
 			Source: filepath.Join(workDir, "rust-extension", atomName),
 			Dest:   ".",
 		},
@@ -505,7 +505,7 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 	s.Writer.ArchiveDirs = []string{cloneDir}
 
 	s.RenamePath = []tarf_specs.RenameRule{
-		tarf_specs.RenameRule{
+		{
 			Source: filepath.Join(unpackDir, "staging"),
 			Dest:   ".",
 		},

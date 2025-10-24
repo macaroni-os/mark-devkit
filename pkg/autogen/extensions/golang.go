@@ -234,7 +234,7 @@ func (e *ExtensionGolang) createBundleTarball(
 	s.Writer.ArchiveDirs = []string{bundlesDir}
 
 	s.RenamePath = []tarf_specs.RenameRule{
-		tarf_specs.RenameRule{
+		{
 			Source: filepath.Join(workDir, "go-extension", atomName),
 			Dest:   ".",
 		},
