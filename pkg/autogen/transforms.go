@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
+	"github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
 	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
@@ -67,6 +68,8 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 					transform.Kind, atom.Name)
 			}
 
+			a.Logger.Debug(fmt.Sprintf(
+				"[%s] Elaborated version '%s'", atom.Name, v))
 			ans[versions[idx]] = v
 		}
 	}
@@ -75,11 +78,24 @@ func (a *AutogenBot) transformsVersions(atom *specs.AutogenAtom, versions []stri
 }
 
 func (a *AutogenBot) sortVersions(atom *specs.AutogenAtom, versions []string) ([]string, error) {
+	log := logger.GetDefaultLogger()
 	// In order to avoid issues with go-version on parse particular versions
 	// I prefer to use GentooPackage that already support different versions and sorting.
 
 	ans := []string{}
 	pkgs := []gentoo.GentooPackage{}
+
+	// In order to help users on identify when to use transformers
+	// it's better add a warning if the version is with chars
+	if len(versions) > 0 {
+		r := regexp.MustCompile("^[a-zA-Z]+")
+		if r.MatchString(versions[0]) {
+			log.Warning(fmt.Sprintf(
+				"[%s] The version %s seems contains string. "+
+					"You need to add a trasform in the chain in order to correctly set original_version variable.",
+				atom.Name, versions[0]))
+		}
+	}
 
 	for idx := range versions {
 		gp, err := gentoo.ParsePackageStr(fmt.Sprintf("%s/%s-%s",
