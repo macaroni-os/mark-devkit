@@ -236,6 +236,14 @@ func (g *GithubGenerator) getTags(atom *specs.AutogenAtom,
 			return tt, err
 		}
 
+		if log.Config.GetGeneral().Debug {
+			for _, t := range tags {
+				log.Debug(fmt.Sprintf(
+					"[%s] Found tag %s.",
+					atom.Name, strings.ReplaceAll(t.GetName(), "\n", "")))
+			}
+		}
+
 		tt = tags
 	}
 
