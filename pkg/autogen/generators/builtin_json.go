@@ -279,6 +279,23 @@ func (g *JsonGenerator) Process(atom *specs.AutogenAtom) (*map[string]interface{
 		versions = append(versions, vstr)
 	}
 
+	// Manage filter vars mapping if present
+	if len(atom.Json.MapFilterVars) > 0 {
+		for k, v := range atom.Json.MapFilterVars {
+			// Parse version filter
+			varFilter, err := jp.ParseString(v)
+			if err != nil {
+				return nil, fmt.Errorf("error on parsing var filter %s: %s",
+					v, err.Error())
+			}
+
+			varValue := varFilter.Get(obj)
+			if len(varValue) > 0 {
+				ans[k] = varValue[0]
+			}
+		}
+	}
+
 	ans["versions"] = versions
 
 	return &ans, nil

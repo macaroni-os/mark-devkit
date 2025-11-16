@@ -233,6 +233,11 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 					ans.Json.Params[k] = v
 				}
 			}
+			if len(atom.Json.MapFilterVars) > 0 {
+				for k, v := range atom.Json.MapFilterVars {
+					ans.Json.MapFilterVars[k] = v
+				}
+			}
 		}
 	}
 
@@ -367,11 +372,18 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			FilterSrcUri:  a.Json.FilterSrcUri,
 			Exclude:       a.Json.Exclude,
 			Params:        make(map[string]string, 0),
+			MapFilterVars: make(map[string]string, 0),
 		}
 
 		if len(a.Json.Params) > 0 {
 			for k, v := range a.Json.Params {
 				ans.Json.Params[k] = v
+			}
+		}
+
+		if len(a.Json.MapFilterVars) > 0 {
+			for k, v := range a.Json.MapFilterVars {
+				ans.Json.MapFilterVars[k] = v
 			}
 		}
 	}

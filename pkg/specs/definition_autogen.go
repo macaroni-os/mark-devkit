@@ -132,4 +132,6 @@ type AutogenJsonProps struct {
 
 	FilterVersion string `json:"version_filter,omitempty" yaml:"version_filter,omitempty"`
 	FilterSrcUri  string `json:"src_uri_filter,omitempty" yaml:"src_uri_filter,omitempty"`
+
+	MapFilterVars map[string]string `json:"map_filter_vars,omitempty" yaml:"map_filter_vars,omitempty"`
 }
