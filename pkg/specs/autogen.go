@@ -426,7 +426,7 @@ func (a *AutogenArtefact) IsLocal() bool {
 
 func (a *AutogenDefinition) GetExtensionOptions(e string) (*AutogenExtension, error) {
 	ext, ok := a.Extensions[e]
-	if ok {
+	if ok && ext != nil {
 		ans := ext.Clone()
 		if ans.Name == "" {
 			ans.Name = e

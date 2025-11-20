@@ -43,7 +43,7 @@ func (a *AutogenBot) ConsumeExtensions(mkit *specs.MergeKit,
 		// Retrieve extension options
 		extOpts, err := autogenDef.GetExtensionOptions(atomExt)
 		if err != nil {
-			a.Logger.Error("[%s] %s", atom.Name, err.Error())
+			a.Logger.Error(fmt.Sprintf("[%s] %s", atom.Name, err.Error()))
 			return err
 		}
 
