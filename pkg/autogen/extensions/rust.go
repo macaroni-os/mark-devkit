@@ -615,7 +615,7 @@ func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
 					cfile, err)
 			}
 
-			if pkg.Package != nil && pkg.Workspace != nil {
+			if pkg.Package == nil && pkg.Workspace == nil {
 				return fmt.Errorf("unexpected file content on %s",
 					cfile)
 			}
