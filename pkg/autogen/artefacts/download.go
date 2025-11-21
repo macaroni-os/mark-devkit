@@ -113,6 +113,8 @@ func DownloadArtefact(
 	if err != nil {
 		return nil, err
 	}
+	// Workaround for AI bot blocks
+	t.Request.Header.Add("Accept", "*/*")
 
 	artefact, err := restGuard.DoDownload(t, downloadedFilePath)
 	if err != nil {
