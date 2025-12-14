@@ -59,6 +59,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			showValues, _ := cmd.Flags().GetBool("show-values")
 			forceMergeCheck, _ := cmd.Flags().GetBool("force-merge-check")
 			atoms, _ := cmd.Flags().GetStringArray("pkg")
+			stopOnError, _ := cmd.Flags().GetBool("stop-on-error")
 
 			minioBucket, _ := cmd.Flags().GetString("minio-bucket")
 			minioAccessId, _ := cmd.Flags().GetString("minio-keyid")
@@ -103,6 +104,11 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 				}
 			}
 
+			notifyDiscordUrl, _ := cmd.Flags().GetString("notify-discord-url")
+			if os.Getenv("MARKDEVKIT_DISCORD_URL") != "" {
+				notifyDiscordUrl = os.Getenv("MARKDEVKIT_DISCORD_URL")
+			}
+
 			log.InfoC(log.Aurora.Bold(
 				fmt.Sprintf(":mask:Loading specfile %s", specfile)),
 			)
@@ -122,10 +128,25 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 			autogenOpts.MergeAutogen = !skipMerge
 			autogenOpts.MergeForced = forceMergeCheck
 			autogenOpts.ShowGeneratedValues = showValues
+			autogenOpts.StopOnError = stopOnError
 			autogenOpts.Atoms = atoms
 
 			if githubUser != "" {
 				autogenOpts.GithubUser = githubUser
+			}
+
+			if notifyDiscordUrl != "" {
+				hook := &specs.MarkDevkitHook{
+					Name:   "discord-inline",
+					Type:   specs.NotifyDiscord,
+					Url:    notifyDiscordUrl,
+					Enable: true,
+				}
+				if config.Notifier.Hooks == nil {
+					config.Notifier.Hooks = []*specs.MarkDevkitHook{hook}
+				} else {
+					config.Notifier.Hooks = append(config.Notifier.Hooks, hook)
+				}
 			}
 
 			autogenBot := autogen.NewAutogenBot(config)
@@ -169,6 +190,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 		"For debug purpose print generated values for any elaborated package in YAML format.")
 	flags.Bool("force-merge-check", false,
 		"Force merge comparison for package with the same version.")
+	flags.Bool("stop-on-error", false, "Stop processing on error.")
 
 	flags.String("signature-name", "", "Specify the name of the user for the commits.")
 	flags.String("signature-email", "", "Specify the email of the user for the commits.")
@@ -188,6 +210,10 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 	flags.String("minio-prefix", "",
 		"Set the prefix path to use or set env MINIO_PREFIX. Note: The path is without initial /.")
 	flags.StringArray("pkg", []string{}, "Elaborate only specified packages.")
+
+	// Discord notify url
+	flags.String("notify-discord-url", "",
+		"Define directly the discord webhook for notify")
 
 	return cmd
 }

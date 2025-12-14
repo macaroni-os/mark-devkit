@@ -20,6 +20,14 @@ logging:
 #      token: mytoken
 
 # ---------------------------------------------
+# Define a list of hooks to execute in order to
+# notify errors on autogen generation
+# ---------------------------------------------
+# hooks:
+#   - type: discord
+#     url: https://discord.com/api/webhooks/<id>/<key>
+
+# ---------------------------------------------
 # Tarball flows configuration section
 # if not defined in JobSource or JobOutput.
 # ---------------------------------------------

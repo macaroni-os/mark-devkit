@@ -21,6 +21,8 @@ const (
 	ExtensionGolang        = "golang"
 	ExtensionRust          = "rust"
 	ExtensionGitSubmodules = "git-submodules"
+
+	NotifyDiscord = "discord"
 )
 
 type AutogenSpec struct {

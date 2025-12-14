@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/macaroni-os/mark-devkit/pkg/autogen/generators"
+	"github.com/macaroni-os/mark-devkit/pkg/autogen/notifier"
 	tmpleng "github.com/macaroni-os/mark-devkit/pkg/autogen/tmpl-engines"
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/kit"
@@ -42,6 +43,8 @@ type AutogenBot struct {
 
 	ElabAtoms []*specs.RepoScanAtom
 	mutex     sync.Mutex
+
+	Notifiers []notifier.Notifier
 }
 
 type AutogenBotOpts struct {
@@ -55,6 +58,7 @@ type AutogenBotOpts struct {
 	MergeAutogen        bool
 	MergeForced         bool
 	ShowGeneratedValues bool
+	StopOnError         bool
 	Atoms               []string
 
 	GitDeepFetch int
@@ -79,6 +83,7 @@ func NewAutogenBotOpts() *AutogenBotOpts {
 		MergeAutogen:        true,
 		MergeForced:         true,
 		ShowGeneratedValues: false,
+		StopOnError:         false,
 		Atoms:               []string{},
 	}
 }
@@ -108,6 +113,7 @@ func NewAutogenBot(c *specs.MarkDevkitConfig) *AutogenBot {
 		GithubClient: nil,
 		RestGuard:    rg,
 		ElabAtoms:    []*specs.RepoScanAtom{},
+		Notifiers:    []notifier.Notifier{},
 	}
 }
 
@@ -290,6 +296,12 @@ func (a *AutogenBot) Run(specfile, kitFile string, opts *AutogenBotOpts) error {
 		return err
 	}
 
+	// Setup notifiers
+	err = a.setupNotifiers()
+	if err != nil {
+		return err
+	}
+
 	targetKit, _ := mkit.GetTargetKit()
 
 	a.Logger.InfoC(a.Logger.Aurora.Bold(
@@ -436,7 +448,16 @@ func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 			err = a.ProcessPackage(mkit, aspec, atom, def,
 				generator, templateEngine, opts)
 			if err != nil {
-				return err
+
+				// Notify error (ignoring error on call webhook for now)
+				a.Notify(atom, fmt.Sprintf("🔥 🚨 - %s", err.Error()))
+
+				a.Logger.Error(fmt.Sprintf(
+					":fire:[%s] %s", atom.Name, err.Error()))
+
+				if opts.StopOnError {
+					return err
+				}
 			}
 		}
 	}

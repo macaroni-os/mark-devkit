@@ -23,6 +23,7 @@ type MarkDevkitConfig struct {
 	Authentication MarkDevkitAuthentication `mapstructure:"authentication" json:"authentication,omitempty" yaml:"authentication,omitempty"`
 	TarFlows       MarkDevkitTarflowsConfig `mapstructure:"tar_flows,omitempty" json:"tar_flows,omitempty" yaml:"tar_flows,omitempty"`
 	RgConfig       *rg.RestGuardConfig      `mapstructure:"rest" json:"rest,omitempty" yaml:"rest,omitempty"`
+	Notifier       MarkDevkitNotifier       `mapstructure:"hooks,omitempty" json:"hooks,omitempty" yaml:"hooks,omitempty"`
 
 	Storage map[string]interface{} `mapstructure:"-" json:"-" yaml:"-"`
 }
@@ -36,6 +37,17 @@ type MarkDevkitTarflowsConfig struct {
 	MaxOpenFiles   int64 `mapstructure:"max_openfiles,omitempty" json:"max_openfiles,omitempty" yaml:"max_openfiles,omitempty"`
 	Mutex4Dirs     bool  `mapstructure:"mutex4dir,omitempty" json:"mutex4dir,omitempty yaml:"mutex4dir,omitempty"`
 	Validate       bool  `mapstructure:"validate,omitempty" json:"validate,omitempty" yaml:"validate,omitempty"`
+}
+
+type MarkDevkitNotifier struct {
+	Hooks []*MarkDevkitHook `mapstructure:"-,inline" json:"-,inline" yaml:"-,inline"`
+}
+
+type MarkDevkitHook struct {
+	Name   string `mapstructure:"name,omitempty" json:"name,omitempty" yaml:"name,omitempty"`
+	Type   string `mapstructure:"type,omitempty" json:"type,omitempty" yaml:"type,omitempty"`
+	Url    string `mapstructure:"url,omitempty" json:"url,omitempty" yaml:"url,omitempty"`
+	Enable bool   `mapstructure:"enable,omitempty" json:"enable,omitempty" yaml:"enable,omitempty"`
 }
 
 type MarkDevkitLogging struct {
@@ -91,6 +103,10 @@ func (c *MarkDevkitConfig) GetGeneral() *MarkDevkitGeneral {
 
 func (c *MarkDevkitConfig) GetLogging() *MarkDevkitLogging {
 	return &c.Logging
+}
+
+func (c *MarkDevkitConfig) GetNotifier() *MarkDevkitNotifier {
+	return &c.Notifier
 }
 
 func (c *MarkDevkitConfig) GetRest() *rg.RestGuardConfig {

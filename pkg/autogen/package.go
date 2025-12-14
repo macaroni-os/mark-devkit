@@ -122,7 +122,9 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 			}
 
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("On downloading %s from url %s: %s",
+					art.Name, art.SrcUri[0], err,
+				)
 			}
 
 			ans.Files = append(ans.Files, *repoFile)
