@@ -51,35 +51,53 @@ func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
 			return ans, err
 		}
 
-		matcher, err := helpers.RenderContentWithTemplates(
-			asset.Matcher,
-			"", "", "asset.matcher", values, []string{},
-		)
-		if err != nil {
-			return ans, err
-		}
+		if asset.Url != "" {
 
-		r := regexp.MustCompile(matcher)
-		if r == nil {
-			return ans, fmt.Errorf("[%s] invalid regex on asset %s", atom.Name, asset.Name)
-		}
-
-		assetFound := false
-
-		for idx := range release.Assets {
-			if r.MatchString(release.Assets[idx].GetName()) {
-				assetFound = true
-				ans = append(ans, &specs.AutogenArtefact{
-					SrcUri: []string{release.Assets[idx].GetBrowserDownloadURL()},
-					Use:    asset.Use,
-					Name:   name,
-				})
-				break
+			assetUrl, err := helpers.RenderContentWithTemplates(
+				asset.Url,
+				"", "", "asset.url", values, []string{},
+			)
+			if err != nil {
+				return ans, err
 			}
-		}
 
-		if !assetFound {
-			return ans, fmt.Errorf("[%s] no asset found for matcher %s", atom.Name, matcher)
+			ans = append(ans, &specs.AutogenArtefact{
+				SrcUri: []string{assetUrl},
+				Use:    asset.Use,
+				Name:   name,
+			})
+
+		} else {
+			matcher, err := helpers.RenderContentWithTemplates(
+				asset.Matcher,
+				"", "", "asset.matcher", values, []string{},
+			)
+			if err != nil {
+				return ans, err
+			}
+
+			r := regexp.MustCompile(matcher)
+			if r == nil {
+				return ans, fmt.Errorf("[%s] invalid regex on asset %s", atom.Name, asset.Name)
+			}
+
+			assetFound := false
+
+			for idx := range release.Assets {
+				if r.MatchString(release.Assets[idx].GetName()) {
+					assetFound = true
+					ans = append(ans, &specs.AutogenArtefact{
+						SrcUri: []string{release.Assets[idx].GetBrowserDownloadURL()},
+						Use:    asset.Use,
+						Name:   name,
+					})
+					break
+				}
+			}
+
+			if !assetFound {
+				return ans, fmt.Errorf("[%s] no asset found for matcher %s", atom.Name, matcher)
+			}
 		}
 
 	}
