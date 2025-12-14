@@ -622,6 +622,14 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		}
 	}
 
+	if atom.HasRevision() {
+		a.Logger.Info(fmt.Sprintf(
+			":eyes:[%s] For packagge %s/%s append revision %d",
+			atom.Name, atom.GetCategory(def), atom.Name, *atom.Revision))
+		selectedVersion = fmt.Sprintf("%s-r%d", selectedVersion, *atom.Revision)
+		values["version"] = selectedVersion
+	}
+
 	if opts.ShowGeneratedValues {
 		data, err := yaml.Marshal(values)
 		if err != nil {

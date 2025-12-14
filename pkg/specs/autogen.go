@@ -119,6 +119,10 @@ func (a *AutogenAtom) HasExtensions() bool {
 	return len(a.Extensions) > 0
 }
 
+func (a *AutogenAtom) HasRevision() bool {
+	return a.Revision != nil && *a.Revision > 0
+}
+
 func (a *AutogenAtom) String() string {
 	data, _ := yaml.Marshal(a)
 	return string(data)
@@ -161,6 +165,10 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 	}
 	if atom.Tarball != "" {
 		ans.Tarball = atom.Tarball
+	}
+	if atom.Revision != nil {
+		rev := *atom.Revision
+		ans.Revision = &rev
 	}
 	if atom.Github != nil {
 		if a.Github == nil {
@@ -341,6 +349,11 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 		for k, v := range a.Vars {
 			ans.Vars[k] = v
 		}
+	}
+
+	if a.Revision != nil {
+		rev := *a.Revision
+		ans.Revision = &rev
 	}
 
 	if a.Github != nil {
