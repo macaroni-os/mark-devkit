@@ -213,7 +213,7 @@ func autogenCmdCommand(config *specs.MarkDevkitConfig) *cobra.Command {
 
 	// Discord notify url
 	flags.String("notify-discord-url", "",
-		"Define directly the discord webhook for notify")
+		"Define directly the discord webhook for notify. Use MARKDEVKIT_DISCORD_URL env in alternative.")
 
 	return cmd
 }
