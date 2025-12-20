@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/flosch/pongo2/v6 v6.0.0
 	github.com/geaaru/pkgs-checker v0.16.0
-	github.com/geaaru/rest-guard v0.7.0
+	github.com/geaaru/rest-guard v0.7.1
 	github.com/geaaru/tar-formers v0.9.1
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/google/go-github/v74 v74.0.0

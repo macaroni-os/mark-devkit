@@ -81,6 +81,22 @@ func (s *RestService) SetRateLimiter() error {
 	return nil
 }
 
+func (s *RestService) SetRateLimiterWithDuration(d time.Duration) error {
+	v, err := s.GetOption(ServiceRateLimiter)
+	if err != nil {
+		return fmt.Errorf("No rate limits option available")
+	}
+
+	// Setup a new Rate Limiter
+	reqs, err := strconv.Atoi(v)
+	if err != nil {
+		return fmt.Errorf("Invalid rate limits option: %s", err.Error())
+	}
+
+	s.RateLimiter = rate.NewLimiter(rate.Every(d), reqs)
+	return nil
+}
+
 func (s *RestService) SetOption(k, v string) {
 	s.Options[k] = v
 }
