@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/macaroni-os/mark-devkit/pkg/helpers"
 	"github.com/macaroni-os/mark-devkit/pkg/kit"
@@ -24,9 +25,10 @@ import (
 
 type DirlistingGenerator struct {
 	*BaseGenerator
-	RestGuard   *guard.RestGuard
-	MapServices map[string]*guard_specs.RestService
-	RateLimit   string
+	RestGuard    *guard.RestGuard
+	MapServices  map[string]*guard_specs.RestService
+	RateLimit    string
+	RateDuration string
 }
 
 func NewDirlistingGenerator(opts map[string]string) *DirlistingGenerator {
@@ -57,6 +59,12 @@ func NewDirlistingGenerator(opts map[string]string) *DirlistingGenerator {
 		ans.RateLimit = limit
 	}
 
+	if limitDuration, present := opts["limit_duration"]; present {
+		log.DebugC(fmt.Sprintf(
+			":brain: Using rate duration %s...", limitDuration))
+		ans.RateDuration = limitDuration
+	}
+
 	return ans
 }
 
@@ -67,10 +75,25 @@ func (g *DirlistingGenerator) GetRestGuardService(service string) *guard_specs.R
 		// Ensure same rate limiter
 		ans.RateLimiter = s.RateLimiter
 	} else {
+		log := logger.GetDefaultLogger()
 		ans = guard_specs.NewRestService(service)
 		ans.Retries = 3
 		ans.SetOption(guard_specs.ServiceRateLimiter, g.RateLimit)
-		ans.SetRateLimiter()
+		if g.RateDuration != "" {
+
+			duration, err := time.ParseDuration(g.RateDuration)
+			if err != nil {
+				log.DebugC(fmt.Sprintf(
+					":brain:[%s] Error on processing duration %s: %s", service,
+					g.RateDuration, err.Error()))
+				ans.SetRateLimiter()
+			} else {
+				ans.SetRateLimiterWithDuration(duration)
+			}
+
+		} else {
+			ans.SetRateLimiter()
+		}
 	}
 
 	return ans
