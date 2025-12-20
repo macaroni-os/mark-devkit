@@ -213,7 +213,8 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 	}
 
 	log.DebugC(fmt.Sprintf(
-		":brain:[%s] Using url %s...", atom.Name, dirUrl))
+		":brain:[%s] Using url %s with matcher %s...", atom.Name,
+		dirUrl, dirMatcher))
 
 	// POST: We use the url value as urlBase
 	uri, err := url.Parse(dirUrl)
@@ -277,6 +278,8 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 				if attr.Key == "href" && r.MatchString(attr.Val) {
 					if rexclude != nil {
 						if rexclude.MatchString(attr.Val) {
+							log.DebugC(fmt.Sprintf(
+								":brain:[%s] %s link skipped.", atom.Name, attr.Val))
 							continue
 						}
 					}
