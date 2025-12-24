@@ -40,6 +40,7 @@ type AutogenDefinition struct {
 	Packages       []map[string]*AutogenAtom `json:"packages,omitempty" yaml:"packages,omitempty"`
 
 	Extensions map[string]*AutogenExtension `json:"extensions_defs,omitempty" yaml:"extensions_defs,omitempty"`
+	MinVersion string                       `json:"markdevkit_min_version,omitempty" yaml:"markdevkit_min_version,omitempty"`
 }
 
 type AutogenExtension struct {

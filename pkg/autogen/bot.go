@@ -19,6 +19,7 @@ import (
 	log "github.com/macaroni-os/mark-devkit/pkg/logger"
 	"github.com/macaroni-os/mark-devkit/pkg/specs"
 
+	gentoo "github.com/geaaru/pkgs-checker/pkg/gentoo"
 	"github.com/geaaru/rest-guard/pkg/guard"
 	"github.com/google/go-github/v74/github"
 	"golang.org/x/oauth2"
@@ -417,6 +418,27 @@ func (a *AutogenBot) ProcessDefinitions(mkit *specs.MergeKit,
 func (a *AutogenBot) ProcessDefinition(mkit *specs.MergeKit,
 	aspec *specs.AutogenSpec, def *specs.AutogenDefinition,
 	opts *AutogenBotOpts, nameDef string) error {
+
+	// Check if min version is set
+	if def.MinVersion != "" {
+		mdevkitMinVersion, err := gentoo.ParsePackageStr(
+			fmt.Sprintf("dev-util/mark-devkit-%s", def.MinVersion))
+		if err != nil {
+			return fmt.Errorf("Invalid min_version %s on definition %s: %s",
+				def.MinVersion, nameDef, err.Error())
+		}
+
+		mdevkitCurrVersion, _ := gentoo.ParsePackageStr(
+			fmt.Sprintf("dev-util/mark-devkit-%s", specs.MARKDEVKIT_VERSION))
+
+		invalidVersion, _ := mdevkitMinVersion.GreaterThan(mdevkitCurrVersion)
+
+		if invalidVersion {
+			return fmt.Errorf(
+				"Definition %s requires mark-devkit v%s (current %s)",
+				nameDef, def.MinVersion, specs.MARKDEVKIT_VERSION)
+		}
+	}
 
 	// Prepare generator
 	generator, err := a.GetGenerator(def.Generator, def.GeneratorOpts, aspec)
