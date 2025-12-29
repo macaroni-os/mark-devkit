@@ -72,9 +72,10 @@ type AutogenAtom struct {
 	Extensions []string        `json:"extensions,omitempty" yaml:"extensions,omitempty"`
 	Assets     []*AutogenAsset `json:"assets,omitempty" yaml:"assets,omitempty"`
 
-	Transforms []*AutogenTransform `json:"transform,omitempty" yaml:"transform,omitempty"`
-	Excludes   []string            `json:"exclude,omitempty" yaml:"exclude,omitempty"`
-	Selector   []string            `json:"selector,omitempty" yaml:"selector,omitempty"`
+	Transforms    []*AutogenTransform `json:"transform,omitempty" yaml:"transform,omitempty"`
+	Excludes      []string            `json:"exclude,omitempty" yaml:"exclude,omitempty"`
+	Selector      []string            `json:"selector,omitempty" yaml:"selector,omitempty"`
+	Selector4Slot *bool               `json:"selector4slot,omitempty" yaml:"selector4slot,omitempty"`
 
 	IgnoreArtefacts *bool `json:"ignore_artefacts,omitempty" yaml:"ignore_artefacts,omitempty"`
 

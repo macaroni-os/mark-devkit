@@ -43,3 +43,15 @@ func SanitizeMapVersionsField(atomName string,
 
 	return nil
 }
+
+func GetSlotFromValues(vars *map[string]interface{}) string {
+	values := *vars
+	slot, ok := values["slot"].(string)
+	if !ok {
+		islot, valid := values["slot"].(int)
+		if valid {
+			slot = fmt.Sprintf("%d", islot)
+		}
+	}
+	return slot
+}

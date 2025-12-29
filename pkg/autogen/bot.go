@@ -699,8 +699,7 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 			string(data)))
 	}
 
-	toAdd, err := a.isVersion2Add(
-		atom, def, selectedVersion, opts)
+	toAdd, err := a.isVersion2Add(atom, def, selectedVersion, opts, &values)
 	if err != nil {
 		return err
 	}

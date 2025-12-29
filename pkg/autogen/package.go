@@ -34,13 +34,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	pn, _ := values["pn"].(string)
 	version, _ := values["version"].(string)
 	artefacts, _ := values["artefacts"].([]*specs.AutogenArtefact)
-	slot, ok := values["slot"].(string)
-	if !ok {
-		islot, valid := values["slot"].(int)
-		if valid {
-			slot = fmt.Sprintf("%d", islot)
-		}
-	}
+	slot := helpers.GetSlotFromValues(mapref)
 
 	ans := &specs.RepoScanAtom{
 		Atom:     fmt.Sprintf("%s/%s-%s", category, atom.Name, version),
@@ -295,7 +289,8 @@ func (a *AutogenBot) copyFilesDir(sourcedir, targetdir string) error {
 }
 
 func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
-	version string, opts *AutogenBotOpts) (bool, error) {
+	version string, opts *AutogenBotOpts,
+	mapref *map[string]interface{}) (bool, error) {
 
 	if a.MergeBot.TargetKitIsANewBranch() {
 		return true, nil
@@ -320,6 +315,18 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 		// try to compare versions with conditions having SLOT.
 		pOpts.IgnoreSlot = true
 
+		if atom.HasSelector4Slot() {
+			// NOTE: There are particular use case where the same version
+			//       is used with different revision and different slots
+			//       (for example for webkit-gtk). In this case, we need
+			//       to use the slot for compare versions.
+			pOpts.IgnoreSlot = !atom.GetSelector4Slot()
+
+			a.Logger.Debug(fmt.Sprintf(
+				":eyes:[%s] Using value %b for SLOT in selector.",
+				atom.Name, pOpts.IgnoreSlot))
+		}
+
 		for _, condition := range atom.Selector {
 			gpkgCond, err := helpers.DecodeCondition(condition,
 				atom.GetCategory(def), atom.Name,
@@ -327,9 +334,19 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 			if err != nil {
 				return false, err
 			}
-			pOpts.Conditions = append(pOpts.Conditions, fmt.Sprintf("%s-%s",
-				gpkgCond.GetPackageNameWithCond(), gpkgCond.GetPV()))
+			if pOpts.IgnoreSlot {
+				pOpts.Conditions = append(pOpts.Conditions, fmt.Sprintf("%s-%s",
+					gpkgCond.GetPackageNameWithCond(), gpkgCond.GetPV()))
+			} else {
+				slot := helpers.GetSlotFromValues(mapref)
+
+				pOpts.Conditions = append(pOpts.Conditions, fmt.Sprintf("%s-%s:%s",
+					gpkgCond.GetPackageNameWithCond(), gpkgCond.GetPV(), slot))
+			}
 		}
+
+		a.Logger.Debug(fmt.Sprintf(
+			":eyes:[%s] Package with conditions %s.", atom.Name, pOpts.Conditions))
 	}
 
 	// Retrieve all availables version in order to return true

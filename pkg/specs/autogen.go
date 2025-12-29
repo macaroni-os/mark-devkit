@@ -92,11 +92,20 @@ func (e *AutogenExtension) Clone() *AutogenExtension {
 
 func NewAutogenAtom(name string) *AutogenAtom {
 	return &AutogenAtom{
-		Name:       name,
-		Vars:       make(map[string]interface{}, 0),
-		Selector:   []string{},
-		Transforms: []*AutogenTransform{},
+		Name:          name,
+		Vars:          make(map[string]interface{}, 0),
+		Selector:      []string{},
+		Selector4Slot: nil,
+		Transforms:    []*AutogenTransform{},
 	}
+}
+
+func (a *AutogenAtom) GetSelector4Slot() bool {
+	return a.Selector4Slot != nil && *a.Selector4Slot
+}
+
+func (a *AutogenAtom) HasSelector4Slot() bool {
+	return a.Selector4Slot != nil
 }
 
 func (a *AutogenAtom) HasTransforms() bool {
@@ -165,6 +174,10 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 	}
 	if atom.Tarball != "" {
 		ans.Tarball = atom.Tarball
+	}
+	if atom.HasSelector4Slot() {
+		selector4slot := *atom.Selector4Slot
+		ans.Selector4Slot = &selector4slot
 	}
 	if atom.Revision != nil {
 		rev := *atom.Revision
@@ -349,6 +362,11 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 		for k, v := range a.Vars {
 			ans.Vars[k] = v
 		}
+	}
+
+	if a.HasSelector4Slot() {
+		selector4slot := *a.Selector4Slot
+		ans.Selector4Slot = &selector4slot
 	}
 
 	if a.Revision != nil {
