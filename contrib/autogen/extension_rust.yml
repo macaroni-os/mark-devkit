@@ -31,7 +31,7 @@ extension_golang_example:
         # to possible values.
         # bundle_extension: "xz"
 
-        # Define a list of crates to ignore
+        # Define a list of crates to ignore (separated by spaces)
         crates_skipped: ""
 
         # git crates options. Possible values: "true" | "false". Default true.

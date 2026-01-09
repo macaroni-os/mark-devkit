@@ -323,7 +323,7 @@ func (a *AutogenBot) isVersion2Add(atom, def *specs.AutogenAtom,
 			pOpts.IgnoreSlot = !atom.GetSelector4Slot()
 
 			a.Logger.Debug(fmt.Sprintf(
-				":eyes:[%s] Using value %b for SLOT in selector.",
+				":eyes:[%s] Using value %v for SLOT in selector.",
 				atom.Name, pOpts.IgnoreSlot))
 		}
 

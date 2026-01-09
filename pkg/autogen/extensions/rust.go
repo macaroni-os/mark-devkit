@@ -6,6 +6,7 @@ package extensions
 
 import (
 	"fmt"
+	nurl "net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -38,7 +39,7 @@ type CargoWorkspace struct {
 	Package      *CargoPackage `toml:"package,omitempty"`
 	Members      []string      `toml:"members,omitempty"`
 	Exclude      []string      `toml:"exclude,omitempty"`
-	Dependencies []string      `toml:"dependencies,omitempty"`
+	Dependencies any           `toml:"dependencies,omitempty"`
 }
 
 type CargoToml struct {
@@ -72,7 +73,7 @@ func (cp *CargoPackage) GetVersion() string {
 }
 
 func (cp *CargoPackage) GetSource() string {
-	if source, ok := cp.Version.(string); ok {
+	if source, ok := cp.Source.(string); ok {
 		return source
 	}
 	return ""
@@ -251,7 +252,7 @@ func (e *ExtensionRust) parseCargoToml(atom *specs.AutogenAtom,
 		toSkip = filepath.Join(pkgUnpackDir, "Cargo.toml")
 	}
 
-	err = e.checkDir4CargoTomp(pkgUnpackDir, toSkip, ans)
+	err = e.checkDir4CargoTomp(atom, pkgUnpackDir, toSkip, ans)
 
 	return ans, err
 }
@@ -342,6 +343,11 @@ func (e *ExtensionRust) downloadBundles(restGuard *guard.RestGuard,
 			sourceOrigin = "crates"
 		}
 
+		log.DebugC(
+			fmt.Sprintf("[%s] Processing create %s as source %s ...",
+				atom.Name, pkg.Name, sourceOrigin,
+			))
+
 		if sourceOrigin == "crates" {
 
 			if _, skipped := skipMap[pkg.Name]; skipped {
@@ -410,8 +416,35 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 	pkgs []*CargoPackage, url, bundlesDir, unpackDir string) error {
 	log := logger.GetDefaultLogger()
 
-	ref := strings.Split(url, "#")[1]
+	var ref, branch string
+
+	if strings.Index(url, "#") > 0 {
+		ref = strings.Split(url, "#")[1]
+		url = strings.Split(url, "#")[0]
+	}
+
+	u, _ := nurl.Parse(url)
+	queryArgs := u.Query()
+	if qBranch, present := queryArgs["branch"]; present {
+		branch = qBranch[0]
+	}
+
+	// Not always ? is present.
 	gitRepo := strings.Split(url, "?")[0]
+
+	if branch != "" {
+		log.Info(
+			fmt.Sprintf(
+				":factory:[%s] Processing git creates for %s hash %s (brach %s)...",
+				atom.Name, gitRepo, ref, branch,
+			))
+	} else {
+		log.Info(
+			fmt.Sprintf(
+				":factory:[%s] Processing git creates for %s hash %s...",
+				atom.Name, gitRepo, ref,
+			))
+	}
 
 	// Name of the dir of the bundle unpacked.
 	// We escape chars: [:] -> %3A, [/] -> %2F
@@ -449,7 +482,7 @@ func (e *ExtensionRust) processGitCrate(atom *specs.AutogenAtom,
 	repoData := &specs.ReposcanKit{
 		Name:       pkgs[0].Name,
 		Url:        gitRepo,
-		Branch:     "",
+		Branch:     branch,
 		CommitSha1: ref,
 	}
 
@@ -591,8 +624,9 @@ func (e *ExtensionRust) retrieveCargoLock(atom *specs.AutogenAtom,
 	return pkgUnpackDir, ans, nil
 }
 
-func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
-	deps *CargoLocalDeps) error {
+func (e *ExtensionRust) checkDir4CargoTomp(atom *specs.AutogenAtom,
+	dir, toSkip string, deps *CargoLocalDeps) error {
+	log := logger.GetDefaultLogger()
 
 	cfile := filepath.Join(dir, "Cargo.toml")
 	if utils.Exists(cfile) {
@@ -624,7 +658,13 @@ func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
 				pkg.Package = pkg.Workspace.Package
 			}
 
-			if pkg.Package.Name != "" {
+			if pkg.Package == nil {
+				log.Warning(
+					fmt.Sprintf(
+						"[%s] Package on path %s with without package metadata. Ignoring it.",
+						atom.Name, pkg.Path,
+					))
+			} else if pkg.Package.Name != "" {
 				deps.Map[pkg.Package.Name] = &pkg
 			}
 		}
@@ -638,7 +678,7 @@ func (e *ExtensionRust) checkDir4CargoTomp(dir, toSkip string,
 	for _, entry := range fEntries {
 		if entry.IsDir() {
 			err := e.checkDir4CargoTomp(
-				filepath.Join(dir, entry.Name()), toSkip, deps)
+				atom, filepath.Join(dir, entry.Name()), toSkip, deps)
 			if err != nil {
 				return err
 			}
