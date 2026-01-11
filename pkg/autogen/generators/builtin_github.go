@@ -160,7 +160,8 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	if tarballName == "" {
 		// Using sha at the end to correctly catch issues
 		// with retag done on upstream repo
-		if sha != "" {
+		if sha != "" && len(sha) > 7 {
+			fmt.Println("SHA ", sha)
 			tarballName = fmt.Sprintf("%s-%s-%s.tar.gz", atom.Name, version,
 				sha[0:7])
 		} else {
@@ -200,7 +201,7 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	values["artefacts"] = artefacts
 
-	if sha != "" {
+	if sha != "" && len(sha) > 7 {
 		values["pkg_basedir"] = fmt.Sprintf("%s-%s-%s",
 			atom.Github.User, atom.Github.Repo, sha[0:7],
 		)
