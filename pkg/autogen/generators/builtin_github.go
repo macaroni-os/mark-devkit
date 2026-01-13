@@ -68,6 +68,11 @@ func (g *GithubGenerator) GetAssets(atom *specs.AutogenAtom,
 			})
 
 		} else {
+
+			if release == nil {
+				return ans, fmt.Errorf("matcher on asset is not permitted without using query release.")
+			}
+
 			matcher, err := helpers.RenderContentWithTemplates(
 				asset.Matcher,
 				"", "", "asset.matcher", values, []string{},
