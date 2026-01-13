@@ -179,18 +179,16 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	artefacts := []*specs.AutogenArtefact{}
 
-	if release != nil && (atom.HasAssets() || release.GetTarballURL() != "") {
-		if atom.HasAssets() {
-			artefacts, err = g.GetAssets(atom, release, mapref)
-			if err != nil {
-				return err
-			}
-		} else {
-			artefacts = append(artefacts, &specs.AutogenArtefact{
-				SrcUri: []string{release.GetTarballURL()},
-				Name:   tarballName,
-			})
+	if atom.HasAssets() {
+		artefacts, err = g.GetAssets(atom, release, mapref)
+		if err != nil {
+			return err
 		}
+	} else if release != nil && release.GetTarballURL() != "" {
+		artefacts = append(artefacts, &specs.AutogenArtefact{
+			SrcUri: []string{release.GetTarballURL()},
+			Name:   tarballName,
+		})
 
 	} else if tag != nil {
 		artefacts = append(artefacts, &specs.AutogenArtefact{
