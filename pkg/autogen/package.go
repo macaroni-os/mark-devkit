@@ -78,8 +78,8 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 				"", "", "ebuild."+field, values, []string{},
 			)
 			if err != nil {
-				a.Logger.Warning("[%s] Error on render variable %s: %s",
-					atom.Name, field, err.Error())
+				a.Logger.Warning(fmt.Sprintf("[%s] Error on render variable %s: %s",
+					atom.Name, field, err.Error()))
 			}
 		}
 	}
