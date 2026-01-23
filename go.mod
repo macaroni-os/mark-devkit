@@ -27,7 +27,7 @@ require (
 	golang.org/x/net v0.48.0
 	golang.org/x/oauth2 v0.30.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.19.4
+	helm.sh/helm/v3 v3.19.5
 )
 
 require (
