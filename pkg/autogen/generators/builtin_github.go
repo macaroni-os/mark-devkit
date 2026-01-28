@@ -122,6 +122,7 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 	var sha string
 
 	originalVersion, _ := values["original_version"].(string)
+	pv, _ := values["pv"].(string)
 
 	// Set release metadata if present
 	if _, present := values["releases"]; present {
@@ -163,14 +164,18 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 
 	tarballName := atom.Tarball
 	if tarballName == "" {
+		tarballVersion := version
+		if pv != "" {
+			tarballVersion = pv
+		}
+
 		// Using sha at the end to correctly catch issues
 		// with retag done on upstream repo
 		if sha != "" && len(sha) > 7 {
-			fmt.Println("SHA ", sha)
-			tarballName = fmt.Sprintf("%s-%s-%s.tar.gz", atom.Name, version,
+			tarballName = fmt.Sprintf("%s-%s-%s.tar.gz", atom.Name, tarballVersion,
 				sha[0:7])
 		} else {
-			tarballName = fmt.Sprintf("%s-%s.tar.gz", atom.Name, version)
+			tarballName = fmt.Sprintf("%s-%s.tar.gz", atom.Name, tarballVersion)
 		}
 	} else {
 		tarballName, err = helpers.RenderContentWithTemplates(

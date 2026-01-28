@@ -667,8 +667,11 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 
 	if atom.HasRevision() {
 		a.Logger.Info(fmt.Sprintf(
-			":eyes:[%s] For packagge %s/%s append revision %d",
+			":eyes:[%s] For package %s/%s append revision %d",
 			atom.Name, atom.GetCategory(def), atom.Name, *atom.Revision))
+		// Store the version without revision in order to use it
+		// for tarball name and/or other.
+		values["pv"] = selectedVersion
 		selectedVersion = fmt.Sprintf("%s-r%d", selectedVersion, *atom.Revision)
 		values["version"] = selectedVersion
 	}
