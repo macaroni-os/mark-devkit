@@ -128,6 +128,7 @@ type AutogenDirlistingProps struct {
 	Url             string `json:"url,omitempty" yaml:"url,omitempty"`
 	Matcher         string `json:"matcher,omitempty" yaml:"matcher,omitempty"`
 	ExcludesMatcher string `json:"exclude,omitempty" yaml:"exclude,omitempty"`
+	IgnoreArtefacts *bool  `json:"ignore_artefacts,omitempty" yaml:"ignore_artefacts,omitempty"`
 }
 
 type AutogenJsonProps struct {

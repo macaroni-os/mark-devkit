@@ -227,6 +227,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			if atom.Dir.ExcludesMatcher != "" {
 				ans.Dir.ExcludesMatcher = atom.Dir.ExcludesMatcher
 			}
+			if atom.Dir.IgnoreArtefacts != nil {
+				ans.Dir.IgnoreArtefacts = atom.Dir.IgnoreArtefacts
+			}
 		}
 	}
 
@@ -392,6 +395,7 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			Url:             a.Dir.Url,
 			Matcher:         a.Dir.Matcher,
 			ExcludesMatcher: a.Dir.ExcludesMatcher,
+			IgnoreArtefacts: a.Dir.IgnoreArtefacts,
 		}
 	}
 

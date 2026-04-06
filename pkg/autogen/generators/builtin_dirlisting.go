@@ -180,7 +180,7 @@ func (g *DirlistingGenerator) SetVersion(atom *specs.AutogenAtom, version string
 			})
 		}
 
-	} else {
+	} else if atom.Dir.IgnoreArtefacts == nil || !(*atom.Dir.IgnoreArtefacts) {
 		artefacts = append(artefacts, &specs.AutogenArtefact{
 			SrcUri: []string{link},
 			Name:   tarballName,
