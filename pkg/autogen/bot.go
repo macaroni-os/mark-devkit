@@ -720,6 +720,16 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		if err != nil {
 			return err
 		}
+		if opts.ShowGeneratedValues {
+			data, err := yaml.Marshal(values)
+			if err != nil {
+				return err
+			}
+			a.Logger.InfoC(fmt.Sprintf(
+				":eyes:[%s] Values after extensions execution:\n%s", atom.Name,
+				string(data)))
+		}
+
 	}
 
 	// Download artefacts and prepare stagings dir.
