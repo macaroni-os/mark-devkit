@@ -1,3 +1,11 @@
+
+# Release 0.30.0 - May 12, 2026
+
+* Upgrade vendor github.com/go-git/go-git/v5 v5.17.2 => v5.19.0 (CVE-2026-45022, CVE-2026-41506)
+
+* Add `builtin-forgejo` generator. The host token could be configured through the
+  *authorization* section of the config file.
+
 # Release 0.29.0 - April 6, 2026
 
 * Go 1.25 is now required
