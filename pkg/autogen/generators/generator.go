@@ -20,6 +20,8 @@ func NewGenerator(t string, opts map[string]string) (Generator, error) {
 	switch t {
 	case specs.GeneratorBuiltinGitub:
 		return NewGithubGenerator(), nil
+	case specs.GeneratorBuiltinForgejo:
+		return NewForgejoGenerator(opts), nil
 	case specs.GeneratorBuiltinDirListing:
 		return NewDirlistingGenerator(opts), nil
 	case specs.GeneratorBuiltinNoop:

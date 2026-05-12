@@ -17,3 +17,5 @@ target:
     - pkg: net-misc/postman-bin
 
     - pkg: x11-terms/wezterm
+
+    - pkg: app-admin/calamares

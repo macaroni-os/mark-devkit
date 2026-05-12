@@ -1,0 +1,21 @@
+macaroni:
+  generator: builtin-forgejo
+  generator_opts:
+    host: https://codeberg.org
+
+  template:
+    engine: helm
+
+  defaults:
+    template: templates/simple.tmpl
+    category: app-admin
+    forgejo:
+      user: Calamares
+    transform:
+      - kind: string
+        match: 'Calamares '
+        replace: ''
+
+  packages:
+    - calamares:
+

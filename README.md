@@ -17,7 +17,8 @@ The `kit merge` command permits to generate and update a specific kit
 with the *atoms* defined in YAML files reading the ebuild from external
 repository or different kits and branches.
 
-The Github Token is read from `GITHUB_TOKEN` environment variable.
+The Github Token is read from `GITHUB_TOKEN` environment variable or from
+the *authorization* section of the configuration file.
 
 ```
 $> mark-devkit kit merge --help
@@ -359,6 +360,10 @@ The generator availables at the moment are:
 
 * `builtin-github`: This generator permits to use GitHub API to retrieve tags or releases
   available for a specific repository and get the last and/or a specific version.
+
+* `builtin-forgejo`: This generator permits to use Forgejo/Gitea API to retrieve tags or
+   releases available to a specific host and a specific repository. The host used
+   is configured through the `generator_opts["host"]` tag.
 
 * `builtin-dirlisting`: this generator permits to using HTML indexes page and retrieve
   tarballs available for a specific package.

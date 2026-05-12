@@ -5,8 +5,9 @@ See AUTHORS and LICENSE for the license details and contributors.
 package specs
 
 const (
-	GeneratorBuiltinGitub      = "builtin-github"
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
+	GeneratorBuiltinForgejo    = "builtin-forgejo"
+	GeneratorBuiltinGitub      = "builtin-github"
 	GeneratorBuiltinNoop       = "builtin-noop"
 	GeneratorBuiltinPypi       = "builtin-pypi"
 	GeneratorBuiltinJson       = "builtin-json"
@@ -60,6 +61,7 @@ type AutogenAtom struct {
 	Name     string                  `json:"-" yaml:"-"`
 	Tarball  string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
 	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
+	Forgejo  *AutogenGithubProps     `json:"forgejo,omitempty" yaml:"forgejo,omitempty"`
 	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
 	Python   *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
 	Json     *AutogenJsonProps       `json:"json,omitempty" yaml:"json,omitempty"`

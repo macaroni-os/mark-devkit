@@ -144,6 +144,13 @@ func (a *AutogenAtom) GithubIgnoreTags() bool {
 	return false
 }
 
+func (a *AutogenAtom) ForgejoIgnoreTags() bool {
+	if a.Forgejo != nil && a.Forgejo.IgnoreTags != nil {
+		return *a.Forgejo.IgnoreTags
+	}
+	return false
+}
+
 func (a *AutogenAtom) GetCategory(def *AutogenAtom) string {
 	if a.Category != "" {
 		return a.Category
@@ -210,6 +217,37 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 			}
 			if atom.Github.Match != "" {
 				ans.Github.Match = atom.Github.Match
+			}
+		}
+	}
+
+	if atom.Forgejo != nil {
+		if a.Forgejo == nil {
+			ans.Forgejo = atom.Forgejo
+		} else {
+			if atom.Forgejo.User != "" {
+				ans.Forgejo.User = atom.Forgejo.User
+			}
+			if atom.Forgejo.Repo != "" {
+				ans.Forgejo.Repo = atom.Forgejo.Repo
+			}
+			if atom.Forgejo.Query != "" {
+				ans.Forgejo.Query = atom.Forgejo.Query
+			}
+			if atom.Forgejo.PerPage != nil {
+				ans.Forgejo.PerPage = atom.Forgejo.PerPage
+			}
+			if atom.Forgejo.Page != nil {
+				ans.Forgejo.Page = atom.Forgejo.Page
+			}
+			if atom.Forgejo.NumPages != nil {
+				ans.Forgejo.NumPages = atom.Forgejo.NumPages
+			}
+			if atom.Forgejo.IgnoreTags != nil {
+				ans.Forgejo.IgnoreTags = atom.Forgejo.IgnoreTags
+			}
+			if atom.Forgejo.Match != "" {
+				ans.Forgejo.Match = atom.Forgejo.Match
 			}
 		}
 	}
@@ -387,6 +425,19 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			NumPages:   a.Github.NumPages,
 			Match:      a.Github.Match,
 			IgnoreTags: a.Github.IgnoreTags,
+		}
+	}
+
+	if a.Forgejo != nil {
+		ans.Forgejo = &AutogenGithubProps{
+			User:       a.Forgejo.User,
+			Repo:       a.Forgejo.Repo,
+			Query:      a.Forgejo.Query,
+			PerPage:    a.Forgejo.PerPage,
+			Page:       a.Forgejo.Page,
+			NumPages:   a.Forgejo.NumPages,
+			Match:      a.Forgejo.Match,
+			IgnoreTags: a.Forgejo.IgnoreTags,
 		}
 	}
 
