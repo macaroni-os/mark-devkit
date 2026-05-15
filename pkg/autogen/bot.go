@@ -537,10 +537,11 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	if def == nil {
 		// Create an empty default object if not present.
 		def = &specs.AutogenAtom{
-			Github: &specs.AutogenGithubProps{},
-			Dir:    &specs.AutogenDirlistingProps{},
-			Python: &specs.AutogenPythonOpts{},
-			Vars:   make(map[string]interface{}, 0),
+			Github:  &specs.AutogenGithubProps{},
+			Forgejo: &specs.AutogenGithubProps{},
+			Dir:     &specs.AutogenDirlistingProps{},
+			Python:  &specs.AutogenPythonOpts{},
+			Vars:    make(map[string]interface{}, 0),
 		}
 	} else {
 		// Ensure that object are not nil to avoid segfault.
@@ -552,6 +553,9 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		}
 		if def.Python == nil {
 			def.Python = &specs.AutogenPythonOpts{}
+		}
+		if def.Forgejo == nil {
+			def.Forgejo = &specs.AutogenGithubProps{}
 		}
 	}
 
