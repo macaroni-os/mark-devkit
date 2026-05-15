@@ -390,6 +390,11 @@ func (g *ForgejoGenerator) Process(atom *specs.AutogenAtom) (
 	log := logger.GetDefaultLogger()
 	var matchRegex *regexp.Regexp
 
+	if g.Client == nil {
+		return nil, fmt.Errorf("forgejo client not correctly initialized for atom %s",
+			atom.Name)
+	}
+
 	// Use atom.Name as default value for forgejo repo and user if not defined.
 	if atom.Forgejo.Repo == "" {
 		atom.Forgejo.Repo = atom.Name
