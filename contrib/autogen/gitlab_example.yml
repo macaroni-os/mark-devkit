@@ -1,0 +1,13 @@
+macaroni:
+  generator: builtin-gitlab
+  generator_opts:
+    host: https://gitlab.gnome.org
+
+  defaults:
+    category: dev-util
+    template: templates/simple.tmpl
+    gitlab:
+      user: GNOME
+      query: releases
+  packages:
+    - calls:

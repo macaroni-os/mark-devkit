@@ -539,6 +539,7 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		def = &specs.AutogenAtom{
 			Github:  &specs.AutogenGithubProps{},
 			Forgejo: &specs.AutogenGithubProps{},
+			Gitlab:  &specs.AutogenGithubProps{},
 			Dir:     &specs.AutogenDirlistingProps{},
 			Python:  &specs.AutogenPythonOpts{},
 			Vars:    make(map[string]interface{}, 0),
@@ -556,6 +557,9 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		}
 		if def.Forgejo == nil {
 			def.Forgejo = &specs.AutogenGithubProps{}
+		}
+		if def.Gitlab == nil {
+			def.Gitlab = &specs.AutogenGithubProps{}
 		}
 	}
 

@@ -8,6 +8,7 @@ const (
 	GeneratorBuiltinDirListing = "builtin-dirlisting"
 	GeneratorBuiltinForgejo    = "builtin-forgejo"
 	GeneratorBuiltinGitub      = "builtin-github"
+	GeneratorBuiltinGitlab     = "builtin-gitlab"
 	GeneratorBuiltinNoop       = "builtin-noop"
 	GeneratorBuiltinPypi       = "builtin-pypi"
 	GeneratorBuiltinJson       = "builtin-json"
@@ -62,6 +63,7 @@ type AutogenAtom struct {
 	Tarball  string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
 	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
 	Forgejo  *AutogenGithubProps     `json:"forgejo,omitempty" yaml:"forgejo,omitempty"`
+	Gitlab   *AutogenGithubProps     `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
 	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
 	Python   *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
 	Json     *AutogenJsonProps       `json:"json,omitempty" yaml:"json,omitempty"`

@@ -11,6 +11,7 @@ target:
 
   atoms:
     - pkg: dev-util/myfoo
+    - pkg: dev-util/calls
 
     - pkg: net-fs/minio
 
