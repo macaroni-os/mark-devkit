@@ -365,6 +365,10 @@ The generator availables at the moment are:
    releases available to a specific host and a specific repository. The host used
    is configured through the `generator_opts["host"]` tag.
 
+* `builtin-gitlab`: This generator permits to use Gitlab API to retrieve tags or
+   releases available to a specific host and a specific repository. The host used
+   is configured through the `generator_opts["host"]` tag.
+
 * `builtin-dirlisting`: this generator permits to using HTML indexes page and retrieve
   tarballs available for a specific package.
 
