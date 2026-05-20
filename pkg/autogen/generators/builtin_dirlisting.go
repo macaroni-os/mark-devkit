@@ -265,6 +265,9 @@ func (g *DirlistingGenerator) Process(atom *specs.AutogenAtom) (*map[string]inte
 
 	service := g.GetRestGuardService(uri.Host)
 	service.AddNode(node)
+	if atom.OverrideUserAgent != "" {
+		service.SetOption("User-Agent", atom.OverrideUserAgent)
+	}
 
 	t := service.GetTicket()
 	defer t.Rip()

@@ -189,6 +189,9 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 	if atom.Tarball != "" {
 		ans.Tarball = atom.Tarball
 	}
+	if atom.OverrideUserAgent != "" {
+		ans.OverrideUserAgent = atom.OverrideUserAgent
+	}
 	if atom.HasSelector4Slot() {
 		selector4slot := *atom.Selector4Slot
 		ans.Selector4Slot = &selector4slot
@@ -423,18 +426,19 @@ func (a *AutogenAtom) Merge(atom *AutogenAtom) *AutogenAtom {
 
 func (a *AutogenAtom) Clone() *AutogenAtom {
 	ans := &AutogenAtom{
-		Name:            a.Name,
-		Tarball:         a.Tarball,
-		Vars:            make(map[string]interface{}, 0),
-		Category:        a.Category,
-		IgnoreArtefacts: a.IgnoreArtefacts,
-		Template:        a.Template,
-		FilesDir:        a.FilesDir,
-		Transforms:      a.Transforms,
-		Excludes:        a.Excludes,
-		Selector:        a.Selector,
-		Assets:          a.Assets,
-		Extensions:      []string{},
+		Name:              a.Name,
+		Tarball:           a.Tarball,
+		Vars:              make(map[string]interface{}, 0),
+		Category:          a.Category,
+		IgnoreArtefacts:   a.IgnoreArtefacts,
+		Template:          a.Template,
+		FilesDir:          a.FilesDir,
+		Transforms:        a.Transforms,
+		Excludes:          a.Excludes,
+		Selector:          a.Selector,
+		Assets:            a.Assets,
+		Extensions:        []string{},
+		OverrideUserAgent: a.OverrideUserAgent,
 	}
 
 	if len(a.Vars) > 0 {

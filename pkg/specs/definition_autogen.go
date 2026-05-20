@@ -59,16 +59,17 @@ type AutogenArtefact struct {
 }
 
 type AutogenAtom struct {
-	Name     string                  `json:"-" yaml:"-"`
-	Tarball  string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
-	Github   *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
-	Forgejo  *AutogenGithubProps     `json:"forgejo,omitempty" yaml:"forgejo,omitempty"`
-	Gitlab   *AutogenGithubProps     `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
-	Dir      *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
-	Python   *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
-	Json     *AutogenJsonProps       `json:"json,omitempty" yaml:"json,omitempty"`
-	Vars     map[string]interface{}  `json:"vars,omitempty" yaml:"vars,omitempty"`
-	Category string                  `json:"category,omitempty" yaml:"category,omitempty"`
+	Name              string                  `json:"-" yaml:"-"`
+	Tarball           string                  `json:"tarball,omitempty" yaml:"tarball,omitempty"`
+	Github            *AutogenGithubProps     `json:"github,omitempty" yaml:"github,omitempty"`
+	Forgejo           *AutogenGithubProps     `json:"forgejo,omitempty" yaml:"forgejo,omitempty"`
+	Gitlab            *AutogenGithubProps     `json:"gitlab,omitempty" yaml:"gitlab,omitempty"`
+	Dir               *AutogenDirlistingProps `json:"dir,omitempty" yaml:"dir,omitempty"`
+	Python            *AutogenPythonOpts      `json:"-,inline" yaml:"-,inline"`
+	Json              *AutogenJsonProps       `json:"json,omitempty" yaml:"json,omitempty"`
+	Vars              map[string]interface{}  `json:"vars,omitempty" yaml:"vars,omitempty"`
+	Category          string                  `json:"category,omitempty" yaml:"category,omitempty"`
+	OverrideUserAgent string                  `json:"override_user_agent,omitempty" yaml:"override_user_agent,omitempty"`
 
 	Template string `json:"template,omitempty" yaml:"template,omitempty"`
 	FilesDir string `json:"files_dir,omitempty" yaml:"files_dir,omitempty"`
