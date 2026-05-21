@@ -1,4 +1,13 @@
 
+# Release 0.31.0 - May 21, 2026
+
+* Add `builtin-gitlab` generator. The host token could be configured through the
+  *authorization* section of the config file.
+
+* Permits to override User-Agent header through generator options.
+
+* Update vendor github.com/go-git/go-git/v5@v5.19.1 - CVE-2026-45571
+
 # Release 0.30.0 - May 12, 2026
 
 * Upgrade vendor github.com/go-git/go-git/v5 v5.17.2 => v5.19.0 (CVE-2026-45022, CVE-2026-41506)
