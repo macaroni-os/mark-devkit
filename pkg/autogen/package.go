@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	autogenart "github.com/macaroni-os/mark-devkit/pkg/autogen/artefacts"
 	tmpleng "github.com/macaroni-os/mark-devkit/pkg/autogen/tmpl-engines"
@@ -73,7 +74,7 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 			// Render the body with the values.
 			fieldValue, _ := values[field].(string)
 
-			values[field], err = helpers.RenderContentWithTemplates(
+			renderedValue, err := helpers.RenderContentWithTemplates(
 				fieldValue,
 				"", "", "ebuild."+field, values, []string{},
 			)
@@ -81,6 +82,15 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 				a.Logger.Warning(fmt.Sprintf("[%s] Error on render variable %s: %s",
 					atom.Name, field, err.Error()))
 			}
+
+			if field == "desc" || field == "homepage" {
+				// Sanitize desc and homepage to avoid syntax errors
+				// on bash for processing ebuild.
+				renderedValue = strings.ReplaceAll(renderedValue, "`", "")
+				renderedValue = strings.ReplaceAll(renderedValue, "\"", "")
+			}
+
+			values[field] = renderedValue
 		}
 	}
 

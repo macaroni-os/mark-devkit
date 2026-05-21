@@ -488,9 +488,9 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 	)
 	if err == nil {
 		ans["repository"] = repository
-		ans["desc"] = strings.ReplaceAll(repository.GetDescription(), "`", "")
+		ans["desc"] = repository.GetDescription()
 		if repository.GetHomepage() != "" {
-			ans["homepage"] = strings.ReplaceAll(repository.GetHomepage(), "`", "")
+			ans["homepage"] = repository.GetHomepage()
 		} else {
 			ans["homepage"] = repository.GetHTMLURL()
 		}
