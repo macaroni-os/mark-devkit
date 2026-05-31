@@ -35,8 +35,6 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	pn, _ := values["pn"].(string)
 	version, _ := values["version"].(string)
 	artefacts, _ := values["artefacts"].([]*specs.AutogenArtefact)
-	slot := helpers.GetSlotFromValues(mapref)
-
 	ans := &specs.RepoScanAtom{
 		Atom:     fmt.Sprintf("%s/%s-%s", category, atom.Name, version),
 		Category: category,
@@ -52,12 +50,6 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 		},
 	}
 
-	if slot != "" && slot != "0" {
-		ans.Metadata["SLOT"] = slot
-	} else {
-		ans.Metadata["SLOT"] = "0"
-	}
-
 	// Prepare package dir
 	err := helpers.EnsureDirWithoutIds(pkgDirStaging, 0755)
 	if err != nil {
@@ -67,12 +59,17 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	// Special vars rendered
 	renderedVars := []string{
 		"body", "iuse", "rdepend", "bdepend", "depend", "pdepend",
-		"cdepend", "s", "homepage", "desc", "required_use",
+		"cdepend", "s", "slot", "homepage", "desc", "required_use",
 	}
 	for _, field := range renderedVars {
 		if _, hasField := values[field]; hasField {
 			// Render the body with the values.
-			fieldValue, _ := values[field].(string)
+			fieldValue, notStr := values[field].(string)
+			if notStr {
+				// Skip rendering of the slot variable
+				// if it's an int
+				continue
+			}
 
 			renderedValue, err := helpers.RenderContentWithTemplates(
 				fieldValue,
@@ -92,6 +89,14 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 
 			values[field] = renderedValue
 		}
+	}
+
+	slot := helpers.GetSlotFromValues(mapref)
+
+	if slot != "" && slot != "0" {
+		ans.Metadata["SLOT"] = slot
+	} else {
+		ans.Metadata["SLOT"] = "0"
 	}
 
 	if len(artefacts) > 0 && (atom.IgnoreArtefacts == nil || !*atom.IgnoreArtefacts) {
