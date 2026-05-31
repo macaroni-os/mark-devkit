@@ -64,8 +64,8 @@ func (a *AutogenBot) GeneratePackageOnStaging(mkit *specs.MergeKit,
 	for _, field := range renderedVars {
 		if _, hasField := values[field]; hasField {
 			// Render the body with the values.
-			fieldValue, notStr := values[field].(string)
-			if notStr {
+			fieldValue, isStr := values[field].(string)
+			if !isStr {
 				// Skip rendering of the slot variable
 				// if it's an int
 				continue
