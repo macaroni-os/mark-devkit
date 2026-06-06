@@ -63,6 +63,9 @@ type MergeBotOpts struct {
 
 	// Pull Request data
 	GithubUser string
+
+	// Kit Clone specs to merge
+	KitCloneSummaryFile string
 }
 
 func NewMergeBotOpts() *MergeBotOpts {
@@ -177,6 +180,18 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 		return err
 	}
 
+	if opts.KitCloneSummaryFile != "" {
+		// Load summary file and merge sha to the
+		// mkit object.
+		summaryFile := specs.NewMergeKit()
+		err := summaryFile.LoadFile(opts.KitCloneSummaryFile)
+		if err != nil {
+			return err
+		}
+
+		m.MergeSummaryFile(mkit, summaryFile)
+	}
+
 	targetKit, err := mkit.GetTargetKit()
 	if err != nil {
 		return err
@@ -227,6 +242,15 @@ func (m *MergeBot) Run(specfile string, opts *MergeBotOpts) error {
 	}
 
 	return m.ElaborateMerge(mkit, opts, targetKit)
+}
+
+func (m *MergeBot) MergeSummaryFile(mkit, summaryfile *specs.MergeKit) {
+	for idx, _ := range mkit.Sources {
+		rk := summaryfile.GetSourceKit(mkit.Sources[idx].Name)
+		if rk != nil {
+			mkit.Sources[idx].CommitSha1 = rk.CommitSha1
+		}
+	}
 }
 
 func (m *MergeBot) ElaborateMerge(mkit *specs.MergeKit,
