@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	cliName = `Copyright (c) 2024-2025 Macaroni OS - Daniele Rondina
+	cliName = `Copyright (c) 2024-2026 Macaroni OS - Daniele Rondina
 
 M.A.R.K. Development Tool
 
