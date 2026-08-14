@@ -15,7 +15,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/ohler55/ojg v1.26.8
 	github.com/onsi/ginkgo/v2 v2.29.0
-	github.com/onsi/gomega v1.41.0
+	github.com/onsi/gomega v1.42.1
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
