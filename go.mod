@@ -22,7 +22,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.55.0
-	golang.org/x/net v0.57.0
+	golang.org/x/net v0.58.0
 	golang.org/x/oauth2 v0.34.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.20.2
