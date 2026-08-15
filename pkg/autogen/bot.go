@@ -682,7 +682,22 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 		values["pv"] = selectedVersion
 		selectedVersion = fmt.Sprintf("%s-r%d", selectedVersion, *atom.Revision)
 		values["version"] = selectedVersion
+	} else {
+		values["pv"] = selectedVersion
 	}
+
+	// Creating a GentooPackage to expand general variables not
+	// yet defined.
+	gpkg, err := gentoo.ParsePackageStr(fmt.Sprintf("%s/%s-%s",
+		atom.GetCategory(def), atom.Name, selectedVersion))
+	if err != nil {
+		return fmt.Errorf("error on parse package string to expand variables: %s",
+			err.Error())
+	}
+	values["p"] = gpkg.GetP()
+	values["pf"] = gpkg.GetPF()
+	values["pfb"] = gpkg.GetPFB()
+	values["pvr"] = gpkg.GetPVR()
 
 	if opts.ShowGeneratedValues {
 		data, err := yaml.Marshal(values)
