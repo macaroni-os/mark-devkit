@@ -76,6 +76,19 @@ func (j *JobRendered) GetPostChrootHooks() *[]*Hook {
 	return &ans
 }
 
+func (j *JobRendered) GetOnFailHooks() *[]*Hook {
+	ans := []*Hook{}
+	for _, hf := range j.HookFile {
+		for idx, h := range hf.Hooks {
+			if h.Type == HookOuterOnFail {
+				ans = append(ans, &hf.Hooks[idx])
+			}
+		}
+	}
+
+	return &ans
+}
+
 func (j *JobRendered) GetOptionsEnvsMap() map[string]string {
 	ans := make(map[string]string, 0)
 

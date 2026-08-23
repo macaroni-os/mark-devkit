@@ -123,6 +123,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 					&envMap,
 				)
 				if err != nil {
+					m.runOnFailHooks(job, rootfsdir,
+						hostExecutor, stdOutWriter, stdErrWriter,
+						&envMap,
+					)
 					return err
 				}
 			}
@@ -141,6 +145,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 	if !opts.SkipSource {
 		err = sourceHandler.Consume(&job.Source, rootfsdir)
 		if err != nil {
+			m.runOnFailHooks(job, rootfsdir,
+				hostExecutor, stdOutWriter, stdErrWriter,
+				&envMap,
+			)
 			return err
 		}
 	}
@@ -157,6 +165,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 					&envMap,
 				)
 				if err != nil {
+					m.runOnFailHooks(job, rootfsdir,
+						hostExecutor, stdOutWriter, stdErrWriter,
+						&envMap,
+					)
 					return err
 				}
 			}
@@ -175,6 +187,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 						&envMap,
 					)
 					if err != nil {
+						m.runOnFailHooks(job, rootfsdir,
+							hostExecutor, stdOutWriter, stdErrWriter,
+							&envMap,
+						)
 						return err
 					}
 				}
@@ -191,6 +207,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 					&envMap,
 				)
 				if err != nil {
+					m.runOnFailHooks(job, rootfsdir,
+						hostExecutor, stdOutWriter, stdErrWriter,
+						&envMap,
+					)
 					return err
 				}
 			}
@@ -203,6 +223,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 		packerHandler := packer.NewPacker(m.Config)
 		err = packerHandler.Produce(rootfsdir, &job.Output)
 		if err != nil {
+			m.runOnFailHooks(job, rootfsdir,
+				hostExecutor, stdOutWriter, stdErrWriter,
+				&envMap,
+			)
 			return err
 		}
 
@@ -219,6 +243,10 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 					&envMap,
 				)
 				if err != nil {
+					m.runOnFailHooks(job, rootfsdir,
+						hostExecutor, stdOutWriter, stdErrWriter,
+						&envMap,
+					)
 					return err
 				}
 			}
@@ -228,6 +256,51 @@ func (m *Metro) RunJob(job *specs.JobRendered, opts *RunOpts) error {
 	}
 
 	return nil
+}
+
+func (m *Metro) runOnFailHooks(job *specs.JobRendered,
+	rootfsdir string,
+	hostExecutor *executor.HostExecutor,
+	stdOutWriter, stdErrWriter *executor.ExecutorWriter,
+	envMap *map[string]string) {
+
+	onFailHooks := job.GetOnFailHooks()
+
+	if len(*onFailHooks) > 0 {
+
+		for _, hook := range *onFailHooks {
+			m.Logger.Info(
+				fmt.Sprintf(":magic_wand:>>> Running hook %s",
+					hook.Name))
+
+			for _, command := range hook.Commands {
+				res, err := hostExecutor.RunCommandWithOutput(
+					command, *envMap,
+					stdOutWriter, stdErrWriter,
+					hook.Entrypoint,
+				)
+				if err != nil {
+					m.Logger.Warning(
+						fmt.Sprintf(":magic_wand:>>> hook %s failed - %s :cross_mark:",
+							hook.Name, err.Error()))
+					break
+				}
+				if res > 0 {
+					m.Logger.Warning(
+						fmt.Sprintf(":magic_wand:>>> hook %s exited with %d - :cross_mark:",
+							hook.Name, res))
+					break
+				}
+			}
+
+			m.Logger.Info(
+				fmt.Sprintf(":magic_wand:>>> Completed hook %s :check_mark:",
+					hook.Name))
+
+		}
+
+	}
+
 }
 
 func (m *Metro) runHook(job *specs.JobRendered, hook *specs.Hook,

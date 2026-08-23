@@ -17,6 +17,8 @@ const (
 	HookOuterPostChroot = "outer-post-chroot"
 	HookOuterPreChroot  = "outer-pre-chroot"
 	HookOuterPostOutput = "outer-post-output"
+
+	HookOuterOnFail = "outer-on-fail"
 )
 
 type MetroSpec struct {
