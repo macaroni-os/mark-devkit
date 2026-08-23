@@ -699,6 +699,42 @@ func (a *AutogenBot) ProcessPackage(mkit *specs.MergeKit,
 	values["pfb"] = gpkg.GetPFB()
 	values["pvr"] = gpkg.GetPVR()
 
+	// Renderize special value extra_envs.
+	// NOTE: We process the values here in order to
+	//       permits the use of the array over extensions
+	//       and show on tracing the generated values.
+	if _, hasField := values["extra_envs"]; hasField {
+
+		// NOTE: we support only array of strings.
+		fieldValue, isArrStr := values["extra_envs"].([]interface{})
+		if isArrStr {
+			extraEnvs := []string{}
+
+			for idx, e := range fieldValue {
+				estr, ok := e.(string)
+				if !ok {
+					if err != nil {
+						a.Logger.Warning(fmt.Sprintf("[%s] Invalid value at pos %s for extra_envs with value %s.",
+							atom.Name, idx, e))
+						continue
+					}
+				}
+				renderedValue, err := helpers.RenderContentWithTemplates(
+					estr, "", "", "extra_envs."+estr, values, []string{},
+				)
+				if err != nil {
+					a.Logger.Warning(fmt.Sprintf("[%s] Error on render extra_envs value %s: %s",
+						atom.Name, estr, err.Error()))
+					continue
+				}
+
+				extraEnvs = append(extraEnvs, renderedValue)
+			}
+
+			values["extra_envs"] = extraEnvs
+		}
+	}
+
 	if opts.ShowGeneratedValues {
 		data, err := yaml.Marshal(values)
 		if err != nil {
