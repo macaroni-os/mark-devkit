@@ -1,4 +1,31 @@
 
+# Release 0.33.0 - Aug 15, 2026
+
+* Renderize `pv`, `pvr`, `pfb`, `pvr` variables
+  following Gentoo specifications.
+
+* Update vendor golang.org/x/crypto@v0.55.0
+
+  Security fix for:
+    - CVE-2026-39827
+    - CVE-2026-39828
+    - CVE-2026-39829
+    - CVE-2026-39830
+    - CVE-2026-39832
+    - CVE-2026-39834
+    - CVE-2026-39835
+    - CVE-2026-39831
+    - CVE-2026-39833
+    - CVE-2026-42508
+    - CVE-2026-46595
+    - CVE-2026-46597
+    - CVE-2026-46598
+    - CVE-2026-25680 (for golang/x/net <0.55.0)
+
+* Update vendor github.com/go-git/go-git/v5@v5.19.2 - CVE-2026-71556
+
+* Update vendor golang.org/x/net@v0.58.0
+
 # Release 0.32.0 - Jun 6, 2026
 
 * Renderize `slot` variable with Helm engine
