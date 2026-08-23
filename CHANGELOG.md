@@ -1,4 +1,11 @@
 
+# Release 0.34.0 - Aug 23, 2026
+
+* `metro`: add support for `outer-on-fail` hooks.
+
+* renderize `extra_envs` variable with
+  Helm engine if it's an array of strings.
+
 # Release 0.33.0 - Aug 15, 2026
 
 * Renderize `pv`, `pvr`, `pfb`, `pvr` variables
