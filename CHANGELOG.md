@@ -1,6 +1,9 @@
 
 # Release 0.35.0 - Aug 28, 2026
 
+* add support for `global_settings` in autogen
+  specification.
+
 * `builtin-forgejo`: Add support for `experimental` option
   that permits to use Pre-Release/Draft release
 
