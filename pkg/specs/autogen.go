@@ -479,42 +479,91 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 
 	if a.Github != nil {
 		ans.Github = &AutogenGithubProps{
-			User:         a.Github.User,
-			Repo:         a.Github.Repo,
-			Query:        a.Github.Query,
-			PerPage:      a.Github.PerPage,
-			Page:         a.Github.Page,
-			NumPages:     a.Github.NumPages,
-			Match:        a.Github.Match,
-			IgnoreTags:   a.Github.IgnoreTags,
-			Experimental: a.Github.Experimental,
+			User:  a.Github.User,
+			Repo:  a.Github.Repo,
+			Query: a.Github.Query,
+			Match: a.Github.Match,
+		}
+
+		if a.Github.Page != nil {
+			page := *a.Github.Page
+			ans.Github.Page = &page
+		}
+		if a.Github.NumPages != nil {
+			numPages := *a.Github.NumPages
+			ans.Github.NumPages = &numPages
+		}
+		if a.Github.PerPage != nil {
+			perPage := *a.Github.PerPage
+			ans.Github.PerPage = &perPage
+		}
+		if a.Github.IgnoreTags != nil {
+			ignoreTags := *a.Github.IgnoreTags
+			ans.Github.IgnoreTags = &ignoreTags
+		}
+		if a.Github.Experimental != nil {
+			exp := *a.Github.Experimental
+			ans.Github.Experimental = &exp
 		}
 	}
 
 	if a.Forgejo != nil {
 		ans.Forgejo = &AutogenGithubProps{
-			User:         a.Forgejo.User,
-			Repo:         a.Forgejo.Repo,
-			Query:        a.Forgejo.Query,
-			PerPage:      a.Forgejo.PerPage,
-			Page:         a.Forgejo.Page,
-			NumPages:     a.Forgejo.NumPages,
-			Match:        a.Forgejo.Match,
-			IgnoreTags:   a.Forgejo.IgnoreTags,
-			Experimental: a.Forgejo.Experimental,
+			User:  a.Forgejo.User,
+			Repo:  a.Forgejo.Repo,
+			Query: a.Forgejo.Query,
+			Match: a.Forgejo.Match,
+		}
+
+		if a.Forgejo.Page != nil {
+			page := *a.Forgejo.Page
+			ans.Forgejo.Page = &page
+		}
+		if a.Forgejo.NumPages != nil {
+			numPages := *a.Forgejo.NumPages
+			ans.Forgejo.NumPages = &numPages
+		}
+		if a.Forgejo.PerPage != nil {
+			perPage := *a.Forgejo.PerPage
+			ans.Forgejo.PerPage = &perPage
+		}
+		if a.Forgejo.IgnoreTags != nil {
+			ignoreTags := *a.Forgejo.IgnoreTags
+			ans.Forgejo.IgnoreTags = &ignoreTags
+		}
+		if a.Forgejo.Experimental != nil {
+			exp := *a.Forgejo.Experimental
+			ans.Forgejo.Experimental = &exp
 		}
 	}
 
 	if a.Gitlab != nil {
 		ans.Gitlab = &AutogenGithubProps{
-			User:       a.Gitlab.User,
-			Repo:       a.Gitlab.Repo,
-			Query:      a.Gitlab.Query,
-			PerPage:    a.Gitlab.PerPage,
-			Page:       a.Gitlab.Page,
-			NumPages:   a.Gitlab.NumPages,
-			Match:      a.Gitlab.Match,
-			IgnoreTags: a.Gitlab.IgnoreTags,
+			User:  a.Gitlab.User,
+			Repo:  a.Gitlab.Repo,
+			Query: a.Gitlab.Query,
+			Match: a.Gitlab.Match,
+		}
+
+		if a.Gitlab.Page != nil {
+			page := *a.Gitlab.Page
+			ans.Gitlab.Page = &page
+		}
+		if a.Gitlab.NumPages != nil {
+			numPages := *a.Gitlab.NumPages
+			ans.Gitlab.NumPages = &numPages
+		}
+		if a.Gitlab.PerPage != nil {
+			perPage := *a.Gitlab.PerPage
+			ans.Gitlab.PerPage = &perPage
+		}
+		if a.Gitlab.IgnoreTags != nil {
+			ignoreTags := *a.Gitlab.IgnoreTags
+			ans.Gitlab.IgnoreTags = &ignoreTags
+		}
+		if a.Gitlab.Experimental != nil {
+			exp := *a.Gitlab.Experimental
+			ans.Gitlab.Experimental = &exp
 		}
 	}
 
@@ -523,7 +572,11 @@ func (a *AutogenAtom) Clone() *AutogenAtom {
 			Url:             a.Dir.Url,
 			Matcher:         a.Dir.Matcher,
 			ExcludesMatcher: a.Dir.ExcludesMatcher,
-			IgnoreArtefacts: a.Dir.IgnoreArtefacts,
+		}
+
+		if a.Dir.IgnoreArtefacts != nil {
+			iArtefacts := *a.Dir.IgnoreArtefacts
+			ans.Dir.IgnoreArtefacts = &iArtefacts
 		}
 	}
 
@@ -597,4 +650,39 @@ func (a *AutogenDefinition) GetExtensionOptions(e string) (*AutogenExtension, er
 		return ans, nil
 	}
 	return nil, fmt.Errorf("Extension %s without options", e)
+}
+
+func (a *AutogenDefinition) MergeDefinition(o *AutogenDefinition) {
+
+	if o.TemplateEngine != nil {
+		if a.TemplateEngine == nil {
+			o.TemplateEngine = o.TemplateEngine
+		}
+	}
+	if a.Generator == "" && o.Generator != "" {
+		a.Generator = o.Generator
+	}
+	if a.MinVersion == "" && o.MinVersion != "" {
+		a.MinVersion = o.MinVersion
+	}
+	for k, v := range o.GeneratorOpts {
+		if _, isPresent := a.GeneratorOpts[k]; !isPresent {
+			a.GeneratorOpts[k] = v
+		}
+	}
+	for k, v := range o.Extensions {
+		if _, isPresent := a.Extensions[k]; !isPresent {
+			a.Extensions[k] = v
+		}
+	}
+
+	if o.Defaults != nil {
+		def := o.Defaults.Clone()
+		if a.Defaults == nil {
+			a.Defaults = def
+		} else {
+			a.Defaults = def.Merge(a.Defaults)
+		}
+	}
+
 }

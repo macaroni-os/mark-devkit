@@ -25,6 +25,8 @@ const (
 	ExtensionGitSubmodules = "git-submodules"
 
 	NotifyDiscord = "discord"
+
+	DefinitionGlobalKey = "global_settings"
 )
 
 type AutogenSpec struct {

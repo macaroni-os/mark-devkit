@@ -1,8 +1,8 @@
-macaroni:
+global_settings:
   generator: builtin-github
-  template:
-    engine: helm
 
+
+macaroni:
   defaults:
     category: dev-util
     github:
