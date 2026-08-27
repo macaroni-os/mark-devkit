@@ -423,9 +423,11 @@ func (g *GithubGenerator) Process(atom *specs.AutogenAtom) (*map[string]interfac
 		validReleases := make(map[string]*github.RepositoryRelease, 0)
 		var present bool
 
+		experimental := atom.GithubExperimental()
 		for idx := range rr {
-			if (rr[idx].Prerelease != nil && *rr[idx].Prerelease) ||
-				(rr[idx].Draft != nil && *rr[idx].Draft) {
+			if (!experimental) &&
+				((rr[idx].Prerelease != nil && *rr[idx].Prerelease) ||
+					(rr[idx].Draft != nil && *rr[idx].Draft)) {
 				continue
 			}
 

@@ -476,8 +476,9 @@ func (g *ForgejoGenerator) Process(atom *specs.AutogenAtom) (
 		validReleases := make(map[string]*client.Release, 0)
 		var present bool
 
+		experimental := atom.ForgejoExperimental()
 		for idx := range rr {
-			if rr[idx].IsPrerelease || rr[idx].IsDraft {
+			if (!experimental) && (rr[idx].IsPrerelease || rr[idx].IsDraft) {
 				continue
 			}
 

@@ -122,7 +122,8 @@ type AutogenGithubProps struct {
 	Match string `json:"match,omitempty" yaml:"match,omitempty"`
 
 	// Release options
-	IgnoreTags *bool `json:"ignore_tags,omitempty" yaml:"ignore_tags,omitempty"`
+	IgnoreTags   *bool `json:"ignore_tags,omitempty" yaml:"ignore_tags,omitempty"`
+	Experimental *bool `json:"experimental,omitempty" yaml:"experimental,omitempty"`
 
 	PerPage  *int `json:"per_page,omitempty" yaml:"per_page,omitempty"`
 	Page     *int `json:"page,omitempty" yaml:"page,omitempty"`
