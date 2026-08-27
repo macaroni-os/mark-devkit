@@ -1,4 +1,12 @@
 
+# Release 0.35.0 - Aug 28, 2026
+
+* `builtin-forgejo`: Add support for `experimental` option
+  that permits to use Pre-Release/Draft release
+
+* `builtin-github`: Add support for `experimental` option
+  that permits to use Pre-Release/Draft release
+
 # Release 0.34.0 - Aug 23, 2026
 
 * `metro`: add support for `outer-on-fail` hooks.
