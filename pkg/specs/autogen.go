@@ -665,14 +665,25 @@ func (a *AutogenDefinition) MergeDefinition(o *AutogenDefinition) {
 	if a.MinVersion == "" && o.MinVersion != "" {
 		a.MinVersion = o.MinVersion
 	}
-	for k, v := range o.GeneratorOpts {
-		if _, isPresent := a.GeneratorOpts[k]; !isPresent {
-			a.GeneratorOpts[k] = v
+	if len(o.GeneratorOpts) > 0 {
+		if a.GeneratorOpts == nil {
+			a.GeneratorOpts = make(map[string]string, 0)
+		}
+		for k, v := range o.GeneratorOpts {
+			if _, isPresent := a.GeneratorOpts[k]; !isPresent {
+				a.GeneratorOpts[k] = v
+			}
 		}
 	}
-	for k, v := range o.Extensions {
-		if _, isPresent := a.Extensions[k]; !isPresent {
-			a.Extensions[k] = v
+
+	if len(o.Extensions) > 0 {
+		if a.Extensions == nil {
+			a.Extensions = make(map[string]*AutogenExtension, 0)
+		}
+		for k, v := range o.Extensions {
+			if _, isPresent := a.Extensions[k]; !isPresent {
+				a.Extensions[k] = v
+			}
 		}
 	}
 
