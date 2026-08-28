@@ -392,7 +392,6 @@ func (a *AutogenBot) ProcessDefinitions(mkit *specs.MergeKit,
 
 	// Check if there is a global_settings key
 	glabalDef, hasGlobal := aspec.Definitions[specs.DefinitionGlobalKey]
-	fmt.Println("HAS GLOBAL ", hasGlobal)
 
 	for name, def := range aspec.Definitions {
 		if name == specs.DefinitionGlobalKey {
