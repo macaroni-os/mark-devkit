@@ -656,7 +656,14 @@ func (a *AutogenDefinition) MergeDefinition(o *AutogenDefinition) {
 
 	if o.TemplateEngine != nil {
 		if a.TemplateEngine == nil {
-			o.TemplateEngine = o.TemplateEngine
+			a.TemplateEngine = o.TemplateEngine
+		} else {
+			if a.TemplateEngine.Engine == "" {
+				a.TemplateEngine.Engine = o.TemplateEngine.Engine
+			}
+			if len(a.TemplateEngine.Opts) == 0 {
+				a.TemplateEngine.Opts = o.TemplateEngine.Opts
+			}
 		}
 	}
 	if a.Generator == "" && o.Generator != "" {
