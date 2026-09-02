@@ -20,6 +20,7 @@ func (m *MergeBot) MergeAtoms(candidates []*specs.RepoScanAtom,
 	mkit *specs.MergeKit, opts *MergeBotOpts) error {
 
 	for _, atom := range candidates {
+
 		err := m.mergeAtom(atom, mkit, opts)
 		if err != nil {
 			return err
@@ -246,7 +247,16 @@ func (m *MergeBot) createManifest(targetPkgDir string,
 	manifestFile := filepath.Join(targetPkgDir, "Manifest")
 
 	if len(files) > 0 {
-		return manifestFile, manifest.Write(manifestFile)
+		// Always regenerate the Manifest in order
+		// to correctly set all DIST entries of all
+		// candidates. But just return the path for the
+		// first candidate of the analyzed package.
+		err := manifest.Write(manifestFile)
+		if present {
+			return "", err
+		} else {
+			return manifestFile, err
+		}
 	}
 	return "", nil
 }
