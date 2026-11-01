@@ -165,17 +165,20 @@ func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 		return err
 	}
 
-	// Retrieve go.sum
-	goSum, err := e.retrieveGoSum(atom, unpackDir)
+	// Retrieve the go.sum objects to bundle: the files defined in the
+	// gosum_paths option, when present, the default single go.sum otherwise.
+	goSums, err := e.collectGoSums(atom, unpackDir)
 	if err != nil {
 		return err
 	}
 
 	// Download bundle files
 	bundlesDir := filepath.Join(pkgWorkDir, bundleIdentifier+"-"+atom.Name)
-	err = e.downloadBundles(restGuard, atom, goSum, bundlesDir)
-	if err != nil {
-		return err
+	for _, goSum := range goSums {
+		err = e.downloadBundles(restGuard, atom, goSum, bundlesDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Create bundle tarball
@@ -301,6 +304,15 @@ func (e *ExtensionGolang) downloadBundles(restGuard *guard.RestGuard,
 		// Replace / with %2F
 		bundle := strings.ReplaceAll(moduleUri, "/", "%2F")
 
+		// Avoid to download the artefact when the bundle file is already
+		// present, it happens when the same module is required by more
+		// than one go.sum file defined in gosum_paths.
+		if utils.Exists(filepath.Join(bundlesDir, bundle)) {
+			log.Debug(fmt.Sprintf("[%s] Bundle %s %s already present. Skipping.",
+				atom.Name, goSum.Lines[idx].Module, goSum.Lines[idx].Version))
+			continue
+		}
+
 		log.Debug(fmt.Sprintf("[%s] Downloading bundle %s %s at %s...",
 			atom.Name, goSum.Lines[idx].Module, goSum.Lines[idx].Version,
 			url))
@@ -358,4 +370,72 @@ func (e *ExtensionGolang) retrieveGoSum(atom *specs.AutogenAtom,
 	}
 
 	return NewGoSum(string(data)), nil
+}
+
+// collectGoSums returns the GoSum objects to bundle. When the gosum_paths
+// option is defined it works in alternative of the default discovery: it is a
+// comma separated list of go.sum files, relative to the repository root, and
+// it builds one GoSum object per file. It is used to support repositories
+// hosting more than one Go module, where the nested ones keep their own
+// go.sum (e.g. the collector/ module of grafana/alloy).
+func (e *ExtensionGolang) collectGoSums(atom *specs.AutogenAtom,
+	targetDir string) ([]*GoSum, error) {
+	log := logger.GetDefaultLogger()
+
+	gosumPaths := strings.TrimSpace(e.Opts["gosum_paths"])
+	if gosumPaths == "" {
+		goSum, err := e.retrieveGoSum(atom, targetDir)
+		if err != nil {
+			return nil, err
+		}
+		return []*GoSum{goSum}, nil
+	}
+
+	repoDir, err := e.retrieveRepoDir(targetDir)
+	if err != nil {
+		return nil, err
+	}
+
+	goSums := []*GoSum{}
+	for _, goSumPath := range strings.Split(gosumPaths, ",") {
+		goSumPath = strings.TrimSpace(goSumPath)
+		if goSumPath == "" {
+			continue
+		}
+
+		goSumPath = filepath.Join(repoDir, goSumPath)
+		log.Debug(fmt.Sprintf("[%s] Reading go.sum %s...", atom.Name, goSumPath))
+
+		data, err := os.ReadFile(goSumPath)
+		if err != nil {
+			return nil, fmt.Errorf("error on read file %s: %s",
+				goSumPath, err.Error())
+		}
+		goSums = append(goSums, NewGoSum(string(data)))
+	}
+
+	return goSums, nil
+}
+
+// retrieveRepoDir returns the directory of the unpacked repository, the same
+// entry retrieveGoSum look into to find the main go.sum.
+func (e *ExtensionGolang) retrieveRepoDir(targetDir string) (string, error) {
+	unpackDirPrefix, _ := e.Opts["unpack_srcdir_prefix"]
+	entries, err := os.ReadDir(targetDir)
+	if err != nil {
+		return "", err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		if unpackDirPrefix != "" &&
+			!strings.HasPrefix(entry.Name(), unpackDirPrefix) {
+			continue
+		}
+		return filepath.Join(targetDir, entry.Name()), nil
+	}
+
+	return "", fmt.Errorf("no repository directory found in %s", targetDir)
 }

@@ -22,6 +22,13 @@ extension_golang_example:
         # contains go.sum is used.
         # unpack_srcdir_prefix: minio-minio-
 
+        # When the repository hosts more than one Go module, the nested ones
+        # keep their own go.sum. gosum_paths works in alternative of the
+        # default go.sum discovery: comma separated list of go.sum files,
+        # relative to the repository root, one bundle set downloaded per
+        # file; modules shared between the files are fetched only once.
+        # gosum_paths: go.sum,collector/go.sum
+
         # See tar-formers supported compression algorithms
         # to possible values.
         # bundle_extension: "xz"
