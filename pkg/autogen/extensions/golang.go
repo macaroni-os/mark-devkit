@@ -166,7 +166,13 @@ func (e *ExtensionGolang) Elaborate(restGuard *guard.RestGuard,
 	}
 
 	// Retrieve go.sum
-	goSum, err := e.retrieveGoSum(atom, unpackDir)
+	goSum, goSumDir, err := e.retrieveGoSum(atom, unpackDir)
+	if err != nil {
+		return err
+	}
+
+	// Merge the extra go.sum files, if any (multi module repositories)
+	goSum, err = e.mergeExtraGoSums(atom, goSumDir, goSum)
 	if err != nil {
 		return err
 	}
@@ -317,13 +323,16 @@ func (e *ExtensionGolang) downloadBundles(restGuard *guard.RestGuard,
 	return nil
 }
 
+// retrieveGoSum retrieves the main go.sum file of the unpacked artefact and
+// return it parsed, with its directory (needed to resolve the extra go.sum
+// paths) and any error.
 func (e *ExtensionGolang) retrieveGoSum(atom *specs.AutogenAtom,
-	targetDir string) (*GoSum, error) {
+	targetDir string) (*GoSum, string, error) {
 
 	unpackDirPrefix, _ := e.Opts["unpack_srcdir_prefix"]
 	entries, err := os.ReadDir(targetDir)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	goSumPath := ""
@@ -349,13 +358,82 @@ func (e *ExtensionGolang) retrieveGoSum(atom *specs.AutogenAtom,
 	}
 
 	if goSumPath == "" {
-		return nil, fmt.Errorf("go.sum file not found")
+		return nil, "", fmt.Errorf("go.sum file not found")
 	}
 
 	data, err := os.ReadFile(goSumPath)
 	if err != nil {
-		return nil, fmt.Errorf("error on read file go.sum: %s", err.Error())
+		return nil, "", fmt.Errorf("error on read file go.sum: %s", err.Error())
 	}
 
-	return NewGoSum(string(data)), nil
+	return NewGoSum(string(data)), filepath.Dir(goSumPath), nil
+}
+
+// mergeExtraGoSums merges the additional go.sum files listed in the
+// extra_go_sums option into goSum. The option is a comma separated list of
+// paths, relative to the directory of the main go.sum; it is needed to support
+// repositories with multiple Go modules, where the nested modules keep their
+// own go.sum (e.g. the collector/ module of grafana/alloy).
+func (e *ExtensionGolang) mergeExtraGoSums(atom *specs.AutogenAtom,
+	goSumDir string, goSum *GoSum) (*GoSum, error) {
+	log := logger.GetDefaultLogger()
+
+	extraFiles := e.Opts["extra_go_sums"]
+	if strings.TrimSpace(extraFiles) == "" {
+		return goSum, nil
+	}
+
+	for _, extraFile := range strings.Split(extraFiles, ",") {
+		extraFile = strings.TrimSpace(extraFile)
+		if extraFile == "" {
+			continue
+		}
+
+		extraPath := extraFile
+		if !filepath.IsAbs(extraPath) {
+			extraPath = filepath.Join(goSumDir, extraFile)
+		}
+
+		if !utils.Exists(extraPath) {
+			return nil, fmt.Errorf("error on read extra go.sum: file %s not found",
+				extraFile)
+		}
+
+		data, err := os.ReadFile(extraPath)
+		if err != nil {
+			return nil, fmt.Errorf("error on read file %s: %s",
+				extraFile, err.Error())
+		}
+
+		added := mergeGoSums(goSum, NewGoSum(string(data)))
+		log.Debug(fmt.Sprintf("[%s] Merged %d rows from extra go.sum %s",
+			atom.Name, added, extraFile))
+	}
+
+	return goSum, nil
+}
+
+// mergeGoSums appends to main the rows of extra not already known, matched by
+// module@version, to avoid downloading the same bundle twice, and return the
+// number of rows added.
+func mergeGoSums(main, extra *GoSum) int {
+	known := make(map[string]bool, len(main.Lines))
+	for idx := range main.Lines {
+		known[fmt.Sprintf("%s@%s", main.Lines[idx].Module,
+			main.Lines[idx].Version)] = true
+	}
+
+	added := 0
+	for idx := range extra.Lines {
+		key := fmt.Sprintf("%s@%s", extra.Lines[idx].Module,
+			extra.Lines[idx].Version)
+		if known[key] {
+			continue
+		}
+		known[key] = true
+		main.Lines = append(main.Lines, extra.Lines[idx])
+		added++
+	}
+
+	return added
 }
