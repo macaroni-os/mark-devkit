@@ -21,7 +21,7 @@ jobs:
 
       - name: Install deps
         run: |
-            sudo -E env "PATH=$PATH" make deps
+            make deps
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -33,10 +33,10 @@ jobs:
           echo "GOVERSION=$(go env GOVERSION)" >> $GITHUB_ENV
 
       - name: Build test
-        run: sudo -E env "PATH=$PATH" make goreleaser-snapshot
+        run: make goreleaser-snapshot
         env:
           GOVERSION: ${{ env.GOVERSION }}
 
       - name: Tests
         run: |
-          sudo -E env "PATH=$PATH" make test-coverage
+          make test-coverage
