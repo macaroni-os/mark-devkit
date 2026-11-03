@@ -770,6 +770,9 @@ func ParsePackageStr(pkg string) (*GentooPackage, error) {
 
 	// Check if there are use flags annotation
 	if strings.Index(pkgname, "[") > 0 {
+		if strings.Index(pkgname, "]") < 0 {
+			return nil, fmt.Errorf("Found [ but not ] on pkg string %s", pkg)
+		}
 		useFlags := pkgname[strings.Index(pkgname, "[")+1 : strings.Index(pkgname, "]")]
 		ans.UseFlags = strings.Split(useFlags, ",")
 		p := pkgname[0:strings.Index(pkgname, "[")]
