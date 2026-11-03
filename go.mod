@@ -3,7 +3,7 @@ module github.com/macaroni-os/mark-devkit
 go 1.26.0
 
 require (
-	github.com/flosch/pongo2/v6 v6.0.0
+	github.com/flosch/pongo2/v6 v6.1.0
 	github.com/geaaru/pkgs-checker v0.17.0
 	github.com/geaaru/rest-guard v0.8.0
 	github.com/geaaru/tar-formers v0.10.7
