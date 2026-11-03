@@ -1,3 +1,17 @@
+# Release 0.36.0 - Nov 3, 2026
+
+* update vendor github.com/geaaru/pkgs-checker@v0.17.0
+
+* update vendor github.com/geaaru/tar-formers@v0.10.7
+
+* update vendor helm.sh/helm/v3@v3.22.1
+
+* update vendor github.com/flosch/pongo2/v6@v6.1.0
+
+* migrate vendor github.com/minio/minio-go/v7 => github.com/pgsty/silo-go/v7 v7.3.1
+
+* add support for `gosum_paths` extension param
+  in the golang extension
 
 # Release 0.35.0 - Aug 28, 2026
 
