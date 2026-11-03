@@ -115,8 +115,8 @@ github.com/geaaru/pkgs-checker/pkg/gentoo
 ## explicit; go 1.25.0
 github.com/geaaru/rest-guard/pkg/guard
 github.com/geaaru/rest-guard/pkg/specs
-# github.com/geaaru/tar-formers v0.9.1
-## explicit; go 1.20
+# github.com/geaaru/tar-formers v0.10.7
+## explicit; go 1.26.0
 github.com/geaaru/tar-formers/pkg/executor
 github.com/geaaru/tar-formers/pkg/logger
 github.com/geaaru/tar-formers/pkg/specs
@@ -276,8 +276,8 @@ github.com/json-iterator/go
 # github.com/kevinburke/ssh_config v1.6.0
 ## explicit; go 1.18
 github.com/kevinburke/ssh_config
-# github.com/klauspost/compress v1.18.2
-## explicit; go 1.23
+# github.com/klauspost/compress v1.20.0
+## explicit; go 1.25
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
@@ -285,6 +285,7 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/cpuinfo
 github.com/klauspost/compress/internal/le
 github.com/klauspost/compress/internal/race
+github.com/klauspost/compress/internal/regmask
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/s2
 github.com/klauspost/compress/zstd
@@ -461,8 +462,8 @@ github.com/subosito/gotenv
 # github.com/tinylib/msgp v1.6.1
 ## explicit; go 1.24
 github.com/tinylib/msgp/msgp
-# github.com/ulikunitz/xz v0.5.15
-## explicit; go 1.12
+# github.com/ulikunitz/xz v0.5.16
+## explicit; go 1.20
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
@@ -481,7 +482,7 @@ gitlab.com/gitlab-org/api/client-go
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr
-# go.uber.org/zap v1.27.1
+# go.uber.org/zap v1.28.0
 ## explicit; go 1.19
 go.uber.org/zap
 go.uber.org/zap/buffer

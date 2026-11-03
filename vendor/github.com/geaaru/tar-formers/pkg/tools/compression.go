@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2021-2023  Daniele Rondina <geaaru@gmail.org>
+Copyright © 2021-2026 Daniele Rondina <geaaru@macaronios.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,6 +52,20 @@ type TarReaderCompressionOpts struct {
 	Mode           CompressionMode
 	CompressReader io.ReadCloser
 	FileReader     io.ReadCloser
+}
+
+func (c *CompressionMode) Ext() (ans string) {
+	switch *c {
+	case Gzip:
+		ans = ".gz"
+	case Zstd:
+		ans = ".zst"
+	case Xz:
+		ans = ".xz"
+	case Bzip2:
+		ans = ".bz2"
+	}
+	return
 }
 
 func ParseCompressionMode(s string) CompressionMode {
