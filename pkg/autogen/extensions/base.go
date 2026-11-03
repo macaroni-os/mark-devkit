@@ -74,7 +74,7 @@ func (e *ExtensionBase) unpackArtefact(downloadDir, targetDir string,
 
 	err := tools.PrepareTarReader(tarball, tarfOpts)
 	if err != nil {
-		return fmt.Errorf("Error on prepare reader:", err.Error())
+		return fmt.Errorf("Error on prepare reader: %s", err.Error())
 	}
 
 	if tarfOpts.CompressReader != nil {
@@ -85,7 +85,7 @@ func (e *ExtensionBase) unpackArtefact(downloadDir, targetDir string,
 
 	err = tarformers.RunTask(s, targetDir)
 	if err != nil {
-		return fmt.Errorf("Error on process tarball :" + err.Error())
+		return fmt.Errorf("Error on process tarball : %s", err.Error())
 	}
 
 	// Apply patches to sources if availables
