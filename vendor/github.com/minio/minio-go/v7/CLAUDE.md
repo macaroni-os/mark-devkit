@@ -29,17 +29,16 @@ SERVER_ENDPOINT=localhost:9000 ACCESS_KEY=minioadmin SECRET_KEY=minioadmin ENABL
 ### Linting and Code Quality
 
 ```bash
-# Run all checks (lint, vet, test, examples, functional tests)
+# Run all checks (lint, test, examples, functional tests)
 make checks
 
-# Run linter only
+# Run linter only (includes govet, staticcheck, and other linters)
 make lint
 
-# Run vet and staticcheck
-make vet
+# Run the pinned golangci-lint version directly without adding it to go.mod
+GOWORK=off go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2 run --timeout=5m --config ./.golangci.yml
 
-# Alternative: run golangci-lint directly
-golangci-lint run --timeout=5m --config ./.golangci.yml
+# Note: 'make vet' is now an alias for 'make lint' for backwards compatibility
 ```
 
 ### Building Examples

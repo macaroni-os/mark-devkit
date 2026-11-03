@@ -1,318 +1,149 @@
-MinIO Go Client SDK for Amazon S3 Compatible Cloud Storage [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io) [![Sourcegraph](https://sourcegraph.com/github.com/minio/minio-go/-/badge.svg)](https://sourcegraph.com/github.com/minio/minio-go?badge) [![Apache V2 License](https://img.shields.io/badge/license-Apache%20V2-blue.svg)](https://github.com/minio/minio-go/blob/master/LICENSE)
-==================================================================================================================================================================================================================================================================================================================================================================================================================
+<h1 align="center">
+  <a href="https://silo.pgsty.com/">
+    <img src=".github/silo-logo.svg" alt="Silo" width="240">
+  </a>
+</h1>
 
-The MinIO Go Client SDK provides straightforward APIs to access any Amazon S3 compatible object storage.
+<h1 align="center">Silo Go SDK</h1>
 
-This Quickstart Guide covers how to install the MinIO client SDK, connect to MinIO, and create a sample file uploader. For a complete list of APIs and examples, see the [godoc documentation](https://pkg.go.dev/github.com/minio/minio-go/v7) or [Go Client API Reference](https://min.io/docs/minio/linux/developers/go/API.html).
+<p align="center">
+  <strong>Go client SDK for Silo and Amazon S3-compatible object storage</strong>
+</p>
 
-These examples presume a working [Go development environment](https://golang.org/doc/install) and the [MinIO `mc` command line tool](https://min.io/docs/minio/linux/reference/minio-mc.html).
+<p align="center">
+  <a href="https://silo.pgsty.com/">Website</a> ·
+  <a href="https://silo.pgsty.com/developers/go/minio-go/">Documentation</a> ·
+  <a href="https://pkg.go.dev/github.com/minio/minio-go/v7">API Reference</a> ·
+  <a href="https://github.com/pgsty/silo-go/releases">Releases</a> ·
+  <a href="https://github.com/pgsty/silo-go/tree/master/examples">Examples</a> ·
+  <a href="https://silo.pgsty.com/about/security/">Security</a>
+</p>
 
-Download from Github
---------------------
+<p align="center">
+  <a href="https://silo.pgsty.com/"><img alt="Website" src="https://img.shields.io/badge/Website-silo.pgsty.com-1d588c"></a>
+  <a href="https://github.com/pgsty/silo-go/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/pgsty/silo-go?include_prereleases&label=release&logo=github"></a>
+  <a href="go.mod"><img alt="Go Version" src="https://img.shields.io/github/go-mod/go-version/pgsty/silo-go?logo=go"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue"></a>
+</p>
 
-From your project directory:
+> [!IMPORTANT]
+> `pgsty/silo-go` is an independent, community-maintained fork of the open-source MinIO Go SDK, published by [Pigsty](https://pigsty.io/) for [Silo](https://silo.pgsty.com/). It is not affiliated with, endorsed by, or sponsored by MinIO, Inc. “MinIO” is used only to identify the upstream project, retained compatibility interfaces, and project lineage.
 
-```sh
-go get github.com/minio/minio-go/v7
+## Overview
+
+Silo Go SDK provides the Go client used by Silo, `mcli`, Silo Console, and other applications that connect to Amazon S3-compatible object storage. It supports bucket and object operations, multipart transfers, presigned requests, notifications, encryption, lifecycle rules, retention, replication, and S3-compatible authentication.
+
+This fork follows the same compatibility rule as the Silo server: **the project and its delivery surface are renamed; public interfaces stay stable.** Existing Go source continues to import `github.com/minio/minio-go/v7` and use the `minio` package name.
+
+## Compatibility Contract
+
+| Surface | Current contract |
+| :-- | :-- |
+| Project repository | [`github.com/pgsty/silo-go`](https://github.com/pgsty/silo-go) |
+| Go module and imports | `github.com/minio/minio-go/v7` |
+| Go package name | `minio` |
+| Silo fork selection | `replace github.com/minio/minio-go/v7 => github.com/pgsty/silo-go/v7 v7.3.1` |
+| Wire protocol | Amazon S3-compatible API and AWS Signature V2/V4 |
+| User-Agent compatibility | The existing `MinIO (...) minio-go/v7.x` form is retained |
+
+The module path, import paths, exported Go identifiers, environment variables, protocol headers, and User-Agent form are compatibility interfaces, not product branding. Changing them would split the Go package ecosystem or break integrations, so this release deliberately preserves them.
+
+## Install the Silo Fork
+
+Select the maintained fork in the application module while keeping existing imports unchanged:
+
+```go
+require github.com/minio/minio-go/v7 v7.3.1
+
+replace github.com/minio/minio-go/v7 => github.com/pgsty/silo-go/v7 v7.3.1
 ```
 
-Initialize a MinIO Client Object
---------------------------------
+Or apply the same selection from the command line:
 
-The MinIO client requires the following parameters to connect to an Amazon S3 compatible object storage:
+```bash
+go mod edit -require=github.com/minio/minio-go/v7@v7.3.1
+go mod edit -replace=github.com/minio/minio-go/v7=github.com/pgsty/silo-go/v7@v7.3.1
+go mod tidy
+```
 
-| Parameter         | Description                                                |
-|-------------------|------------------------------------------------------------|
-| `endpoint`        | URL to object storage service.                             |
-| `_minio.Options_` | All the options such as credentials, custom transport etc. |
+The replacement repository deliberately retains the original module declaration so Go source, exported types, and import identity stay compatible. Go applies its code under the left-hand module identity shown above. Go also ignores `replace` directives declared by dependency modules, so applications and top-level services that require the fork must carry this replacement in their own `go.mod`.
+
+## Quick Start
+
+The compatibility import path and `minio` package name remain unchanged:
 
 ```go
 package main
 
 import (
+	"context"
 	"log"
+	"os"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
 func main() {
-	endpoint := "play.min.io"
-	accessKeyID := "Q3AM3UQ867SPQQA43P2F"
-	secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-	useSSL := true
-
-	// Initialize minio client object.
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-		Secure: useSSL,
+	client, err := minio.New("127.0.0.1:9000", &minio.Options{
+		Creds: credentials.NewStaticV4(
+			os.Getenv("S3_ACCESS_KEY"),
+			os.Getenv("S3_SECRET_KEY"),
+			"",
+		),
+		Secure: false,
 	})
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
-	log.Printf("%#v\n", minioClient) // minioClient is now set up
+	ctx := context.Background()
+	if err := client.MakeBucket(ctx, "demo", minio.MakeBucketOptions{}); err != nil {
+		exists, checkErr := client.BucketExists(ctx, "demo")
+		if checkErr != nil || !exists {
+			log.Fatal(err)
+		}
+	}
+
+	_, err = client.FPutObject(ctx, "demo", "README.md", "README.md", minio.PutObjectOptions{
+		ContentType: "text/markdown",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
-Example - File Uploader
------------------------
+Run it against a local Silo server:
 
-This sample code connects to an object storage server, creates a bucket, and uploads a file to the bucket. It uses the MinIO `play` server, a public MinIO cluster located at [https://play.min.io](https://play.min.io).
-
-The `play` server runs the latest stable version of MinIO and may be used for testing and development. The access credentials shown in this example are open to the public and all data uploaded to `play` should be considered public and non-protected.
-
-### FileUploader.go
-
-This example does the following:
-
--	Connects to the MinIO `play` server using the provided credentials.
--	Creates a bucket named `testbucket`.
--	Uploads a file named `testdata` from `/tmp`.
--	Verifies the file was created using `mc ls`.
-
-	```go
-	// FileUploader.go MinIO example
-	package main
-
-	import (
-		"context"
-		"log"
-
-		"github.com/minio/minio-go/v7"
-		"github.com/minio/minio-go/v7/pkg/credentials"
-	)
-
-	func main() {
-		ctx := context.Background()
-		endpoint := "play.min.io"
-		accessKeyID := "Q3AM3UQ867SPQQA43P2F"
-		secretAccessKey := "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-		useSSL := true
-
-		// Initialize minio client object.
-		minioClient, err := minio.New(endpoint, &minio.Options{
-			Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-			Secure: useSSL,
-		})
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		// Make a new bucket called testbucket.
-		bucketName := "testbucket"
-		location := "us-east-1"
-
-		err = minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: location})
-		if err != nil {
-			// Check to see if we already own this bucket (which happens if you run this twice)
-			exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
-			if errBucketExists == nil && exists {
-				log.Printf("We already own %s\n", bucketName)
-			} else {
-				log.Fatalln(err)
-			}
-		} else {
-			log.Printf("Successfully created %s\n", bucketName)
-		}
-
-		// Upload the test file
-		// Change the value of filePath if the file is in another location
-		objectName := "testdata"
-		filePath := "/tmp/testdata"
-		contentType := "application/octet-stream"
-
-		// Upload the test file with FPutObject
-		info, err := minioClient.FPutObject(ctx, bucketName, objectName, filePath, minio.PutObjectOptions{ContentType: contentType})
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		log.Printf("Successfully uploaded %s of size %d\n", objectName, info.Size)
-	}
-	```
-
-**1. Create a test file containing data:**
-
-You can do this with `dd` on Linux or macOS systems:
-
-```sh
-dd if=/dev/urandom of=/tmp/testdata bs=2048 count=10
+```bash
+export S3_ACCESS_KEY=minioadmin
+export S3_SECRET_KEY=change-me-long-password
+go run .
 ```
 
-or `fsutil` on Windows:
+Use TLS and scoped credentials in production. See the [Go client guide](https://silo.pgsty.com/developers/go/minio-go/), compatibility-path [API reference](https://pkg.go.dev/github.com/minio/minio-go/v7), and maintained [`examples`](examples/) for the complete surface.
 
-```sh
-fsutil file createnew "C:\Users\<username>\Desktop\sample.txt" 20480
+## Development
+
+```bash
+go test ./...
+make lint
 ```
 
-**2. Run FileUploader with the following commands:**
+`make lint` runs the pinned GolangCI-Lint release without adding its analyzer dependency tree to the SDK's published `go.mod`. A cold lint run needs network access or a pre-warmed Go module cache. Functional tests require a compatible object-storage server and are documented in [`CLAUDE.md`](CLAUDE.md).
 
-```sh
-go mod init example/FileUploader
-go get github.com/minio/minio-go/v7
-go get github.com/minio/minio-go/v7/pkg/credentials
-go run FileUploader.go
-```
+## Related Projects
 
-The output resembles the following:
+| Repository | Description |
+| :-- | :-- |
+| [`pgsty/silo`](https://github.com/pgsty/silo) | Silo object-storage server |
+| [`pgsty/mc`](https://github.com/pgsty/mc) | Silo command-line client, shipped as `mcli` |
+| [`pgsty/silo-console`](https://github.com/pgsty/silo-console) | Web administration console for Silo |
+| [`pgsty/silo-pkg`](https://github.com/pgsty/silo-pkg) | Shared Go packages maintained for the Silo forks |
 
-```sh
-2023/11/01 14:27:55 Successfully created testbucket
-2023/11/01 14:27:55 Successfully uploaded testdata of size 20480
-```
+## License, Attribution, and Trademark
 
-**3. Verify the Uploaded File With `mc ls`:**
+Silo Go SDK is distributed under the [Apache License 2.0](LICENSE). This fork derives from [`minio/minio-go`](https://github.com/minio/minio-go); upstream copyright and third-party notices remain preserved in [`NOTICE`](NOTICE), [`CREDITS`](CREDITS), source headers, and Git history.
 
-```sh
-mc ls play/testbucket
-[2023-11-01 14:27:55 UTC]  20KiB STANDARD TestDataFile
-```
-
-API Reference
--------------
-
-The full API Reference is available here.
-
--	[Complete API Reference](https://min.io/docs/minio/linux/developers/go/API.html)
-
-### API Reference : Bucket Operations
-
--	[`MakeBucket`](https://min.io/docs/minio/linux/developers/go/API.html#MakeBucket)
--	[`ListBuckets`](https://min.io/docs/minio/linux/developers/go/API.html#ListBuckets)
--	[`BucketExists`](https://min.io/docs/minio/linux/developers/go/API.html#BucketExists)
--	[`RemoveBucket`](https://min.io/docs/minio/linux/developers/go/API.html#RemoveBucket)
--	[`ListObjects`](https://min.io/docs/minio/linux/developers/go/API.html#ListObjects)
--	[`ListIncompleteUploads`](https://min.io/docs/minio/linux/developers/go/API.html#ListIncompleteUploads)
-
-### API Reference : Bucket policy Operations
-
--	[`SetBucketPolicy`](https://min.io/docs/minio/linux/developers/go/API.html#SetBucketPolicy)
--	[`GetBucketPolicy`](https://min.io/docs/minio/linux/developers/go/API.html#GetBucketPolicy)
-
-### API Reference : Bucket notification Operations
-
--	[`SetBucketNotification`](https://min.io/docs/minio/linux/developers/go/API.html#SetBucketNotification)
--	[`GetBucketNotification`](https://min.io/docs/minio/linux/developers/go/API.html#GetBucketNotification)
--	[`RemoveAllBucketNotification`](https://min.io/docs/minio/linux/developers/go/API.html#RemoveAllBucketNotification)
--	[`ListenBucketNotification`](https://min.io/docs/minio/linux/developers/go/API.html#ListenBucketNotification) (MinIO Extension)
--	[`ListenNotification`](https://min.io/docs/minio/linux/developers/go/API.html#ListenNotification) (MinIO Extension)
-
-### API Reference : File Object Operations
-
--	[`FPutObject`](https://min.io/docs/minio/linux/developers/go/API.html#FPutObject)
--	[`FGetObject`](https://min.io/docs/minio/linux/developers/go/API.html#FGetObject)
-
-### API Reference : Object Operations
-
--	[`GetObject`](https://min.io/docs/minio/linux/developers/go/API.html#GetObject)
--	[`PutObject`](https://min.io/docs/minio/linux/developers/go/API.html#PutObject)
--	[`PutObjectStreaming`](https://min.io/docs/minio/linux/developers/go/API.html#PutObjectStreaming)
--	[`StatObject`](https://min.io/docs/minio/linux/developers/go/API.html#StatObject)
--	[`CopyObject`](https://min.io/docs/minio/linux/developers/go/API.html#CopyObject)
--	[`RemoveObject`](https://min.io/docs/minio/linux/developers/go/API.html#RemoveObject)
--	[`RemoveObjects`](https://min.io/docs/minio/linux/developers/go/API.html#RemoveObjects)
--	[`RemoveIncompleteUpload`](https://min.io/docs/minio/linux/developers/go/API.html#RemoveIncompleteUpload)
--	[`SelectObjectContent`](https://min.io/docs/minio/linux/developers/go/API.html#SelectObjectContent)
-
-### API Reference : Presigned Operations
-
--	[`PresignedGetObject`](https://min.io/docs/minio/linux/developers/go/API.html#PresignedGetObject)
--	[`PresignedPutObject`](https://min.io/docs/minio/linux/developers/go/API.html#PresignedPutObject)
--	[`PresignedHeadObject`](https://min.io/docs/minio/linux/developers/go/API.html#PresignedHeadObject)
--	[`PresignedPostPolicy`](https://min.io/docs/minio/linux/developers/go/API.html#PresignedPostPolicy)
-
-### API Reference : Client custom settings
-
--	[`SetAppInfo`](https://min.io/docs/minio/linux/developers/go/API.html#SetAppInfo)
--	[`TraceOn`](https://min.io/docs/minio/linux/developers/go/API.html#TraceOn)
--	[`TraceOff`](https://min.io/docs/minio/linux/developers/go/API.html#TraceOff)
-
-Full Examples
--------------
-
-### Full Examples : Bucket Operations
-
--	[makebucket.go](https://github.com/minio/minio-go/blob/master/examples/s3/makebucket.go)
--	[listbuckets.go](https://github.com/minio/minio-go/blob/master/examples/s3/listbuckets.go)
--	[bucketexists.go](https://github.com/minio/minio-go/blob/master/examples/s3/bucketexists.go)
--	[removebucket.go](https://github.com/minio/minio-go/blob/master/examples/s3/removebucket.go)
--	[listobjects.go](https://github.com/minio/minio-go/blob/master/examples/s3/listobjects.go)
--	[listobjectsV2.go](https://github.com/minio/minio-go/blob/master/examples/s3/listobjectsV2.go)
--	[listincompleteuploads.go](https://github.com/minio/minio-go/blob/master/examples/s3/listincompleteuploads.go)
-
-### Full Examples : Bucket policy Operations
-
--	[setbucketpolicy.go](https://github.com/minio/minio-go/blob/master/examples/s3/setbucketpolicy.go)
--	[getbucketpolicy.go](https://github.com/minio/minio-go/blob/master/examples/s3/getbucketpolicy.go)
--	[listbucketpolicies.go](https://github.com/minio/minio-go/blob/master/examples/s3/listbucketpolicies.go)
-
-### Full Examples : Bucket lifecycle Operations
-
--	[setbucketlifecycle.go](https://github.com/minio/minio-go/blob/master/examples/s3/setbucketlifecycle.go)
--	[getbucketlifecycle.go](https://github.com/minio/minio-go/blob/master/examples/s3/getbucketlifecycle.go)
-
-### Full Examples : Bucket encryption Operations
-
--	[setbucketencryption.go](https://github.com/minio/minio-go/blob/master/examples/s3/setbucketencryption.go)
--	[getbucketencryption.go](https://github.com/minio/minio-go/blob/master/examples/s3/getbucketencryption.go)
--	[removebucketencryption.go](https://github.com/minio/minio-go/blob/master/examples/s3/removebucketencryption.go)
-
-### Full Examples : Bucket replication Operations
-
--	[setbucketreplication.go](https://github.com/minio/minio-go/blob/master/examples/s3/setbucketreplication.go)
--	[getbucketreplication.go](https://github.com/minio/minio-go/blob/master/examples/s3/getbucketreplication.go)
--	[removebucketreplication.go](https://github.com/minio/minio-go/blob/master/examples/s3/removebucketreplication.go)
-
-### Full Examples : Bucket notification Operations
-
--	[setbucketnotification.go](https://github.com/minio/minio-go/blob/master/examples/s3/setbucketnotification.go)
--	[getbucketnotification.go](https://github.com/minio/minio-go/blob/master/examples/s3/getbucketnotification.go)
--	[removeallbucketnotification.go](https://github.com/minio/minio-go/blob/master/examples/s3/removeallbucketnotification.go)
--	[listenbucketnotification.go](https://github.com/minio/minio-go/blob/master/examples/minio/listenbucketnotification.go) (MinIO Extension)
--	[listennotification.go](https://github.com/minio/minio-go/blob/master/examples/minio/listen-notification.go) (MinIO Extension)
-
-### Full Examples : File Object Operations
-
--	[fputobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/fputobject.go)
--	[fgetobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/fgetobject.go)
-
-### Full Examples : Object Operations
-
--	[putobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/putobject.go)
--	[getobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/getobject.go)
--	[statobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/statobject.go)
--	[copyobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/copyobject.go)
--	[removeobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/removeobject.go)
--	[removeincompleteupload.go](https://github.com/minio/minio-go/blob/master/examples/s3/removeincompleteupload.go)
--	[removeobjects.go](https://github.com/minio/minio-go/blob/master/examples/s3/removeobjects.go)
-
-### Full Examples : Encrypted Object Operations
-
--	[put-encrypted-object.go](https://github.com/minio/minio-go/blob/master/examples/s3/put-encrypted-object.go)
--	[get-encrypted-object.go](https://github.com/minio/minio-go/blob/master/examples/s3/get-encrypted-object.go)
--	[fput-encrypted-object.go](https://github.com/minio/minio-go/blob/master/examples/s3/fputencrypted-object.go)
-
-### Full Examples : Presigned Operations
-
--	[presignedgetobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/presignedgetobject.go)
--	[presignedputobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/presignedputobject.go)
--	[presignedheadobject.go](https://github.com/minio/minio-go/blob/master/examples/s3/presignedheadobject.go)
--	[presignedpostpolicy.go](https://github.com/minio/minio-go/blob/master/examples/s3/presignedpostpolicy.go)
-
-Explore Further
----------------
-
--	[Godoc Documentation](https://pkg.go.dev/github.com/minio/minio-go/v7)
--	[Complete Documentation](https://min.io/docs/minio/kubernetes/upstream/index.html)
--	[MinIO Go Client SDK API Reference](https://min.io/docs/minio/linux/developers/go/API.html)
-
-Contribute
-----------
-
-[Contributors Guide](https://github.com/minio/minio-go/blob/master/CONTRIBUTING.md)
-
-License
--------
-
-This SDK is distributed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0), see [LICENSE](https://github.com/minio/minio-go/blob/master/LICENSE) and [NOTICE](https://github.com/minio/minio-go/blob/master/NOTICE) for more information.
+MinIO is a trademark of MinIO, Inc. The name is used here only to identify the upstream project and compatibility lineage. Pigsty, Silo, and `pgsty/silo-go` are independent community efforts and are not affiliated with, endorsed by, or sponsored by MinIO, Inc.
