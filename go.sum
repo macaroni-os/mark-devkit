@@ -398,3 +398,5 @@ sigs.k8s.io/structured-merge-diff/v6 v6.4.2 h1:qdOxHwrl2Kaag1aQEarlYcOA9vSyGCp3C
 sigs.k8s.io/structured-merge-diff/v6 v6.4.2/go.mod h1:M3W8sfWvn2HhQDIbGWj3S099YozAsymCo/wrT5ohRUE=
 sigs.k8s.io/yaml v1.6.0 h1:G8fkbMSAFqgEFgh4b1wmtzDnioxFCUgTZhlbj5P9QYs=
 sigs.k8s.io/yaml v1.6.0/go.mod h1:796bPqUfzR/0jLAl6XjHl3Ck7MiyVv8dbTdyT3/pMf4=
+github.com/org-tekeli-borisp/tar-formers v0.10.8-0.20261105084619-de7c4b1edde8 h1:amQUPp+SFgV6MG2uN7p+ECE3VeYC7xLcct0YWQ4jQVc=
+github.com/org-tekeli-borisp/tar-formers v0.10.8-0.20261105084619-de7c4b1edde8/go.mod h1:chiJKjyO+DZOJRyZbA7ZakdSCxKw+CABEEa6kdQwLdI=

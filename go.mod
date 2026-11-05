@@ -141,3 +141,5 @@ require (
 )
 
 replace github.com/minio/minio-go/v7 => github.com/pgsty/silo-go/v7 v7.3.1
+
+replace github.com/geaaru/tar-formers => github.com/org-tekeli-borisp/tar-formers v0.10.8-0.20261105084619-de7c4b1edde8

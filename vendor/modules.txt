@@ -118,7 +118,7 @@ github.com/geaaru/pkgs-checker/pkg/gentoo
 ## explicit; go 1.25.0
 github.com/geaaru/rest-guard/pkg/guard
 github.com/geaaru/rest-guard/pkg/specs
-# github.com/geaaru/tar-formers v0.10.7
+# github.com/geaaru/tar-formers v0.10.7 => github.com/org-tekeli-borisp/tar-formers v0.10.8-0.20261105084619-de7c4b1edde8
 ## explicit; go 1.26.0
 github.com/geaaru/tar-formers/pkg/executor
 github.com/geaaru/tar-formers/pkg/logger
@@ -885,3 +885,4 @@ sigs.k8s.io/structured-merge-diff/v6/value
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v3
 # github.com/minio/minio-go/v7 => github.com/pgsty/silo-go/v7 v7.3.1
+# github.com/geaaru/tar-formers => github.com/org-tekeli-borisp/tar-formers v0.10.8-0.20261105084619-de7c4b1edde8
