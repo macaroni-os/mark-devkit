@@ -157,6 +157,13 @@ func (g *GithubGenerator) SetVersion(atom *specs.AutogenAtom, version string,
 			atom.Name, originalVersion, version))
 	}
 
+	// GetTargetCommitish() could return the name of the
+	// branch of the release and not the sha.
+	// Ignoring sha with values less of 40 chars
+	if len(sha) < 40 {
+		sha = ""
+	}
+
 	values["sha"] = sha
 	delete(values, "releases")
 	delete(values, "tags")

@@ -210,7 +210,7 @@ func (e *ExtensionRust) Elaborate(restGuard *guard.RestGuard,
 	version, _ := values["version"].(string)
 	sha, _ := values["sha"].(string)
 	bundleTarball := ""
-	if sha == "" {
+	if sha == "" || len(sha) < 40 {
 		bundleTarball = fmt.Sprintf(
 			"%s-%s-%s.tar.%s", atom.Name, version, bundleIdentifier, bundleExtension,
 		)
